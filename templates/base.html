@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='sidebar.css')}}">
+
+</head>
+<body>
+
+<!-- Vertical navbar -->
+<div class="vertical-nav bg-white" id="sidebar">
+    <div class="py-4 px-3 mb-4 bg-light">
+        <div class="media-body">
+          <h4 class="m-0">RBS Control panel</h4>
+          <p class="font-weight-light text-muted mb-0">MCA-IBA</p>
+        </div>
+    </div>
+    <p class="text-gray font-weight-bold text-uppercase px-3 small pb-4 mb-0">Main</p>
+    <ul class="nav flex-column bg-white mb-0">
+      
+        <li class="nav-item  {% if request.path == url_for('welcome')%} active {%endif%}">
+        <a href="{{url_for('welcome')}}" class="nav-link text-dark bg-light">
+                  <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>
+                  Dashboard
+              </a>
+      </li>
+      <li class="nav-item  {% if request.path == url_for('post_example')%} active {%endif%}">
+        <a href="{{url_for('post_example')}}" class="nav-link text-dark">
+                  <i class="fa fa-address-card mr-3 text-primary fa-fw"></i>
+                  AML X_Y
+              </a>
+      </li>
+      <li class="nav-item  {% if request.path == url_for('flask_example', index=0)%} active {%endif%}">
+        <a href="{{url_for('flask_example', index=0)}}" class="nav-link text-dark">
+                  <i class="fa fa-cubes mr-3 text-primary fa-fw"></i>
+                  AML DET01_THETA
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-picture-o mr-3 text-primary fa-fw"></i>
+                  AML PHI_ZETA
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-picture-o mr-3 text-primary fa-fw"></i>
+                  CAEN
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-picture-o mr-3 text-primary fa-fw"></i>
+                  CANBERRA
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-picture-o mr-3 text-primary fa-fw"></i>
+                  MOTRONA
+              </a>
+      </li>
+    </ul>
+  
+    <p class="text-gray font-weight-bold text-uppercase px-3 small py-4 mb-0">Charts</p>
+  
+    <ul class="nav flex-column bg-white mb-0">
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-area-chart mr-3 text-primary fa-fw"></i>
+                  Area charts
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-bar-chart mr-3 text-primary fa-fw"></i>
+                  Bar charts
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-pie-chart mr-3 text-primary fa-fw"></i>
+                  Pie charts
+              </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link text-dark">
+                  <i class="fa fa-line-chart mr-3 text-primary fa-fw"></i>
+                  Line charts
+              </a>
+      </li>
+    </ul>
+  </div>
+  <!-- End vertical navbar -->
+  
+<div class="page-content p-5" id="content">
+{% block content %}
+{% endblock %}
+</div>
+
+</body>
+</html>

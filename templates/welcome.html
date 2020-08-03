@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+
+    {% for item in array %}
+    <p>{{loop.index0}}:{{item}}</p>
+    {% endfor %}
+    THIS IS SOME TEXT
+
+{% endblock %}
