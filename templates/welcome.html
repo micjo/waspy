@@ -4,12 +4,63 @@
 
 {% block content %}
 
-    {% for item in array %}
-    <p>{{loop.index0}}:{{item}}</p>
-    {% endfor %}
-    THIS IS SOME TEXT
-<p>
-    DASHBOARD BUTTONS GO HERE
-</p>
+<div class="row">
+    <div class="col">
+        
+        <div class="container">
+            <h3>aml x_y </h3> 
+            <div class="spinner-grow text-success" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>  
+        <div class="container"><label>13:44.12</label> </div>
+        <form method="POST">
+            <div class="container"><label>100 </label> <input type="text" id="set_m1_position"></div>           
+            <div class="container"><label>15.00 </label> <input type="text" id="set_m1_position"> </div>
+        </form>
+        <div class="container">
+            <button type="button" class="btn btn-primary padded">submit</button>
+            <button type="button" class="btn btn-primary padded">load/unload</button>
+            <button type="button" class="btn btn-primary padded">exit</button>
+        </div>
+    </div>
+    <div class="col">
+    <div class="container">
+        <h3>aml det01_theta </h3> 
+        <div class="spinner-grow text-danger" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>  
+    <div class="container"><label>13:44.12</label> </div>
+    <form method="POST">
+        <div class="container"><label>100 </label> <input type="text" id="set_m1_position"></div>           
+        <div class="container"><label>15.00 </label> <input type="text" id="set_m1_position"> </div>
+    </form>
+    <div class="container">
+        <button type="button" class="btn btn-primary padded">submit</button>
+        <button type="button" class="btn btn-primary padded">load/unload</button>
+        <button type="button" class="btn btn-primary padded">exit</button>
+    </div>
+</div>
+<div class="col">
+<div class="container">
+    <h3>aml phi_zeta </h3> 
+    <div class="spinner-grow text-success" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>  
+<div class="container"><label>13:44.12</label> </div>
+<form method="POST">
+    <div class="container"><label>100 </label> <input type="text" id="set_m1_position"></div>           
+    <div class="container"><label>15.00 </label> <input type="text" id="set_m1_position"> </div>
+</form>
+<div class="container">
+    <button type="button" class="btn btn-primary padded">submit</button>
+    <button type="button" class="btn btn-primary padded">load/unload</button>
+    <button type="button" class="btn btn-primary padded">exit</button>
+</div>
+</div>
+
+  </div>
 
 {% endblock %}
