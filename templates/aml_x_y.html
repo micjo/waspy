@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+
+<button onclick="toggleUi()">Toggle Full/Min</button>
+<div class="row">
+  <div class="column" style="background-color:#e6ffe6;">
+    <h2>Actuals </h2>
+      <hr>
+      <h3>Generic</h3>
+      <div class="container"><label>Timestamp:</label> <label id="timestamp">-</label> </div>
+      <div class="container"><label>Status:</label> <label id="status">-</label> </div>
+      <div class="container"><label>Command Identifier:</label> <label id="command_id">-</label> </div>
+      <div class="container"><label>Error Code:</label> <label id="error_code">-</label> </div>
+      <div class="container"><label>Expiry Date:</label> <label id="expiry_date">-</label> </div>
+      <hr>
+      <h3>Motor 1</h3>
+      <div class="container"><label>Position (Steps): </label> <label id="m1_pos_steps">-</label> </div>
+      <div class="container"><label>Position (World): </label> <label id="m1_pos_world">-</label> </div>
+      <div class="container"><label>Temperature: </label> <label id="m1_temp">-</label> </div>
+      <div class="container"><label>Offset: </label> <label id="m1_offset">-</label> </div>
+      <hr>
+      <h3>Motor 2</h3>
+      <div class="container"><label>Position (Steps): </label> <label id="m2_pos_steps">-</label> </div>
+      <div class="container"><label>Position (World): </label> <label id="m2_pos_world">-</label> </div>
+      <div class="container"><label>Temperature: </label> <label id="m2_temp">-</label> </div>
+      <div class="container"><label>Offset: </label> <label id="m2_offset">-</label> </div>
+      <hr>
+      <h3>Litteral</h3>
+      <div class="container"><label>Request: </label> <label id="litteral_request">-</label> </div>
+      <div class="container"><label>Response: </label> <label id="litteral_response">-</label> </div>
+  </div>
+
+  <div class="column" style="background-color:paleturquoise;">
+    <h2>Configure</h2>
+    <hr>
+    <h3>Motor 1</h3>
+      <div class="container"><label>Set Position (World):</label><input type="text" id="set_m1_position"></div>
+      <div class="container"><label>Get Position</label><input type="checkbox" id="get_m1_position"> </div>
+      <div class="container"><label>Get Temperature</label><input type="checkbox" id="get_m1_temperature"></div>
+      <div class="container"><label>Idle Position update</label><input type="checkbox" id="get_m1_idle_position"> </div>
+      <div class="container"><label>Idle Temperature Update </label><input type="checkbox" id="get_m1_idle_temperature"></div>
+      <div class="container"><label>Redefine step counter:</label><input type="text" id="set_m1_step_counter"></div>
+      <div class="container"><label>Redefine Motor Position</label><input type="text" id="set_m1_redefine_position"></div>
+      <div class="container" id="m1_offset"><label>Redefine Offset</label><input type="text" id="set_m1_redefine_offset"></div>
+    <hr>
+      <h3>Motor 2</h3>
+        <div class="container"><label>Set Position (World):</label><input type="text" id="set_m2_position"></div>
+        <div class="container"><label>Get Position</label><input type="checkbox" id="get_m2_position"> </div>
+        <div class="container"><label>Get Temperature</label><input type="checkbox" id="get_m2_temperature"></div>
+        <div class="container"><label>Idle Position update</label><input type="checkbox" id="get_m2_idle_position"> </div>
+        <div class="container"><label>Idle Temperature Update </label><input type="checkbox" id="get_m2_idle_temperature"></div>
+        <div class="container"><label>Redefine step counter:</label><input type="text" id="set_m2_step_counter"></div>
+        <div class="container"><label>Redefine Motor Position</label><input type="text" id="set_m2_redefine_position"></div>
+        <div class="container"><label>Redefine Offset</label><input type="text" id="set_m2_redefine_offset"></div>
+        <hr>
+        <h3>Litteral</h3>
+        <div class="container"><label>Command: </label> <input type="text" id="litteral_cmd"></div>
+        <hr>
+        <div class="container"><label>Send Parameters </label><input type="button" value="SUBMIT" onclick="submit();"></div>
+        <div class="container"><label>Command Identifier: </label><label id="sent_command_id"> - </label> </div>
+        <div class="container"><label>Daemon Response: </label><label id="daemon_response"> - </label> </div>
+    
+  </div>
+</div>
+
+{% endblock %}
