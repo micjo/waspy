@@ -84,3 +84,58 @@
     color: #aaa;
   }
    
+
+
+
+
+
+  /* * {
+    box-sizing: border-box;
+    line-height: 100%;
+  
+  } */
+  .row {
+  display: flex;
+  line-height: 100%;
+  }
+  /* Create two equal columns that sits next to each other */
+  .column {
+  flex: 1%;
+  padding: 1%;
+  color: black;
+  }
+  .column-values {
+  flex: 1%;
+  padding: 1%;
+  color: mediumblue;
+  }
+  
+  /* firefox is special */
+  hr {
+  clear: both;
+  }
+  
+  .container {
+  width: 100%;
+  clear: both;
+  display: flex;
+  float:left;
+  padding-bottom:2%;
+  flex-direction: row; 
+  justify-content: left; 
+  align-items: center;
+  }
+  
+  .container label {
+  width:80%;
+  text-align: left;
+  }
+  
+  .container input {
+  width: 20%;
+  text-align: left;
+  }
+  
+  .container input[type=checkbox],input[type=button] {
+  width:min-content
+  }

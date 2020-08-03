@@ -18,4 +18,12 @@ def post_example():
         return redirect((url_for('welcome')))
     else:
         return render_template("post_example.html")
+
+
+@app.route("/aml_x_y", methods=["GET", "POST"])
+def aml_x_y():
+    if request.method == "POST":
+        return redirect((url_for('aml_x_y')))
+    else:
+        return render_template("aml_x_y.html")
     
