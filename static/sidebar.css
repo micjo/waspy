@@ -14,13 +14,13 @@
     top: 0;
     left: 0;
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
-    transition: all 0.4s;
+    /* transition: all 0.4s; */
   }
   
   .page-content {
     width: calc(100% - 17rem);
     margin-left: 17rem;
-    transition: all 0.4s;
+    /* transition: all 0.4s; */
   }
   
   /* for toggle behavior */
@@ -67,6 +67,10 @@
     overflow-x: hidden;
   }
 
+  .logging {
+    max-height:400px;
+    background-color: #f8f9fa;
+  }
   .active {
       font-weight: bold;
   }
@@ -100,6 +104,7 @@
   .row {
   display: flex;
   line-height: 100%;
+  padding-bottom:5%
   } 
   /* Create two equal columns that sits next to each other */
   .column {
@@ -126,6 +131,27 @@
   display: flex;
   float:left;
   padding-bottom:2%;
+  flex-direction: row; 
+  justify-content: space-between; 
+  align-items: center;
+  } 
+
+.daemon-list-ok {
+  background-color: #f8f9fa;;
+  color: black;
+  padding: 2%;
+}
+.daemon-list-fail {
+  background-color: #f8f9fa;;
+  color: red;
+  padding: 2%;
+}
+
+
+.min-container {
+  width: 100%;
+  display: flex;
+  padding-bottom:1%;
   flex-direction: row; 
   justify-content: space-between; 
   align-items: center;
