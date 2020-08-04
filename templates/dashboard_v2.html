@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+
+<h1>System status</h1>
+
+<h3>Running</h3>
+<hr>
+<div class="daemon-list-ok">
+<ul>
+<li> aml x_y</li>
+<li> aml phi_zeta</li>
+</ul>
+</div>
+
+<h3>Failed</h3>
+<hr>
+<div class="daemon-list-fail">
+<ul>
+    <li> aml det01_theta</li>
+</ul>
+</div>
+
+<h3>Logging</h3>
+<hr>
+<div class="overflow-auto logging">
+    [2020.07.30__13:11__45.668052] [INFO] DAEMON INFO:<br>
+    [2020.07.30__13:11__45.668180] [INFO] BUILD DATE: Jul 30 2020-13:04:36<br>
+    [2020.07.30__13:11__45.668248] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.07.30__13:11__45.668291] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.07.30__13:11__45.668993] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:0<br>
+    [2020.07.30__13:11__45.669144] [ERR] Bad file descriptor<br>
+    [2020.08.03__09:46__28.952141] [INFO] DAEMON INFO:<br>
+    [2020.08.03__09:46__28.952329] [INFO] BUILD DATE: Jul 31 2020-12:00:02<br>
+    [2020.08.03__09:46__28.952404] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__09:46__28.952465] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__09:46__28.953281] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:0<br>
+    [2020.08.03__09:46__28.953559] [ERR] Bad file descriptor<br>
+    [2020.08.03__09:47__09.705543] [INFO] DAEMON INFO:<br>
+    [2020.08.03__09:47__09.705668] [INFO] BUILD DATE: Jul 31 2020-12:00:02<br>
+    [2020.08.03__09:47__09.705732] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__09:47__09.705784] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__09:47__09.706493] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:8080<br>
+    [2020.08.03__09:47__09.706664] [ERR] Bad file descriptor<br>
+    [2020.08.03__10:12__18.972035] [INFO] DAEMON INFO:<br>
+    [2020.08.03__10:12__18.972095] [INFO] BUILD DATE: Aug  3 2020-10:11:57<br>
+    [2020.08.03__10:12__18.972124] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__10:12__18.972148] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__10:12__18.972534] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:8080<br>
+    [2020.08.03__10:12__18.972628] [ERR] Bad file descriptor<br>
+    [2020.08.03__10:13__20.475070] [INFO] DAEMON INFO:<br>
+    [2020.08.03__10:13__20.475225] [INFO] BUILD DATE: Aug  3 2020-10:11:57<br>
+    [2020.08.03__10:13__20.475292] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__10:13__20.475344] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__10:13__20.476101] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:8080<br>
+    [2020.08.03__10:13__20.476266] [ERR] Bad file descriptor<br>
+    [2020.08.03__10:16__15.455840] [INFO] [HttpServer::post] New request received: sendlitteralCommand: 0, litteralCommand: , AccelSettings: {set: 0, startStopSpeed: 0, slewSpeed: 0, stepsInRamp: 0}, StepSettings: {set: 0, maxFrequencyForOctalSteps: 0, maxFrequencyForQuadSteps: 0, maxFrequencyForHalfSteps: 0}, SpeedSettings: {set: 0, slewSpeedInStepsPerSecond: 0}, HoldSettings: {set: 0, holdTime: 0, torqueReduction: 0}, MotorRequest m1: {setPosition: 1, position: 10, getPosition: 0, getTemperature: 0, loopedGetPosition: 2, loopedGetTemperature: 2, redefinePosition: 0, newPosition: 0, setStepCounter: 0, newStepCounter: 0, setOffset: 0, offset: 0}, MotorRequest m2: {setPosition: 0, position: 0, getPosition: 0, getTemperature: 0, loopedGetPosition: 2, loopedGetTemperature: 2, redefinePosition: 0, newPosition: 0, setStepCounter: 0, newStepCounter: 0, setOffset: 0, offset: 0}, debugMode: 0<br>
+    [2020.08.03__10:34__14.158770] [INFO] [HttpServer::post] New request received: sendlitteralCommand: 0, litteralCommand: , AccelSettings: {set: 0, startStopSpeed: 0, slewSpeed: 0, stepsInRamp: 0}, StepSettings: {set: 0, maxFrequencyForOctalSteps: 0, maxFrequencyForQuadSteps: 0, maxFrequencyForHalfSteps: 0}, SpeedSettings: {set: 0, slewSpeedInStepsPerSecond: 0}, HoldSettings: {set: 0, holdTime: 0, torqueReduction: 0}, MotorRequest m1: {setPosition: 1, position: 10, getPosition: 0, getTemperature: 0, loopedGetPosition: 2, loopedGetTemperature: 2, redefinePosition: 0, newPosition: 0, setStepCounter: 0, newStepCounter: 0, setOffset: 0, offset: 0}, MotorRequest m2: {setPosition: 0, position: 0, getPosition: 0, getTemperature: 0, loopedGetPosition: 2, loopedGetTemperature: 2, redefinePosition: 0, newPosition: 0, setStepCounter: 0, newStepCounter: 0, setOffset: 0, offset: 0}, debugMode: 0<br>
+    [2020.08.03__10:35__09.199832] [INFO] [HttpServer::post] New request received: sendlitteralCommand: 0, litteralCommand: , AccelSettings: {set: 0, startStopSpeed: 0, slewSpeed: 0, stepsInRamp: 0}, StepSettings: {set: 0, maxFrequencyForOctalSteps: 0, maxFrequencyForQuadSteps: 0, maxFrequencyForHalfSteps: 0}, SpeedSettings: {set: 0, slewSpeedInStepsPerSecond: 0}, HoldSettings: {set: 0, holdTime: 0, torqueReduction: 0}, MotorRequest m1: {setPosition: 1, position: 10, getPosition: 0, getTemperature: 0, loopedGetPosition: 2, loopedGetTemperature: 2, redefinePosition: 0, newPosition: 0, setStepCounter: 0, newStepCounter: 0, setOffset: 0, offset: 0}, MotorRequest m2: {setPosition: 0, position: 0, getPosition: 0, getTemperature: 0, loopedGetPosition: 2, loopedGetTemperature: 2, redefinePosition: 0, newPosition: 0, setStepCounter: 0, newStepCounter: 0, setOffset: 0, offset: 0}, debugMode: 0<br>
+    [2020.08.03__10:48__58.363815] [INFO] DAEMON INFO:<br>
+    [2020.08.03__10:48__58.363926] [INFO] BUILD DATE: Aug  3 2020-10:11:57<br>
+    [2020.08.03__10:48__58.363979] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__10:48__58.364023] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__10:48__58.364761] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:8080<br>
+    [2020.08.03__10:48__58.364949] [ERR] Bad file descriptor<br>
+    [2020.08.03__10:58__59.635632] [INFO] DAEMON INFO:<br>
+    [2020.08.03__10:58__59.635745] [INFO] BUILD DATE: Aug  3 2020-10:11:57<br>
+    [2020.08.03__10:58__59.635799] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__10:58__59.635844] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__10:58__59.636523] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:8080<br>
+    [2020.08.03__10:58__59.636689] [ERR] Bad file descriptor<br>
+    [2020.08.03__11:05__55.572710] [INFO] DAEMON INFO:<br>
+    [2020.08.03__11:05__55.572801] [INFO] BUILD DATE: Aug  3 2020-10:11:57<br>
+    [2020.08.03__11:05__55.572851] [INFO] RELEASE: v2.1-beta.1<br>
+    [2020.08.03__11:05__55.572900] [INFO] BUILT ON MACHINE: R4207<br>
+    [2020.08.03__11:05__55.573431] [INFO] [HTTP SERVER] Starting on http://0.0.0.0:8080<br>
+    [2020.08.03__11:05__55.573655] [ERR] Bad file descriptor<br>
+    </div>
+
+{% endblock %}
