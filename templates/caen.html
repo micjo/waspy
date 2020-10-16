@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+
+
+<div class="container">
+  <h3>CAEN Board 0 - Channel 0</h3> 
+  <canvas id="chart" width="600" height="400"></canvas>
+</div> 
+
+<script>
+  window.setInterval(function(){
+    refreshData();
+},1000)
+
+let lineChart
+Chart.defaults.global.animationSteps = 0;
+
+Chart.defaults.global.tooltipYPadding = 16;
+Chart.defaults.global.tooltipCornerRadius = 0;
+Chart.defaults.global.tooltipTitleFontStyle = "normal";
+Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+Chart.defaults.global.animationEasing = "easeOutBounce";
+Chart.defaults.global.responsive = false;
+Chart.defaults.global.scaleLineColor = "black";
+Chart.defaults.global.scaleFontSize = 16;
+  
+
+function refreshData() {
+
+  console.log("hello");
+  let url = "http://192.168.1.40:22123/liveData";
+  let xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4)
+    {
+      data = JSON.parse(xhr.response)["Board-0"]["Channel-0"]["energy_histogram"];
+      dataStrList = data.split(";");
+      console.log(dataStrList);
+      
+      
+      x_coordinates = [];
+      y_coordinates = [];
+      for (const point of dataStrList) {
+        if (point) {
+          x_and_y = point.split(",");
+          x_coordinates.push(parseInt(x_and_y[0]));
+          y_coordinates.push(parseInt(x_and_y[1]));
+        }
+      }
+
+      var barData = {
+        labels : x_coordinates,
+        datasets : [{
+          data : y_coordinates
+        }]
+      }
+
+      console.log(barData)
+
+      var options = {
+        animation: {
+          duration: 0
+        },
+        scales: {
+            xAxes: [{
+                type: 'linear',
+                position: 'bottom'
+            }]
+        }
+      }
+      
+    var ctx = document.getElementById('chart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: x_coordinates,
+        datasets: [{
+            label: 'My First dataset',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: y_coordinates
+        }]
+    },
+
+    // Configuration options go here
+    options: {
+      animation: {
+        duration: 0
+      }
+    }
+  });
+
+    }
+  }
+
+  xhr.open("GET", url, true);
+  xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
+  xhr.send();
+  
+}
+
+</script>
+
+
+
+
+{% endblock %}

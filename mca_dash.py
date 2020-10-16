@@ -1,5 +1,5 @@
 from flask import Flask, render_template, abort, request, jsonify, app, redirect, url_for
-
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -26,6 +26,14 @@ def aml_x_y():
         return redirect((url_for('aml_x_y')))
     else:
         return render_template("aml_x_y.html")
+
+
+@app.route("/caen", methods=["GET", "POST"])
+def caen():
+    if request.method == "POST":
+        return redirect((url_for('caen')))
+    else:
+        return render_template("caen.html")
     
 @app.route("/min_itf", methods=["GET", "POST"])
 def min_itf():
