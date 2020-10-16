@@ -11,9 +11,9 @@
 <script>
   window.setInterval(function(){
     refreshData();
-},1000)
+},100)
 
-let lineChart
+var lineChart
 Chart.defaults.global.animationSteps = 0;
 
 Chart.defaults.global.tooltipYPadding = 16;
@@ -24,6 +24,31 @@ Chart.defaults.global.animationEasing = "easeOutBounce";
 Chart.defaults.global.responsive = false;
 Chart.defaults.global.scaleLineColor = "black";
 Chart.defaults.global.scaleFontSize = 16;
+
+
+let x_coordinates = [];
+let y_coordinates = [];
+var ctx = document.getElementById('chart').getContext('2d');
+lineChart = new Chart(ctx, {
+  // The type of chart we want to create
+  type: 'line',
+
+  // The data for our dataset
+  data: {
+      labels: [],
+      datasets: [{
+          label: 'Histogram Board 0 CHannel 0',
+          data: []
+      }]
+  },
+
+  // Configuration options go here
+  options: {
+    animation: {
+      duration: 0
+    }
+  }
+});
   
 
 function refreshData() {
@@ -34,65 +59,27 @@ function refreshData() {
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4)
     {
+
       data = JSON.parse(xhr.response)["Board-0"]["Channel-0"]["energy_histogram"];
       dataStrList = data.split(";");
       console.log(dataStrList);
       
-      
-      x_coordinates = [];
-      y_coordinates = [];
+      lineChart.data.labels = [];
+      lineChart.data.datasets[0].data = [];
       for (const point of dataStrList) {
         if (point) {
           x_and_y = point.split(",");
-          x_coordinates.push(parseInt(x_and_y[0]));
-          y_coordinates.push(parseInt(x_and_y[1]));
+          lineChart.data.labels.push(parseInt(x_and_y[0]));
+          lineChart.data.datasets[0].data.push(parseInt(x_and_y[1]));
         }
       }
 
-      var barData = {
-        labels : x_coordinates,
-        datasets : [{
-          data : y_coordinates
-        }]
-      }
+    if (lineChart) {
+      lineChart.update();
 
-      console.log(barData)
 
-      var options = {
-        animation: {
-          duration: 0
-        },
-        scales: {
-            xAxes: [{
-                type: 'linear',
-                position: 'bottom'
-            }]
-        }
-      }
-      
-    var ctx = document.getElementById('chart').getContext('2d');
-    var chart = new Chart(ctx, {
-    // The type of chart we want to create
-    type: 'line',
-
-    // The data for our dataset
-    data: {
-        labels: x_coordinates,
-        datasets: [{
-            label: 'My First dataset',
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
-            data: y_coordinates
-        }]
-    },
-
-    // Configuration options go here
-    options: {
-      animation: {
-        duration: 0
-      }
     }
-  });
+
 
     }
   }
