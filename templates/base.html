@@ -5,7 +5,7 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='sidebar.css')}}">
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js'></script>
 
 </head>
 <body>
@@ -58,12 +58,15 @@
                   {% if request.path == url_for('phi_zeta')%} > {%endif%} AML PHI_ZETA
               </a>
       </li>
+
       <li class="nav-item">
-        <a href="#" class="nav-link text-dark">
+        <li class="nav-item  {% if request.path == url_for('caen')%} active {%endif%}">
+            <a href="{{url_for('caen')}}" class="nav-link text-dark">
                   <i class="fa fa-picture-o mr-3 text-primary fa-fw"></i>
-                  CAEN
+                  {% if request.path == url_for('caen')%} > {%endif%} CAEN
               </a>
       </li>
+
       <li class="nav-item">
         <a href="#" class="nav-link text-dark">
                   <i class="fa fa-picture-o mr-3 text-primary fa-fw"></i>
