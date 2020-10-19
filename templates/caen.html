@@ -14,7 +14,7 @@
     refreshData();
 },1000)
 
-var lineChart
+//var lineChart
 Chart.defaults.global.animationSteps = 0;
 
 Chart.defaults.global.tooltipYPadding = 16;
@@ -30,7 +30,7 @@ Chart.defaults.global.scaleFontSize = 16;
 let x_coordinates = [];
 let y_coordinates = [];
 var ctx = document.getElementById('chart').getContext('2d');
-lineChart = new Chart(ctx, {
+/*lineChart = new Chart(ctx, {
   // The type of chart we want to create
   type: 'line',
 
@@ -50,10 +50,39 @@ lineChart = new Chart(ctx, {
       duration: 0
     }
   }
+});*/
+
+
+let lineChart = new Chart(ctx, {
+  // The type of chart we want to create
+  type: 'scatter',
+
+  // The data for our dataset
+  data: {
+      labels: [],
+      datasets: [{
+          label: 'Histogram Board 0 CHannel 0',
+          data: [{
+            x: 3500,
+            y: 10
+        }, {
+            x: 10,
+            y: 5
+        }],
+          backgroundColor: 'rgba(242, 207, 222, 0.40)'
+      }]
+  },
+
+  // Configuration options go here
+  options: {
+    animation: {
+      duration: 0
+    }
+  }
 });
+  
 
 function refreshData() {
-
   console.log("hello");
   let url = "http://192.168.1.40:22123/liveData";
   let xhr = new XMLHttpRequest();
@@ -65,16 +94,20 @@ function refreshData() {
       dataStrList = data.split(";");
       console.log(dataStrList);
       
-      lineChart.data.labels = [];
       lineChart.data.datasets[0].data = [];
+      
       for (const point of dataStrList) {
         if (point) {
           x_and_y = point.split(",");
-          lineChart.data.labels.push(parseInt(x_and_y[0]));
-          lineChart.data.datasets[0].data.push(parseInt(x_and_y[1]));
+          element = {
+            x: parseInt(x_and_y[0]), 
+            y: parseInt(x_and_y[1])
+          };
+
+          lineChart.data.datasets[0].data.push(element);
         }
       }
-
+      console.log(lineChart.data.datasets.data);
     if (lineChart) {
       lineChart.update();
 
@@ -91,8 +124,6 @@ function refreshData() {
     xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
     xhr.send();
   }
-
-  
 }
 
 </script>
