@@ -2,16 +2,17 @@
 {% block title %}Welcome{% endblock %}
 {% block content %}
 
-
+<h3>CAEN Board 0 - Channel 0</h3> 
 <div class="container">
-  <h3>CAEN Board 0 - Channel 0</h3> 
-  <canvas id="chart" width="600" height="400"></canvas>
+  
+  <canvas id="chart" width="800" height="600"></canvas>
 </div> 
+<div class="container"><label> update</label><input type="checkbox" id="update_chart"> </div>
 
 <script>
   window.setInterval(function(){
     refreshData();
-},100)
+},1000)
 
 var lineChart
 Chart.defaults.global.animationSteps = 0;
@@ -38,7 +39,8 @@ lineChart = new Chart(ctx, {
       labels: [],
       datasets: [{
           label: 'Histogram Board 0 CHannel 0',
-          data: []
+          data: [],
+          backgroundColor: 'rgba(242, 207, 222, 0.40)'
       }]
   },
 
@@ -49,7 +51,6 @@ lineChart = new Chart(ctx, {
     }
   }
 });
-  
 
 function refreshData() {
 
@@ -84,9 +85,13 @@ function refreshData() {
     }
   }
 
-  xhr.open("GET", url, true);
-  xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
-  xhr.send();
+  if (document.getElementById("update_chart").checked) 
+  {
+    xhr.open("GET", url, true);
+    xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
+    xhr.send();
+  }
+
   
 }
 
