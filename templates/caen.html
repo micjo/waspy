@@ -2,9 +2,37 @@
 {% block title %}Welcome{% endblock %}
 {% block content %}
 
-<h3>CAEN Board 0 - Channel 0</h3> 
+<h1>CAEN Data acquisition</h1>
+<label for="channel">Choose a Channel:</label>
+
+<select name="channels" id="channels">
+  <option value="board0-channel0">board 0 channel 0</option>
+  <option value="board0-channel1">board 0 channel 1</option>
+  <option value="board0-channel2">board 0 channel 2</option>
+  <option value="board0-channel3">board 0 channel 3</option>
+  <option value="board0-channel4">board 0 channel 4</option>
+  <option value="board0-channel5">board 0 channel 5</option>
+  <option value="board0-channel6">board 0 channel 6</option>
+  <option value="board0-channel7">board 0 channel 7</option>
+  <option value="board0-channel8">board 0 channel 8</option>
+  <option value="board1-channel0">board 1 channel 0</option>
+  <option value="board1-channel1">board 1 channel 1</option>
+  <option value="board1-channel2">board 1 channel 2</option>
+  <option value="board1-channel3">board 1 channel 3</option>
+  <option value="board1-channel4">board 1 channel 4</option>
+  <option value="board1-channel5">board 1 channel 5</option>
+  <option value="board1-channel6">board 1 channel 6</option>
+  <option value="board1-channel7">board 1 channel 7</option>
+  <option value="board1-channel8">board 1 channel 8</option>
+  <option value="board1-channel9">board 1 channel 9</option>
+  <option value="board1-channel10">board 1 channel 10</option>
+  <option value="board1-channel11">board 1 channel 11</option>
+  <option value="board1-channel12">board 1 channel 12</option>
+  <option value="board1-channel13">board 1 channel 13</option>
+  <option value="board1-channel14">board 1 channel 14</option>
+  <option value="board1-channel15">board 1 channel 15</option>
+</select> 
 <div class="container">
-  
   <canvas id="chart" width="800" height="600"></canvas>
 </div> 
 <div class="container"><label> update</label><input type="checkbox" id="update_chart"> </div>
@@ -61,14 +89,7 @@ let lineChart = new Chart(ctx, {
   data: {
       labels: [],
       datasets: [{
-          label: 'Histogram Board 0 CHannel 0',
-          data: [{
-            x: 3500,
-            y: 10
-        }, {
-            x: 10,
-            y: 5
-        }],
+          label: 'Histogram Board 0 Channel 0',
           backgroundColor: 'rgba(242, 207, 222, 0.40)'
       }]
   },
@@ -77,43 +98,55 @@ let lineChart = new Chart(ctx, {
   options: {
     animation: {
       duration: 0
-    }
+    } 
   }
 });
   
 
+function updateGraph(channelId, jsonData) {
+  data = JSON.parse(jsonData);
+  let channelData;
+  if (channelId === "board0-channel0" ) {
+    console.log("selected board 0 channel 0");
+    channelData = data["Board-0"]["Channel-0"]["energy_histogram"];
+    lineChart.data.datasets[0].label = "Histrogram Board 0 (V1782) Channel 0";
+  }
+  
+  if (channelId === "board1-channel0") {
+    console.log("selected board 1 channel 0");
+    channelData = data["Board-1"]["Channel-0"]["energy_histogram"];
+    lineChart.data.datasets[0].label = "Histrogram Board 1 (V1725) Channel 0";
+  }
+
+  lineChart.data.datasets[0].data = [];
+  dataStrList = channelData.split(";");
+  for (const point of dataStrList) {
+      if(point) {
+        x_and_y = point.split(",");
+        element = {
+          x: parseInt(x_and_y[0]),
+          y: parseInt(x_and_y[1])
+        };
+
+        lineChart.data.datasets[0].data.push(element);
+      }
+  }
+}
+
 function refreshData() {
   console.log("hello");
-  let url = "http://192.168.1.40:22123/liveData";
+  let url = "http://DESKTOP-GL7PJ05:22123/liveData";
   let xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4)
     {
-
-      data = JSON.parse(xhr.response)["Board-0"]["Channel-0"]["energy_histogram"];
-      dataStrList = data.split(";");
-      console.log(dataStrList);
-      
-      lineChart.data.datasets[0].data = [];
-      
-      for (const point of dataStrList) {
-        if (point) {
-          x_and_y = point.split(",");
-          element = {
-            x: parseInt(x_and_y[0]), 
-            y: parseInt(x_and_y[1])
-          };
-
-          lineChart.data.datasets[0].data.push(element);
-        }
+      console.log(xhr.response);
+      if (lineChart) {
+        selectedChannel = document.getElementById("channels").value;
+        console.log(selectedChannel);
+        updateGraph(selectedChannel, xhr.response);
+        lineChart.update();
       }
-      console.log(lineChart.data.datasets.data);
-    if (lineChart) {
-      lineChart.update();
-
-
-    }
-
 
     }
   }
