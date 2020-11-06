@@ -1,5 +1,6 @@
 from flask import Flask, render_template, abort, request, jsonify, app, redirect, url_for
 from flask_cors import CORS
+import requests
 
 app = Flask(__name__)
 
@@ -33,7 +34,16 @@ def caen():
     if request.method == "POST":
         return redirect((url_for('caen')))
     else:
-        return render_template("caen.html")
+        r = requests.get(url = "http://DESKTOP-GL7PJ05:22123/liveData")
+        data = r.json()
+        nrOfBoards = len(data.keys())
+        channelSizes = []
+
+        for board in range(0,  nrOfBoards):
+            nrOfChannels = len(data["Board-" + str(board)].keys())
+            channelSizes.append(nrOfChannels)
+
+        return render_template("caen.html", channelSizes=channelSizes)
     
 @app.route("/min_itf", methods=["GET", "POST"])
 def min_itf():
