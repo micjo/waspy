@@ -7,28 +7,11 @@
 <div class="row">
   <div class="column" style="background-color:#e6ffe6;">
     <h2>Actuals</h2>
-
     <div class="container">
       <canvas id="chart" width="800" height="600"></canvas>
     </div> 
-    {% for channelSize in channelSizes %}
-      {% set boardIndex = loop.index0 %}
-        <div class="container"> <h5>Board-{{boardIndex}}</h5>
-        {% for channelIndex in range(channelSize) %}
-           <div class="container-fluid">
-            <div class="row justify-content-center">
-              <strong>{{channelIndex}}</strong>
-            </div>
-            <div class="row justify-content-center">
-              <div class="spinner-grow spinner-grow-sm" role="status" style="visibility: hidden" 
-                id="spinner-{{boardIndex}}-{{channelIndex}}">
-                   <span class="sr-only">Loading...</span>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-        </div>
-    {% endfor %}
+    <div id="actuals">
+    </div>
 
 
 
@@ -36,13 +19,13 @@
   <div class="column" style="background-color:paleturquoise;">
     <h2>Engine</h2>
     <div class="container">
-      <select name="channels" id="channels">
-      {% for channelSize in channelSizes %}
+      <select name="chnanellgraph" id="graphSelect">
+      <!-- {% for channelSize in channelSizes %}
         {% set boardIndex = loop.index0 %}
           {% for channelIndex in range(channelSize) %}
             <option value="{{boardIndex}}-{{channelIndex}}">board {{boardIndex}} channel {{channelIndex}}</option>
           {% endfor %}
-      {% endfor %}
+      {% endfor %} -->
       </select> 
     </div>
     <div class="container"><label> update</label><input type="checkbox" id="update_chart"></div>
@@ -51,6 +34,7 @@
     <button type="button" class="btn btn-primary">Clear Data</button>
     <button type="button" class="btn btn-primary">Close</button>
     <button type="button" class="btn btn-primary">Record Raw Data</button>
+    <button type="button" class="btn btn-primary" onclick="updateChannels()">Refresh</button>
   
   
     <div class="dropdown show">
@@ -116,30 +100,33 @@ let lineChart = new Chart(ctx, {
 
 function updateGraph() 
 {
-  let url = "http://DESKTOP-GL7PJ05:22123/liveData_" + selectedChannel;
-  let xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      if (lineChart) {
-        lineChart.data.datasets[0].data = [];
-        let i = 0;
-        samples = xhr.response.split(",");
-        for (const datapoint of samples) {
-          element = {
-            x: i,
-            y: parseInt(datapoint)
+  if (selectedChannel) {
+    let url = "http://DESKTOP-GL7PJ05:22123/liveData_" + selectedChannel;
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if (lineChart) {
+          lineChart.data.datasets[0].data = [];
+          let i = 0;
+          samples = xhr.response.split(",");
+          for (const datapoint of samples) {
+            element = {
+              x: i,
+              y: parseInt(datapoint)
+            }
+            lineChart.data.datasets[0].data.push(element);
+            i++;
           }
-          lineChart.data.datasets[0].data.push(element);
-          i++;
+          lineChart.update();
         }
-        lineChart.update();
       }
     }
+  
+    xhr.open("GET", url, true);
+    xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
+    xhr.send();
   }
 
-  xhr.open("GET", url, true);
-  xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
-  xhr.send();
 }
 
 function updateChannelActivity()
@@ -176,16 +163,82 @@ function updateChannelActivity()
   xhr2.send();
 }
 
+function createChannelSpinner(channelIndex) 
+{
+  let channelDiv = document.createElement('div');
+  
+  let channelText = document.createElement('div');
+  channelText.classList.add("row","justify-content-center");
+  channelText.innerText = channelIndex;
+  
+  let channelSpinner = document.createElement('div');
+  channelSpinner.classList.add("spinner-grow", "spinner-grow-sm");
+  channelSpinner.setAttribute("role", "status");
+  channelSpinner.setAttribute("style", "visibility: hidden");
+// TODO SET ID FOR SPINNER UPDATING !!!
+error
+
+
+  channelDiv.appendChild(channelText);
+  channelDiv.appendChild(channelSpinner);
+
+  return channelDiv
+}
+
+function createGraphOption(boardIndex, channelIndex) 
+{
+  graphOption = document.createElement('option');
+  graphOption.innerText = 'board ' + boardIndex + " - channel " + channelIndex;
+  graphOption.value = boardIndex + "-" + channelIndex;
+
+  return graphOption;
+}
+
+
+function nrOfChannelsChanged(channels)
+{
+  actualsDiv = document.getElementById("actuals");
+  actualsDiv.innerHTML = '';
+
+  graphSelect = document.getElementById("graphSelect");
+  graphSelect.innerText = '';
+  
+  let boardIndex = 0;
+  for (const channelSize of channels) {
+    var boardDiv = document.createElement('div');
+    boardDiv.classList.add("container");
+    boardDiv.innerText = 'Board-' + boardIndex;
+    for ( channelIndex = 0; channelIndex < channelSize; channelIndex++) {
+
+      graphSelect.appendChild(createGraphOption(boardIndex, channelIndex));
+      let channelDiv = createChannelSpinner(channelIndex);
+      boardDiv.appendChild(createChannelSpinner(channelIndex));
+    }
+    actualsDiv.appendChild(boardDiv);
+    boardIndex++;
+  }
+}
+
+
+function updateChannels()
+{ 
+  fetch("http://192.168.178.29:22123/actuals")
+    .then(response => response.json())
+    .then(result => {
+      channels = result["Actuals"]["channels"];
+      console.log(result["Actuals"]["channels"]);
+      nrOfChannelsChanged(channels)
+    })
+    .catch(error => {
+      alert("Error when trying to reach CAEN daemon: " + error);
+
+    });
+}
+
+
+
 function refreshData() 
 {
-//  var x = document.getElementById("spinnerId");
-//  x.style.visibility = 'hidden';
-  if (document.getElementById("update_chart").checked) {
-    console.log("updating");
-    selectedChannel = document.getElementById("channels").value;
-    updateGraph();
-  }
-
   updateChannelActivity();
 }
 
