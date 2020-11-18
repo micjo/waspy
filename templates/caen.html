@@ -19,36 +19,22 @@
   <div class="column" style="background-color:paleturquoise;">
     <h2>Engine</h2>
     <div class="container">
-      <select name="chnanellgraph" id="graphSelect">
-      <!-- {% for channelSize in channelSizes %}
-        {% set boardIndex = loop.index0 %}
-          {% for channelIndex in range(channelSize) %}
-            <option value="{{boardIndex}}-{{channelIndex}}">board {{boardIndex}} channel {{channelIndex}}</option>
-          {% endfor %}
-      {% endfor %} -->
+      <select name="channelgraph" id="graphSelect">
       </select> 
     </div>
     <div class="container"><label> update</label><input type="checkbox" id="update_chart"></div>
-    <button type="button" class="btn btn-primary">Start Acquisition</button>
-    <button type="button" class="btn btn-primary">Stop Acquisition</button>
+
+      <div class="container">
+    <div class="btn-group-vertical">
+    <button type="button" class="btn btn-primary" onclick="startAcq()">Start Acquisition</button>
+    <button type="button" class="btn btn-primary" onclick="stopAcq()"> Stop Acquisition</button>
     <button type="button" class="btn btn-primary">Clear Data</button>
     <button type="button" class="btn btn-primary">Close</button>
     <button type="button" class="btn btn-primary">Record Raw Data</button>
     <button type="button" class="btn btn-primary" onclick="updateChannels()">Refresh</button>
-  
-  
-    <div class="dropdown show">
-      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Dropdown link
-      </a>
-    
-      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-        <a class="dropdown-item" href="#">Action</a>
-        <a class="dropdown-item" href="#">Another action</a>
-        <a class="dropdown-item" href="#">Something else here</a>
-      </div>
     </div>
-  
+  </div>
+    <div class="padded-top"><label id="status"> status</label></div>
   </div>
 </div>
 
@@ -92,78 +78,127 @@ let lineChart = new Chart(ctx, {
   // Configuration options go here
   options: {
     animation: {
-      duration: 0
-    } 
+        duration: 0 // general animation time
+    },
+    hover: {
+        animationDuration: 0 // duration of animations when hovering an item
+    },
+    elements: {
+      line: {
+          tension: 0 // disables bezier curves
+      }
+    },
+
+    responsiveAnimationDuration: 0 // animation duration after a resize
   }
 });
 
 
+function sendEngine(textBody)
+{
+  fetch('http://DESKTOP-GL7PJ05:22123/engine', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+    body: textBody
+  })
+  .then(response => response.text())
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch((error) => {
+    document.getElementById("status").innerText= 
+      "Error when sending engine:\n" + error;
+  });
+}
+
+function startAcq() 
+{
+  let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
+  request = "engine_file_created_at="+timestamp + "\n";
+  request += "start_acquisition=true";
+  sendEngine(request);
+}
+
+function stopAcq() 
+{
+  let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
+  request = "engine_file_created_at="+timestamp + "\n";
+  request += "stop_acquisition=true";
+  sendEngine(request);
+}
+
+function drawGraph(response) 
+{
+  if (lineChart) {
+    let select =  document.getElementById("graphSelect");
+    lineChart.data.datasets[0].label = "Histogram board " + select.options[select.selectedIndex].text;
+    lineChart.data.datasets[0].data = [];
+    let i = 0;
+    response = response.split(",");
+    for (const datapoint of response) {
+      element = {
+        x: i,
+        y: parseInt(datapoint)
+      }
+      lineChart.data.datasets[0].data.push(element);
+      i++;
+    }
+    lineChart.update();
+  }
+}
+
 function updateGraph() 
 {
-  if (selectedChannel) {
-    let url = "http://DESKTOP-GL7PJ05:22123/liveData_" + selectedChannel;
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        if (lineChart) {
-          lineChart.data.datasets[0].data = [];
-          let i = 0;
-          samples = xhr.response.split(",");
-          for (const datapoint of samples) {
-            element = {
-              x: i,
-              y: parseInt(datapoint)
-            }
-            lineChart.data.datasets[0].data.push(element);
-            i++;
-          }
-          lineChart.update();
-        }
-      }
-    }
-  
-    xhr.open("GET", url, true);
-    xhr.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
-    xhr.send();
-  }
+  selectedChannel = document.getElementById("graphSelect").value;
+  updateEnable = document.getElementById("update_chart").checked;
 
+  if (selectedChannel && updateEnable) {
+    fetch("http://192.168.178.29:22123/liveData_" +selectedChannel)
+    .then(response => response.text())
+    .then(drawGraph)
+    .catch(error => {
+      document.getElementById("status").innerText= 
+        "Error when updating graph:\n" + error;
+    })
+  }
 }
 
 function updateChannelActivity()
 {
-  let url2 = "http://192.168.178.29:22123/actuals";
-  let xhr2 = new XMLHttpRequest();
-  xhr2.onreadystatechange = function () {
-    if (xhr2.readyState === 4) {
-      rawData = xhr2.response;
-      data = JSON.parse(rawData);
-      
-      let channelSizes = {{channelSizes}};
-      console.log(channelSizes);
-      let index = 0;
-      for (const channelSize of channelSizes) {
-        for (channelIndex=0; channelIndex < channelSize; channelIndex++) {
-
-          var spinner = document.getElementById("spinner-"+index+"-"+channelIndex);
-
-          if (data["Board" + index]["Channel"+channelIndex]["data_received"]) {
-            spinner.style.visibility = 'visible';
-          }
-          else {
-            spinner.style.visibility = 'hidden';
-          }
-        }
-        index++;
-      }
-    }
-  }
-
-  xhr2.open("GET", url2, true);
-  xhr2.setRequestHeader("Content-Type","text/plain;charset=UTF-8");
-  xhr2.send();
+  fetch("http://192.168.178.29:22123/actuals")
+    .then(response => response.json())
+    .then(drawSpinners)
+    .catch(error => {
+      document.getElementById("status").innerText= 
+        "Error when updating channel activity:\n" + error;
+    })
 }
 
-function createChannelSpinner(channelIndex) 
+function drawSpinners(result) 
+{
+  channelSizes = result["Actuals"]["channels"];
+  let index = 0;
+  for (const channelSize of channelSizes) {
+    for (channelIndex=0; channelIndex < channelSize; channelIndex++) {
+
+      var spinner = document.getElementById("spinner-"+index+"-"+channelIndex);
+
+      if (spinner === null) {continue;}
+
+      if (result["Board" + index]["Channel"+channelIndex]["data_received"]) {
+        spinner.style.visibility = 'visible';
+      }
+      else {
+        spinner.style.visibility = 'hidden';
+      }
+    }
+    index++;
+  }
+}
+
+function createChannelSpinner(boardIndex,channelIndex) 
 {
   let channelDiv = document.createElement('div');
   
@@ -175,9 +210,7 @@ function createChannelSpinner(channelIndex)
   channelSpinner.classList.add("spinner-grow", "spinner-grow-sm");
   channelSpinner.setAttribute("role", "status");
   channelSpinner.setAttribute("style", "visibility: hidden");
-// TODO SET ID FOR SPINNER UPDATING !!!
-error
-
+  channelSpinner.setAttribute("id", "spinner-" + boardIndex + "-" + channelIndex);
 
   channelDiv.appendChild(channelText);
   channelDiv.appendChild(channelSpinner);
@@ -195,7 +228,7 @@ function createGraphOption(boardIndex, channelIndex)
 }
 
 
-function nrOfChannelsChanged(channels)
+function nrOfChannelsChanged(result)
 {
   actualsDiv = document.getElementById("actuals");
   actualsDiv.innerHTML = '';
@@ -203,16 +236,17 @@ function nrOfChannelsChanged(channels)
   graphSelect = document.getElementById("graphSelect");
   graphSelect.innerText = '';
   
+  channels = result["Actuals"]["channels"];
   let boardIndex = 0;
+  
   for (const channelSize of channels) {
     var boardDiv = document.createElement('div');
     boardDiv.classList.add("container");
-    boardDiv.innerText = 'Board-' + boardIndex;
+    let boardStr = result["Board"+boardIndex]["hardware_type"];
+    boardDiv.innerText = 'Board-' + boardIndex + ": " + boardStr;
     for ( channelIndex = 0; channelIndex < channelSize; channelIndex++) {
-
       graphSelect.appendChild(createGraphOption(boardIndex, channelIndex));
-      let channelDiv = createChannelSpinner(channelIndex);
-      boardDiv.appendChild(createChannelSpinner(channelIndex));
+      boardDiv.appendChild(createChannelSpinner(boardIndex, channelIndex));
     }
     actualsDiv.appendChild(boardDiv);
     boardIndex++;
@@ -224,14 +258,10 @@ function updateChannels()
 { 
   fetch("http://192.168.178.29:22123/actuals")
     .then(response => response.json())
-    .then(result => {
-      channels = result["Actuals"]["channels"];
-      console.log(result["Actuals"]["channels"]);
-      nrOfChannelsChanged(channels)
-    })
+    .then(nrOfChannelsChanged)
     .catch(error => {
-      alert("Error when trying to reach CAEN daemon: " + error);
-
+      document.getElementById("status").innerText= 
+      "Error when trying to reach CAEN daemon:\n" + error;
     });
 }
 
@@ -240,6 +270,7 @@ function updateChannels()
 function refreshData() 
 {
   updateChannelActivity();
+  updateGraph();
 }
 
 </script>
