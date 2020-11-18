@@ -9,7 +9,7 @@
     <h2>Actuals</h2>
     <div class="container">
       <canvas id="chart" width="800" height="600"></canvas>
-    </div> 
+    </div>
     <div id="actuals">
     </div>
 
@@ -20,7 +20,7 @@
     <h2>Engine</h2>
     <div class="container">
       <select name="channelgraph" id="graphSelect">
-      </select> 
+      </select>
     </div>
     <div class="container"><label> update</label><input type="checkbox" id="update_chart"></div>
 
@@ -28,9 +28,10 @@
     <div class="btn-group-vertical">
     <button type="button" class="btn btn-primary" onclick="startAcq()">Start Acquisition</button>
     <button type="button" class="btn btn-primary" onclick="stopAcq()"> Stop Acquisition</button>
-    <button type="button" class="btn btn-primary">Clear Data</button>
-    <button type="button" class="btn btn-primary">Close</button>
-    <button type="button" class="btn btn-primary">Record Raw Data</button>
+    <button type="button" class="btn btn-primary" onclick="clearData()">Clear Data</button>
+    <button type="button" class="btn btn-primary" onclick="closeDaemon()">Close</button>
+    <button type="button" class="btn btn-primary" onclick="recordListData()">Record List Data</button>
+    <button type="button" class="btn btn-primary" onclick="saveHistogram()">save histogram</button>
     <button type="button" class="btn btn-primary" onclick="updateChannels()">Refresh</button>
     </div>
   </div>
@@ -108,12 +109,52 @@ function sendEngine(textBody)
     console.log('Success:', data);
   })
   .catch((error) => {
-    document.getElementById("status").innerText= 
+    document.getElementById("status").innerText=
       "Error when sending engine:\n" + error;
   });
 }
 
-function startAcq() 
+function saveHistogram()
+{
+  let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
+  request = "engine_file_created_at="+timestamp + "\n";
+  request += "store_histogram=true";
+  sendEngine(request);
+}
+function clearData()
+{
+  let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
+  request = "engine_file_created_at="+timestamp + "\n";
+  request += "clear_acquisition=true";
+  sendEngine(request);
+}
+
+function closeDaemon()
+{
+  let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
+  request = "engine_file_created_at="+timestamp + "\n";
+  request += "exit=true";
+  sendEngine(request);
+
+  actualsDiv = document.getElementById("actuals");
+  actualsDiv.innerHTML = '';
+
+  graphSelect = document.getElementById("graphSelect");
+  graphSelect.innerText = '';
+
+  lineChart.data.datasets[0].label = "";
+  lineChart.data.datasets[0].data = [];
+}
+
+function recordListData()
+{
+  let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
+  request = "engine_file_created_at="+timestamp + "\n";
+  request += "store_list_data=true";
+  sendEngine(request);
+}
+
+function startAcq()
 {
   let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
   request = "engine_file_created_at="+timestamp + "\n";
@@ -121,7 +162,7 @@ function startAcq()
   sendEngine(request);
 }
 
-function stopAcq() 
+function stopAcq()
 {
   let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
   request = "engine_file_created_at="+timestamp + "\n";
@@ -129,7 +170,7 @@ function stopAcq()
   sendEngine(request);
 }
 
-function drawGraph(response) 
+function drawGraph(response)
 {
   if (lineChart) {
     let select =  document.getElementById("graphSelect");
@@ -149,7 +190,7 @@ function drawGraph(response)
   }
 }
 
-function updateGraph() 
+function updateGraph()
 {
   selectedChannel = document.getElementById("graphSelect").value;
   updateEnable = document.getElementById("update_chart").checked;
@@ -159,7 +200,7 @@ function updateGraph()
     .then(response => response.text())
     .then(drawGraph)
     .catch(error => {
-      document.getElementById("status").innerText= 
+      document.getElementById("status").innerText=
         "Error when updating graph:\n" + error;
     })
   }
@@ -171,12 +212,12 @@ function updateChannelActivity()
     .then(response => response.json())
     .then(drawSpinners)
     .catch(error => {
-      document.getElementById("status").innerText= 
+      document.getElementById("status").innerText=
         "Error when updating channel activity:\n" + error;
     })
 }
 
-function drawSpinners(result) 
+function drawSpinners(result)
 {
   channelSizes = result["Actuals"]["channels"];
   let index = 0;
@@ -198,14 +239,14 @@ function drawSpinners(result)
   }
 }
 
-function createChannelSpinner(boardIndex,channelIndex) 
+function createChannelSpinner(boardIndex,channelIndex)
 {
   let channelDiv = document.createElement('div');
-  
+
   let channelText = document.createElement('div');
   channelText.classList.add("row","justify-content-center");
   channelText.innerText = channelIndex;
-  
+
   let channelSpinner = document.createElement('div');
   channelSpinner.classList.add("spinner-grow", "spinner-grow-sm");
   channelSpinner.setAttribute("role", "status");
@@ -218,7 +259,7 @@ function createChannelSpinner(boardIndex,channelIndex)
   return channelDiv
 }
 
-function createGraphOption(boardIndex, channelIndex) 
+function createGraphOption(boardIndex, channelIndex)
 {
   graphOption = document.createElement('option');
   graphOption.innerText = 'board ' + boardIndex + " - channel " + channelIndex;
@@ -235,10 +276,10 @@ function nrOfChannelsChanged(result)
 
   graphSelect = document.getElementById("graphSelect");
   graphSelect.innerText = '';
-  
+
   channels = result["Actuals"]["channels"];
   let boardIndex = 0;
-  
+
   for (const channelSize of channels) {
     var boardDiv = document.createElement('div');
     boardDiv.classList.add("container");
@@ -255,19 +296,19 @@ function nrOfChannelsChanged(result)
 
 
 function updateChannels()
-{ 
+{
   fetch("http://192.168.178.29:22123/actuals")
     .then(response => response.json())
     .then(nrOfChannelsChanged)
     .catch(error => {
-      document.getElementById("status").innerText= 
+      document.getElementById("status").innerText=
       "Error when trying to reach CAEN daemon:\n" + error;
     });
 }
 
 
 
-function refreshData() 
+function refreshData()
 {
   updateChannelActivity();
   updateGraph();
