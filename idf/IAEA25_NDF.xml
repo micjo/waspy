@@ -254,20 +254,6 @@
 							</simpledata>
 						</simulation>
 					</simulations>
-					<ndf:straggling>
-						<ndf:stragglingdefault>
-							<ndf:stragglingfactor units="none">1.</ndf:stragglingfactor>
-							<ndf:stragglingoffset units="keV">0.</ndf:stragglingoffset>
-							<ndf:stragglingmodel>
-								<ndf:code>wdepth</ndf:code>
-								<ndf:wdepthparameters>
-									<ndf:wdepthfile>26.dpt</ndf:wdepthfile>
-									<ndf:wdepthenergylevel units="none">0</ndf:wdepthenergylevel>
-								</ndf:wdepthparameters>
-							</ndf:stragglingmodel>
-						</ndf:stragglingdefault>
-					</ndf:straggling>
-					<ndf:doublescattering>normal</ndf:doublescattering>
 				</process>
 			</spectrum>
 		</spectra>
