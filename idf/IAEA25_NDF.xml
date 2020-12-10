@@ -256,6 +256,22 @@
 					</simulations>
 				</process>
 			</spectrum>
+            <spectrum>
+                <notes><note>histogram for detector 1. The line number indicated the bin, the number the occurence rate</note></notes>
+                <data><datafile><filename>histogram_0-01.txt</filename></datafile></data>
+            </spectrum>
+            <spectrum>
+                <notes><note>list data for detector 1. The first number indicated the timestamp, the second the energy</note></notes>
+                <data><datafile><filename>list_0-01.txt</filename></datafile></data>
+            </spectrum>
+            <spectrum>
+                <notes><note>histogram for detector 2. The line number indicated the bin, the number the occurence rate</note></notes>
+                <data><datafile><filename>histogram_0-02.txt</filename></datafile></data>
+            </spectrum>
+            <spectrum>
+                <notes><note>list data for detector 2. The first number indicated the timestamp, the second the energy</note></notes>
+                <data><datafile><filename>list_0-02.txt</filename></datafile></data>
+            </spectrum>
 		</spectra>
 	</sample>
 </idf>
