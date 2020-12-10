@@ -25,20 +25,20 @@
 			<note>There is no sample involved, this is a pure simulation</note>
 		</notes>
 		<description>This is calculation 25 of the IAEA intercomparison of IBA software as made by NDF version v9.2m build 26Jul09</description>
-        <!--<elementsandmolecules>-->
-            <!--<elements>-->
-                <!--<nelements>3</nelements>-->
-                <!--<element>-->
-                    <!--<name>Au</name>-->
-                <!--</element>-->
-                <!--<element>-->
-                    <!--<name>Si</name>-->
-                <!--</element>-->
-                <!--<element>-->
-                    <!--<name>O</name>-->
-                <!--</element>-->
-            <!--</elements>-->
-			<!-- <molecules>
+		<elementsandmolecules>
+			<elements>
+				<nelements>3</nelements>
+				<element>
+					<name>Au</name>
+				</element>
+				<element>
+					<name>Si</name>
+				</element>
+				<element>
+					<name>O</name>
+				</element>
+			</elements>
+			<molecules>
 				<nmolecules>3</nmolecules>
 				<molecule>
 					<name>Au</name>
@@ -50,8 +50,8 @@
 					<name>Si 1 O 2</name>
 					<density units="1e22at/cm3">6.6e0</density>
 				</molecule>
-			</molecules> -->
-        <!--</elementsandmolecules>-->
+			</molecules>
+		</elementsandmolecules>
 		<structure>
 			<notes>
 				<note>Defined by the IAEA group of Experts for the IAEA intercomparison of IBA software</note>
@@ -100,49 +100,49 @@
 				<notes>
 					<note>pure simulation</note>
 				</notes>
-				<!--<beam>-->
-					<!--<beamparticle>4He</beamparticle>-->
-					<!--<beamZ>2</beamZ>-->
-					<!--<beammass units="amu">4.0</beammass>-->
-					<!--<beamenergy units="keV">1000.</beamenergy>-->
-					<!--<beamenergyspread mode="FWHM" units="keV">1.</beamenergyspread>-->
-					<!--<beamfluence units="uC">10</beamfluence>-->
-					<!--<beamangularspread units="degree" mode="sigma">0.05</beamangularspread>-->
-				<!--</beam>-->
-				<!--<geometry>-->
-					<!--<geometrytype>Cornell</geometrytype>-->
-					<!--<incidenceangle units="degree">80</incidenceangle>-->
-					<!--<scatteringangle units="degree">170</scatteringangle>-->
-					<!--<exitangle units="degree">80.153</exitangle>-->
-				<!--</geometry>-->
-				<!--<detection>-->
-					<!--<detector>-->
-						<!--<detectortype>SSB</detectortype>-->
-						<!--<solidangle units="msr">1</solidangle>-->
-						<!--<detectorshape>-->
-							<!--<shape>circular</shape>-->
-							<!--<l1 units="mm">1</l1>-->
-						<!--</detectorshape>-->
-					<!--</detector>-->
-				<!--</detection>-->
+				<beam>
+					<beamparticle>4He</beamparticle>
+					<beamZ>2</beamZ>
+					<beammass units="amu">4.0</beammass>
+					<beamenergy units="keV">1000.</beamenergy>
+					<beamenergyspread mode="FWHM" units="keV">1.</beamenergyspread>
+					<beamfluence units="uC">10</beamfluence>
+					<beamangularspread units="degree" mode="sigma">0.05</beamangularspread>
+				</beam>
+				<geometry>
+					<geometrytype>Cornell</geometrytype>
+					<incidenceangle units="degree">80</incidenceangle>
+					<scatteringangle units="degree">170</scatteringangle>
+					<exitangle units="degree">80.153</exitangle>
+				</geometry>
+				<detection>
+					<detector>
+						<detectortype>SSB</detectortype>
+						<solidangle units="msr">1</solidangle>
+						<detectorshape>
+							<shape>circular</shape>
+							<l1 units="mm">1</l1>
+						</detectorshape>
+					</detector>
+				</detection>
 				<calibrations>
-					<!--<detectorresolutions>-->
-						<!--<detectorresolution>-->
-							<!--<resolutionion>4He</resolutionion>-->
-							<!--<resolutionparameters>-->
-								<!--<resolutionparameter mode="FWHM" units="keV">16</resolutionparameter>-->
-							<!--</resolutionparameters>-->
-						<!--</detectorresolution>-->
-					<!--</detectorresolutions>-->
-					<!--<energycalibrations>-->
-						<!--<energycalibration>-->
-							<!--<calibrationmode>energy</calibrationmode>-->
-							<!--<calibrationparameters>-->
-								<!--<calibrationparameter units="keV">0.</calibrationparameter>-->
-								<!--<calibrationparameter units="keV/channel">3.</calibrationparameter>-->
-							<!--</calibrationparameters>-->
-						<!--</energycalibration>-->
-					<!--</energycalibrations>-->
+					<detectorresolutions>
+						<detectorresolution>
+							<resolutionion>4He</resolutionion>
+							<resolutionparameters>
+								<resolutionparameter mode="FWHM" units="keV">16</resolutionparameter>
+							</resolutionparameters>
+						</detectorresolution>
+					</detectorresolutions>
+					<energycalibrations>
+						<energycalibration>
+							<calibrationmode>energy</calibrationmode>
+							<calibrationparameters>
+								<calibrationparameter units="keV">0.</calibrationparameter>
+								<calibrationparameter units="keV/channel">3.</calibrationparameter>
+							</calibrationparameters>
+						</energycalibration>
+					</energycalibrations>
 				</calibrations>
 				<reactions>
 					<technique>RBS</technique>
@@ -254,20 +254,20 @@
 							</simpledata>
 						</simulation>
 					</simulations>
-					<!--<ndf:straggling>-->
-						<!--<ndf:stragglingdefault>-->
-							<!--<ndf:stragglingfactor units="none">1.</ndf:stragglingfactor>-->
-							<!--<ndf:stragglingoffset units="keV">0.</ndf:stragglingoffset>-->
-							<!--<ndf:stragglingmodel>-->
-								<!--<ndf:code>wdepth</ndf:code>-->
-								<!--<ndf:wdepthparameters>-->
-									<!--<ndf:wdepthfile>26.dpt</ndf:wdepthfile>-->
-									<!--<ndf:wdepthenergylevel units="none">0</ndf:wdepthenergylevel>-->
-								<!--</ndf:wdepthparameters>-->
-							<!--</ndf:stragglingmodel>-->
-						<!--</ndf:stragglingdefault>-->
-					<!--</ndf:straggling>-->
-					<!--<ndf:doublescattering>normal</ndf:doublescattering>-->
+					<ndf:straggling>
+						<ndf:stragglingdefault>
+							<ndf:stragglingfactor units="none">1.</ndf:stragglingfactor>
+							<ndf:stragglingoffset units="keV">0.</ndf:stragglingoffset>
+							<ndf:stragglingmodel>
+								<ndf:code>wdepth</ndf:code>
+								<ndf:wdepthparameters>
+									<ndf:wdepthfile>26.dpt</ndf:wdepthfile>
+									<ndf:wdepthenergylevel units="none">0</ndf:wdepthenergylevel>
+								</ndf:wdepthparameters>
+							</ndf:stragglingmodel>
+						</ndf:stragglingdefault>
+					</ndf:straggling>
+					<ndf:doublescattering>normal</ndf:doublescattering>
 				</process>
 			</spectrum>
 		</spectra>
