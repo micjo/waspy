@@ -1,0 +1,928 @@
+<?xml version="1.0"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by Nuno Barradas (ITN) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="dateType">
+		<xs:union memberTypes="xs:date xs:dateTime"/>
+	</xs:simpleType>
+	<xs:simpleType name="floatordoublelistType">
+		<xs:list itemType="floatordoubleType"/>
+	</xs:simpleType>
+	<xs:simpleType name="tokenlistType">
+		<xs:list itemType="xs:NMTOKEN"/>
+	</xs:simpleType>
+	<xs:simpleType name="floatordoubleType">
+		<xs:union memberTypes="xs:float xs:double"/>
+	</xs:simpleType>
+	<xs:complexType name="anyrealvalueType">
+		<xs:simpleContent>
+			<xs:extension base="floatordoubleType">
+				<xs:attribute name="quantity" type="xs:NMTOKEN" use="optional"/>
+				<xs:attribute name="mode" type="modeType" use="optional"/>
+				<xs:attribute name="units" type="xs:string" use="optional"/>
+				<xs:attribute name="uncertainty" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyA" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyB" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyplus" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyminus" type="floatordoubleType" use="optional"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="realvalueType">
+		<xs:simpleContent>
+			<xs:extension base="floatordoubleType">
+				<xs:attribute name="quantity" type="quantityType" use="optional"/>
+				<xs:attribute name="units" type="unitsType" use="required"/>
+				<xs:attribute name="uncertainty" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyA" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyB" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyplus" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyminus" type="floatordoubleType" use="optional"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="realvaluespreadType">
+		<xs:simpleContent>
+			<xs:extension base="realvalueType">
+				<xs:attribute name="mode" type="modeType" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="modeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="FWHM"/>
+			<xs:enumeration value="sigma"/>
+			<xs:enumeration value="variance"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="quantityType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="efficiency"/>
+			<xs:enumeration value="time"/>
+			<xs:enumeration value="yield"/>
+			<xs:enumeration value="energy"/>
+			<xs:enumeration value="density"/>
+			<xs:enumeration value="thickness"/>
+			<xs:enumeration value="length"/>
+			<xs:enumeration value="area"/>
+			<xs:enumeration value="volume"/>
+			<xs:enumeration value="arealdensity"/>
+			<xs:enumeration value="concentration"/>
+			<xs:enumeration value="crosssection"/>
+			<xs:enumeration value="stoppingpower"/>
+			<xs:enumeration value="charge"/>
+			<xs:enumeration value="mass"/>
+			<xs:enumeration value="atomicnumber"/>
+			<xs:enumeration value="current"/>
+			<xs:enumeration value="fluence"/>
+			<xs:enumeration value="angle"/>
+			<xs:enumeration value="solidangle"/>
+			<xs:enumeration value="temperature"/>
+			<xs:enumeration value="pressure"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="unitsType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="s"/>
+			<xs:enumeration value="ms"/>
+			<xs:enumeration value="ns"/>
+			<xs:enumeration value="us"/>
+			<xs:enumeration value="counts"/>
+			<xs:enumeration value="counts/(uCmg/cm2)"/>
+			<xs:enumeration value="counts/(uC1e15at/cm2)"/>
+			<xs:enumeration value="counts/(uCug/cm2)"/>
+			<xs:enumeration value="eV"/>
+			<xs:enumeration value="keV"/>
+			<xs:enumeration value="MeV"/>
+			<xs:enumeration value="eV^2"/>
+			<xs:enumeration value="keV^2"/>
+			<xs:enumeration value="MeV^2"/>
+			<xs:enumeration value="g/cm3"/>
+			<xs:enumeration value="1e22at/cm3"/>
+			<xs:enumeration value="A"/>
+			<xs:enumeration value="Angstrom"/>
+			<xs:enumeration value="nm"/>
+			<xs:enumeration value="um"/>
+			<xs:enumeration value="mm"/>
+			<xs:enumeration value="cm"/>
+			<xs:enumeration value="m"/>
+			<xs:enumeration value="A2"/>
+			<xs:enumeration value="Angstrom2"/>
+			<xs:enumeration value="nm2"/>
+			<xs:enumeration value="um2"/>
+			<xs:enumeration value="mm2"/>
+			<xs:enumeration value="cm2"/>
+			<xs:enumeration value="m2"/>
+			<xs:enumeration value="A3"/>
+			<xs:enumeration value="Angstrom3"/>
+			<xs:enumeration value="nm3"/>
+			<xs:enumeration value="um3"/>
+			<xs:enumeration value="mm3"/>
+			<xs:enumeration value="cm3"/>
+			<xs:enumeration value="m3"/>
+			<xs:enumeration value="ug/cm2"/>
+			<xs:enumeration value="mg/cm2"/>
+			<xs:enumeration value="1e15at/cm2"/>
+			<xs:enumeration value="at%"/>
+			<xs:enumeration value="mol%"/>
+			<xs:enumeration value="wt%"/>
+			<xs:enumeration value="ug/g"/>
+			<xs:enumeration value="fraction"/>
+			<xs:enumeration value="relative"/>
+			<xs:enumeration value="barn"/>
+			<xs:enumeration value="b"/>
+			<xs:enumeration value="mbarn"/>
+			<xs:enumeration value="mb"/>
+			<xs:enumeration value="cm2"/>
+			<xs:enumeration value="cm2/mg"/>
+			<xs:enumeration value="cm2/ug"/>
+			<xs:enumeration value="cm2/(1e15at/cm2)"/>
+			<xs:enumeration value="rr"/>
+			<xs:enumeration value="eV/A"/>
+			<xs:enumeration value="keV/A"/>
+			<xs:enumeration value="MeV/A"/>
+			<xs:enumeration value="eV/Angstrom"/>
+			<xs:enumeration value="keV/Angstrom"/>
+			<xs:enumeration value="MeV/Angstrom"/>
+			<xs:enumeration value="eV/nm"/>
+			<xs:enumeration value="keV/nm"/>
+			<xs:enumeration value="MeV/nm"/>
+			<xs:enumeration value="eV/um"/>
+			<xs:enumeration value="keV/um"/>
+			<xs:enumeration value="MeV/um"/>
+			<xs:enumeration value="eV/cm"/>
+			<xs:enumeration value="keV/cm"/>
+			<xs:enumeration value="MeV/cm"/>
+			<xs:enumeration value="eV/m"/>
+			<xs:enumeration value="keV/m"/>
+			<xs:enumeration value="MeV/m"/>
+			<xs:enumeration value="eV/(ug/cm2)"/>
+			<xs:enumeration value="keV/(ug/cm2)"/>
+			<xs:enumeration value="MeV/(ug/cm2)"/>
+			<xs:enumeration value="eV/(mg/cm2)"/>
+			<xs:enumeration value="keV/(mg/cm2)"/>
+			<xs:enumeration value="MeV/(mg/cm2)"/>
+			<xs:enumeration value="eV/(1e15at/cm2)"/>
+			<xs:enumeration value="keV/(1e15at/cm2)"/>
+			<xs:enumeration value="MeV/(1e15at/cm2)"/>
+			<xs:enumeration value="q"/>
+			<xs:enumeration value="amu"/>
+			<xs:enumeration value="g"/>
+			<xs:enumeration value="kg"/>
+			<xs:enumeration value="nA"/>
+			<xs:enumeration value="nAmpere"/>
+			<xs:enumeration value="Ampere"/>
+			<xs:enumeration value="uC"/>
+			<xs:enumeration value="puC"/>
+			<xs:enumeration value="C"/>
+			<xs:enumeration value="pC"/>
+			<xs:enumeration value="uCoulomb"/>
+			<xs:enumeration value="puCoulomb"/>
+			<xs:enumeration value="Coulomb"/>
+			<xs:enumeration value="pCoulomb"/>
+			<xs:enumeration value="#particles"/>
+			<xs:enumeration value="degree"/>
+			<xs:enumeration value="rad"/>
+			<xs:enumeration value="mrad"/>
+			<xs:enumeration value="sr"/>
+			<xs:enumeration value="msr"/>
+			<xs:enumeration value="srad"/>
+			<xs:enumeration value="msrad"/>
+			<xs:enumeration value="C"/>
+			<xs:enumeration value="K"/>
+			<xs:enumeration value="atm"/>
+			<xs:enumeration value="bar"/>
+			<xs:enumeration value="mbar"/>
+			<xs:enumeration value="Torr"/>
+			<xs:enumeration value="mTorr"/>
+			<xs:enumeration value="mmHg"/>
+			<xs:enumeration value="Pa"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="yieldType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="yield"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="yieldunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="yieldunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="counts"/>
+			<xs:enumeration value="counts/(uCmg/cm2)"/>
+			<xs:enumeration value="counts/(uC1e15at/cm2)"/>
+			<xs:enumeration value="counts/(uCug/cm2)"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="othervalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="other"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="efficiencyType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="efficiency"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="efficiencyunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="efficiencyunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="fraction"/>
+			<xs:enumeration value="relative"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="timevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="time"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="s"/>
+							<xs:enumeration value="ms"/>
+							<xs:enumeration value="ns"/>
+							<xs:enumeration value="us"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="timevaluespreadType">
+		<xs:simpleContent>
+			<xs:extension base="timevalueType">
+				<xs:attribute name="mode" type="modeType" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="densityvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="density"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="g/cm3"/>
+							<xs:enumeration value="1e22at/cm3"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="pressurevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="pressure"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="atm"/>
+							<xs:enumeration value="bar"/>
+							<xs:enumeration value="mbar"/>
+							<xs:enumeration value="Torr"/>
+							<xs:enumeration value="mTorr"/>
+							<xs:enumeration value="mmHg"/>
+							<xs:enumeration value="Pa"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="temperaturevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="temperature"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="C"/>
+							<xs:enumeration value="K"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="solidanglevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="solidangle"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="sr"/>
+							<xs:enumeration value="msr"/>
+							<xs:enumeration value="srad"/>
+							<xs:enumeration value="msrad"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="anglevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="angle"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="degree"/>
+							<xs:enumeration value="rad"/>
+							<xs:enumeration value="mrad"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="anglevaluespreadType">
+		<xs:simpleContent>
+			<xs:extension base="anglevalueType">
+				<xs:attribute name="mode" type="modeType" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="fluencevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="fluence"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="uC"/>
+							<xs:enumeration value="puC"/>
+							<xs:enumeration value="C"/>
+							<xs:enumeration value="pC"/>
+							<xs:enumeration value="uCoulomb"/>
+							<xs:enumeration value="puCoulomb"/>
+							<xs:enumeration value="Coulomb"/>
+							<xs:enumeration value="pCoulomb"/>
+							<xs:enumeration value="#particles"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="currentvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="current"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="nA"/>
+							<xs:enumeration value="nAmpere"/>
+							<xs:enumeration value="Ampere"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="atomicnumbervalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="atomicnumber"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="massvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="mass"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="amu"/>
+							<xs:enumeration value="g"/>
+							<xs:enumeration value="kg"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="chargevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="charge"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="q"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="stoppingpowervalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="stoppingpower"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="stoppingpowerunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="stoppingpowerunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="eV/A"/>
+			<xs:enumeration value="keV/A"/>
+			<xs:enumeration value="MeV/A"/>
+			<xs:enumeration value="eV/Angstrom"/>
+			<xs:enumeration value="keV/Angstrom"/>
+			<xs:enumeration value="MeV/Angstrom"/>
+			<xs:enumeration value="eV/nm"/>
+			<xs:enumeration value="keV/nm"/>
+			<xs:enumeration value="MeV/nm"/>
+			<xs:enumeration value="eV/um"/>
+			<xs:enumeration value="keV/um"/>
+			<xs:enumeration value="MeV/um"/>
+			<xs:enumeration value="eV/cm"/>
+			<xs:enumeration value="keV/cm"/>
+			<xs:enumeration value="MeV/cm"/>
+			<xs:enumeration value="eV/m"/>
+			<xs:enumeration value="keV/m"/>
+			<xs:enumeration value="MeV/m"/>
+			<xs:enumeration value="eV/(ug/cm2)"/>
+			<xs:enumeration value="keV/(ug/cm2)"/>
+			<xs:enumeration value="MeV/(ug/cm2)"/>
+			<xs:enumeration value="eV/(mg/cm2)"/>
+			<xs:enumeration value="keV/(mg/cm2)"/>
+			<xs:enumeration value="MeV/(mg/cm2)"/>
+			<xs:enumeration value="eV/(1e15at/cm2)"/>
+			<xs:enumeration value="keV/(1e15at/cm2)"/>
+			<xs:enumeration value="MeV/(1e15at/cm2)"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="crosssectionvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="crosssection"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="crosssectionunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="crosssectionunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="barn"/>
+			<xs:enumeration value="b"/>
+			<xs:enumeration value="mbarn"/>
+			<xs:enumeration value="mb"/>
+			<xs:enumeration value="cm2"/>
+			<xs:enumeration value="cm2/mg"/>
+			<xs:enumeration value="cm2/ug"/>
+			<xs:enumeration value="cm2/(1e15at/cm2)"/>
+			<xs:enumeration value="rr"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="concentrationvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="concentration"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="concentrationunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="concentrationunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="at%"/>
+			<xs:enumeration value="mol%"/>
+			<xs:enumeration value="wt%"/>
+			<xs:enumeration value="ug/g"/>
+			<xs:enumeration value="fraction"/>
+			<xs:enumeration value="relative"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="arealdensityorthicknessvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="arealdensity"/>
+							<xs:enumeration value="thickness"/>
+							<xs:enumeration value="length"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="arealdensityorthicknessunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="arealdensityorthicknessunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="ug/cm2"/>
+			<xs:enumeration value="mg/cm2"/>
+			<xs:enumeration value="1e15at/cm2"/>
+			<xs:enumeration value="A"/>
+			<xs:enumeration value="Angstrom"/>
+			<xs:enumeration value="nm"/>
+			<xs:enumeration value="um"/>
+			<xs:enumeration value="mm"/>
+			<xs:enumeration value="cm"/>
+			<xs:enumeration value="m"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="arealdensityorthicknessvaluespreadType">
+		<xs:simpleContent>
+			<xs:extension base="arealdensityorthicknessvalueType">
+				<xs:attribute name="mode" type="modeType" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="arealdensityvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="arealdensity"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="ug/cm2"/>
+							<xs:enumeration value="mg/cm2"/>
+							<xs:enumeration value="1e15at/cm2"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="thicknessvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="thickness"/>
+							<xs:enumeration value="length"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="A"/>
+							<xs:enumeration value="Angstrom"/>
+							<xs:enumeration value="nm"/>
+							<xs:enumeration value="um"/>
+							<xs:enumeration value="mm"/>
+							<xs:enumeration value="cm"/>
+							<xs:enumeration value="m"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="areavalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="thickness"/>
+							<xs:enumeration value="length"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="A2"/>
+							<xs:enumeration value="Angstrom2"/>
+							<xs:enumeration value="nm2"/>
+							<xs:enumeration value="um2"/>
+							<xs:enumeration value="mm2"/>
+							<xs:enumeration value="cm2"/>
+							<xs:enumeration value="m2"/>
+							<xs:enumeration value="fraction"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="volumevalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="thickness"/>
+							<xs:enumeration value="length"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="A3"/>
+							<xs:enumeration value="Angstrom3"/>
+							<xs:enumeration value="nm3"/>
+							<xs:enumeration value="um3"/>
+							<xs:enumeration value="mm3"/>
+							<xs:enumeration value="cm3"/>
+							<xs:enumeration value="m3"/>
+							<xs:enumeration value="fraction"/>
+							<xs:enumeration value="other"/>
+							<xs:enumeration value="arbitrary"/>
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="energyvalueType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="quantity" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="quantityType">
+							<xs:enumeration value="energy"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:attribute name="units" type="energyunitsType" use="required"/>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="energyunitsType">
+		<xs:restriction base="unitsType">
+			<xs:enumeration value="eV"/>
+			<xs:enumeration value="keV"/>
+			<xs:enumeration value="MeV"/>
+			<xs:enumeration value="eV^2"/>
+			<xs:enumeration value="keV^2"/>
+			<xs:enumeration value="MeV^2"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="arbitrary"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="energyvaluespreadType">
+		<xs:simpleContent>
+			<xs:extension base="energyvalueType">
+				<xs:attribute name="mode" type="modeType" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="energycalibrationType">
+		<xs:simpleContent>
+			<xs:extension base="floatordoubleType">
+				<xs:attribute name="quantity" type="xs:NMTOKEN" use="optional"/>
+				<xs:attribute name="units" type="energycalibrationsunitsType" use="optional"/>
+				<xs:attribute name="uncertainty" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyA" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyB" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyplus" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyminus" type="floatordoubleType" use="optional"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="energycalibrationsunitsType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[kM]?eV(/channel(^\d+)?)?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="resolutionparameterType">
+		<xs:simpleContent>
+			<xs:extension base="floatordoubleType">
+				<xs:attribute name="quantity" type="xs:NMTOKEN" use="optional"/>
+				<xs:attribute name="mode" type="modeType" use="required"/>
+				<xs:attribute name="units" type="resolutionparameterunitsType" use="optional"/>
+				<xs:attribute name="uncertainty" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyA" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyB" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyplus" type="floatordoubleType" use="optional"/>
+				<xs:attribute name="uncertaintyminus" type="floatordoubleType" use="optional"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="adimensionalType">
+		<xs:simpleContent>
+			<xs:restriction base="realvalueType">
+				<xs:attribute name="units" use="required">
+					<xs:simpleType>
+						<xs:restriction base="unitsType">
+							<xs:enumeration value="none"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="resolutionparameterunitsType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="none"/>
+			<xs:pattern value="[kM]?eV(^-\d+)?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="levelType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="none"/>
+			<xs:pattern value="K|L[1-3]|M[1-5]|N[1-7]|O[1-7]|M4,5|N2,3|N6,7|N6\(7\)|O4,5"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="transitionType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="none"/>
+			<xs:pattern value="(K|L[1-3]|M[1-5]|N[1-7]|O[1-7]|M4,5|N2,3|N6,7|N6\(7\)|O4,5)\-(K|L[1-3]|M[1-5]|N[1-7]|O[1-7]|M4,5|N2,3|N6,7|N6\(7\)|O4,5)"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
