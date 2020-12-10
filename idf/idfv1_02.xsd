@@ -1,0 +1,2153 @@
+<?xml version="1.0"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by Nuno Barradas (ITN) -->
+<xs:schema xmlns="http://idf.schemas.itn.pt" xmlns:idf="http://idf.schemas.itn.pt" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://idf.schemas.itn.pt" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:include schemaLocation="IDFunitsv1_02.xsd"/>
+	<xs:annotation>
+		<xs:documentation>This is a zeroth version of the Ion Beam Analysis Data Fornat</xs:documentation>
+		<xs:documentation>In fact, this was already v1, the first version released Fall 2009</xs:documentation>
+		<xs:documentation>This was modified 14 May 2010 as follows:
+		realtime, livetime and deadtime are now of type timevalueType, before they were of type xs:duration which is the standard XML description of a duration i.e. a period of time;
+		introduced in the data group "sample", just after "users" and "notes", the element "description" of type xs:string
+		toftimeresolution is now of newly created timevaluespreadType type, which has the additional attribute "mode"
+    the new elements "energyminimum" and "energymaximum" of type "energyvalueType" were introduced in the "crosssection" data group, just after the "crosssectiontype" element
+		</xs:documentation>
+	</xs:annotation>
+	<xs:element name="idf">
+		<xs:annotation>
+			<xs:documentation>The root element of all IDF files must be idf.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="attributes" minOccurs="0"/>
+				<xs:choice minOccurs="0" maxOccurs="unbounded">
+					<xs:element ref="repository" minOccurs="0"/>
+					<xs:element ref="sample" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:unique name="id">
+			<xs:selector xpath="
+			idf:repository/idf:elementsandmoleculesrepository/idf:elementsandmolecules|
+			idf:repository/idf:beamrepository/idf:beam|
+			idf:repository/idf:geometryrepository/idf:geometry|
+			idf:repository/idf:instrumentrepository/idf:instrument|
+			idf:repository/idf:detectionrepository/idf:detection|
+			idf:repository/idf:calibrationsrepository/idf:detectorefficiency|
+			idf:repository/idf:calibrationsrepository/idf:detectorresolution|
+			idf:repository/idf:calibrationsrepository/idf:energycalibration"/>
+			<xs:field xpath="@id"/>
+		</xs:unique>
+		<xs:keyref name="idref" refer="id">
+			<xs:selector xpath="
+			idf:sample/idf:elementsandmolecules|
+			idf:sample/idf:spectra/idf:spectrum/idf:beam|
+			idf:sample/idf:spectra/idf:spectrum/idf:geometry|
+			idf:sample/idf:spectra/idf:spectrum/idf:instrument|
+			idf:sample/idf:spectra/idf:spectrum/idf:detection|
+			idf:sample/idf:spectra/idf:spectrum/idf:detectorefficiency|
+			idf:sample/idf:spectra/idf:spectrum/idf:detectorresolution|
+			idf:sample/idf:spectra/idf:spectrum/idf:energycalibration"/>
+			<xs:field xpath="@ref"/>
+		</xs:keyref>
+	</xs:element>
+	<xs:element name="attributes">
+		<xs:annotation>
+			<xs:documentation>Tese are attributes of the IDF file, including version of IDF that this file conforms to, name of the IDF file, date file was created,  any number of dates that the file was update</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="idfversion" type="xs:string"/>
+				<xs:element name="filename" type="xs:string" minOccurs="0"/>
+				<xs:element name="createtime" type="dateType" minOccurs="0"/>
+				<xs:element ref="updatetimes" minOccurs="0"/>
+				<xs:element name="code" type="xs:string" minOccurs="0"/>
+				<xs:element name="version" type="xs:string" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="updatetimes">
+		<xs:annotation>
+			<xs:documentation>any number of “updatetime” tags can be given.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="updatetime" type="dateType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts repository-->
+	<xs:element name="repository">
+		<xs:annotation>
+			<xs:documentation>DIfferent sections of experimental conditions can be defined in advance, to be referenced later.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="elementsandmoleculesrepository" minOccurs="0"/>
+				<xs:element ref="beamrepository" minOccurs="0"/>
+				<xs:element ref="geometryrepository" minOccurs="0"/>
+				<xs:element ref="instrumentrepository" minOccurs="0"/>
+				<xs:element ref="detectionrepository" minOccurs="0"/>
+				<xs:element ref="calibrationsrepository" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="elementsandmoleculesrepository">
+		<xs:annotation>
+			<xs:documentation>Each elementsandmolecules tag defines one type of sample, i.e. it defines a set of elements or logical units. Similar samples can then all reference the information given here</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="elementsandmolecules" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="beamrepository">
+		<xs:annotation>
+			<xs:documentation>If, for instance, the same beam and energy was used for many samples, it can be defined here only once, instead of repeating the same information in every sample</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="beam" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="instrumentrepository">
+		<xs:annotation>
+			<xs:documentation>Instrument includes the accelerator, beam line and experimental chamber used. All samples measured with the same setup can reference an instrument definition given here</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="instrument" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="geometryrepository">
+		<xs:annotation>
+			<xs:documentation>geometry defines only the basic quantities, such as scattering, incidence and exit angle, and beam spot</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="geometry" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="detectionrepository">
+		<xs:annotation>
+			<xs:documentation>detection includes everything that comes after the sample, such as slits, foils, detector, electronics. All samples measured with a given detector, where all these elements are the same, can reference a definition given here</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="detection" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="calibrationsrepository">
+		<xs:annotation>
+			<xs:documentation>calibrations includes e.g. detector efficiency and resolution, and energy calibration. Often, samples measured in one batch share these parameters</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="detectorefficiency" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="detectorresolution" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="energycalibration" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts sample-->
+	<xs:element name="sample">
+		<xs:annotation>
+			<xs:documentation>As many samples as desired can be included in one IDF file. Each sample corresponds to a new sample data group, that includes all the information about the sample,
+			 such as structure, any spectra measured (which can be more than one, or even none if it is a pure simulation), all experimental conditions for the different measurements, all calculations and simulations
+			 and their parameters</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="elementsandmolecules" minOccurs="0"/>
+				<xs:element ref="structure" minOccurs="0"/>
+				<xs:element ref="spectra" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts elementsandmolecules-->
+	<xs:element name="elementsandmolecules">
+		<xs:annotation>
+			<xs:documentation>This data group is used to define what are the constituents of a sample, such as the elements present. Logical elements such as moledules can also be given</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="elements" minOccurs="0"/>
+				<xs:element ref="molecules" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-elementsandmolecules">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="elements">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:elements/idf:nelements"/>
+		</xs:unique>
+		<xs:unique name="molecules">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:molecules/idf:nmolecules"/>
+		</xs:unique>
+	</xs:element>
+	<xs:element name="elements">
+		<xs:annotation>
+			<xs:documentation>The elements data group includes one element group per element present in the sample. This is redundant relative to molecules 
+			If both elements and molecules are present, care should be taken to ensure that they are consistent with each other. 
+			In case of inconsistency, elements it to be considered correct</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="nelements" type="xs:positiveInteger" minOccurs="0"/>
+				<xs:element ref="element" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="element">
+		<xs:annotation>
+			<xs:documentation>Defines a given element present in the sample</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="name" type="xs:string" minOccurs="0"/>
+				<xs:element name="density" type="densityvalueType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="molecules">
+		<xs:annotation>
+			<xs:documentation>The molecules data group includes one logical element (e.g. molecule or element) group per logical element (e.g. molecule or element) present in the sample. 
+			This is redundant relative to elements If both elements and molecules are present, care should be taken to ensure that they are consistent with each other. 
+			In case of inconsistency, elements it to be considered correct</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="nmolecules" type="xs:positiveInteger" minOccurs="0"/>
+				<xs:element ref="molecule" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="molecule">
+		<xs:annotation>
+			<xs:documentation>Defines a given logical element present in the sample</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="name" type="xs:string" minOccurs="0"/>
+				<xs:element name="density" type="densityvalueType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here ends elementsandmolecules-->
+	<!--here starts structure-->
+	<xs:element name="structure">
+		<xs:annotation>
+			<xs:documentation>The structure data group is used to define the sample, in particular a given depth profile expressed for instance as a layered structure. 
+			Other methods are also allowed. Crystalline structure can also be given. The normal way of describing a sample structure is a layered description. 
+			A second way is the so-called “point by point” profile, in which for each element a table (depth, concentration) is calculated by directly converting the yield in each channel into a concentration. 
+			This second method is popular for instance in HI-ERDA</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="crystalstructure" type="xs:string" minOccurs="0"/>
+				<xs:element ref="layeredstructure" minOccurs="0"/>
+				<xs:element ref="pointbypointstructure" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="layeredstructure">
+		<xs:annotation>
+			<xs:documentation>A layered structure can be described withini this data group</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="nlayers" type="xs:positiveInteger" minOccurs="0"/>
+				<xs:element name="layers" type="layersType" minOccurs="0"/>
+				<!--equationoverlays and roughness provisonailly defined as string, must be changed-->
+				<xs:element ref="equationoverlays" minOccurs="0"/>
+				<xs:element ref="roughness" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="layerelements">
+		<xs:annotation>
+			<xs:documentation>Defines the concentration of elements in the layers. This is redundant relative to layermolecules 
+			If both layerelements and layermolecules are present, care should be taken to ensure that they are consistent with each other. 
+			In case of inconsistency, layerelements it to be considered correct</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="layerelement" type="layerelementType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="layermolecules">
+		<xs:annotation>
+			<xs:documentation>Defines the concentration of logical elements in the layers. This is redundant relative to layerelements. 
+			If both layerelements and layermolecules are present, care should be taken to ensure that they are consistent with each other. 
+			In case of inconsistency, layerelements it to be considered correct</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="layermolecule" type="layerelementType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="pointbypointstructure">
+		<xs:annotation>
+			<xs:documentation>A sample structure can be given by specifying a (depth/concentration) table for the elements
+			 This is the so-called “point by point” profile, in which for each element the yield in each channel in converted into a concentration by using the cross section.
+			 The depth is obtained by using calculated stopping power, either from the data directly, of if some elements are invisible, from an assumed structure (often iteratively).
+			  This method is popular for instance in HI-ERDA
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="npbpelements" type="xs:positiveInteger" minOccurs="0"/>
+				<xs:element name="pbpelement" type="pbpelementType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="pbpelementType">
+		<xs:annotation>
+			<xs:documentation>Type to define the point by point depth profile for one element</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="elementname" type="xs:string" minOccurs="0"/>
+			<xs:element name="pbp" type="simpledatadepthconcentrationType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="equationoverlays">
+		<xs:annotation>
+			<xs:documentation>This data group is empty in IDF, it is reserved for user-specific equation overlays to the layered structure defined</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="roughness">
+		<xs:annotation>
+			<xs:documentation>This data group is empty in IDF, it is reserved for user-specific roughness description</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="layersType">
+		<xs:annotation>
+			<xs:documentation>Type defining layers</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="layer" type="layerType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="layerType">
+		<xs:annotation>
+			<xs:documentation>Type defining one given layer</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="layerthickness" type="arealdensityorthicknessvalueType" minOccurs="0"/>
+			<xs:element name="layeruniformity" type="arealdensityorthicknessvaluespreadType" minOccurs="0"/>
+			<xs:element name="layerdensity" type="densityvalueType" minOccurs="0"/>
+			<xs:element name="layercrystalstructure" type="xs:string" minOccurs="0"/>
+			<xs:element ref="layerelements" minOccurs="0"/>
+			<xs:element ref="layermolecules" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="layerelementType">
+		<xs:annotation>
+			<xs:documentation>Type defining the concentration of one element in one layer</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="name" type="xs:string" minOccurs="0"/>
+			<xs:element name="concentration" type="concentrationvalueType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--here ends structure-->
+	<!--here starts spectra-->
+	<xs:element name="spectra">
+		<xs:annotation>
+			<xs:documentation>The spectra data group contains one or more spectrum data groups</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="spectrum" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts spectrum-->
+	<xs:element name="spectrum">
+		<xs:annotation>
+			<xs:documentation>The spectrum data group contains everyting referring to one given spectrum, including experimental conditions, data, and any simulations</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="log" minOccurs="0"/>
+				<xs:element ref="environment" minOccurs="0"/>
+				<xs:group ref="experimental"/>
+				<xs:element ref="reactions" minOccurs="0"/>
+				<xs:element ref="data" minOccurs="0"/>
+				<xs:element ref="process" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here start log and environment -->
+	<xs:element name="log">
+		<xs:annotation>
+			<xs:documentation>Log data such as start and end times, live time and real time</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="realtime" type="timevalueType" minOccurs="0"/>
+				<xs:element name="livetime" type="timevalueType" minOccurs="0"/>
+				<xs:element name="deadtime" type="timevalueType" minOccurs="0"/>
+				<xs:element name="starttime" type="xs:dateTime" minOccurs="0"/>
+				<xs:element name="stoptime" type="xs:dateTime" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="environment">
+		<xs:annotation>
+			<xs:documentation>Data such as presure and temperature in the experimental data can be given here in a limited way.
+			“temperature” and “pressure” are not extremely useful parameters. The “environment” group is here so users who have special requirements have a place to introduce user-specific environment-related tags.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="temperature" type="temperaturevalueType" minOccurs="0"/>
+				<xs:element name="pressure" type="pressurevalueType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here end log and environment -->
+	<!--here starts experimental-->
+	<xs:group name="experimental">
+		<xs:annotation>
+			<xs:documentation>Experimental conditions are given in this group. They are separated in the data groups beam, geometry, instrument, detection, and calibrations</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="beam" minOccurs="0"/>
+			<xs:element ref="geometry" minOccurs="0"/>
+			<xs:element ref="instrument" minOccurs="0"/>
+			<xs:element ref="detection" minOccurs="0"/>
+			<xs:element ref="calibrations" minOccurs="0"/>
+		</xs:sequence>
+	</xs:group>
+	<!--here starts beam-->
+	<xs:element name="beam">
+		<xs:annotation>
+			<xs:documentation>The beam data group defines the experimental conditions of the beam before hitting the sample, including beam energy, energy spread, charge state, shape, any slits and foils, current</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="beamparticle" type="xs:string" minOccurs="0"/>
+				<xs:element name="beamZ" type="xs:positiveInteger" minOccurs="0"/>
+				<xs:element name="beammass" type="massvalueType" minOccurs="0"/>
+				<xs:element name="beamenergy" type="energyvalueType" minOccurs="0"/>
+				<xs:element name="beamenergyspread" type="energyvaluespreadType" minOccurs="0"/>
+				<xs:element name="beamchargestate" type="simplesimulationType" minOccurs="0"/>
+				<xs:element name="beamfluence" type="fluencevalueType" minOccurs="0"/>
+				<xs:element name="beamcurrent" type="currentvalueType" minOccurs="0"/>
+				<xs:element name="beamangularspread" type="anglevaluespreadType" minOccurs="0"/>
+				<xs:element name="beamshape" type="shape2dType" minOccurs="0"/>
+				<xs:element name="slitsbeforesample" type="slitsType" minOccurs="0"/>
+				<xs:element name="beamfoil" type="foilType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-beam">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="beamparticle">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamparticle"/>
+		</xs:unique>
+		<xs:unique name="beamZ">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamZ"/>
+		</xs:unique>
+		<xs:unique name="beammass">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beammass"/>
+		</xs:unique>
+		<xs:unique name="beamenergy">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamenergy"/>
+		</xs:unique>
+		<xs:unique name="beamenergyspread">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamenergyspread"/>
+		</xs:unique>
+		<xs:unique name="beamfluence">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamfluence"/>
+		</xs:unique>
+		<xs:unique name="beamcurrent">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamcurrent"/>
+		</xs:unique>
+		<xs:unique name="beamangularspread">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamangularspread"/>
+		</xs:unique>
+		<xs:unique name="beamshape">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamshape/idf:shape"/>
+		</xs:unique>
+		<xs:unique name="beamfoil">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamfoil/idf:foildistancetosample"/>
+		</xs:unique>
+	</xs:element>
+	<xs:complexType name="foilType">
+		<xs:annotation>
+			<xs:documentation>This type defines a multilayered foil, including distance to sample</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="foildistancetosample" type="thicknessvalueType" minOccurs="0"/>
+			<xs:element name="foillayers" type="layersType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="slitsType">
+		<xs:annotation>
+			<xs:documentation>This type includes multiple slits, each with given dimensions and a given distance to sample</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="slit" type="slitType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="slitType">
+		<xs:annotation>
+			<xs:documentation>This type defines one given slit with given dimensions and a given distance to sample</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="slitshape" type="shape3dType" minOccurs="0"/>
+			<xs:element name="slitdistancetosample" type="thicknessvalueType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--here ends beam-->
+	<!--here starts geometry-->
+	<xs:element name="geometry">
+		<xs:annotation>
+			<xs:documentation>geometry defines only the basic quantities, such as scattering, incidence and exit angle, and beam spot. 
+			The experimental geometry is defined here as it pertains to scattering; the normal parameters considered in codes are used here, plus the definition of the spot in the sample. 
+			Further details on the geometry are found in the beam and instrument entries</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="geometrytype" type="geometrytypeType" minOccurs="0"/>
+				<xs:element name="incidenceangle" type="anglevalueType" minOccurs="0"/>
+				<xs:element name="scatteringangle" type="anglevalueType" minOccurs="0"/>
+				<xs:element name="exitangle" type="anglevalueType" minOccurs="0"/>
+				<xs:element name="spot" type="shape2dType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-geometry">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="geometrytype">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:geometrytype"/>
+		</xs:unique>
+		<xs:unique name="incidenceangle">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:incidenceangle"/>
+		</xs:unique>
+		<xs:unique name="scatteringangle">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:scatteringangle"/>
+		</xs:unique>
+		<xs:unique name="exitangle">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:exitangle"/>
+		</xs:unique>
+		<xs:unique name="spot">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:spot/idf:shape"/>
+		</xs:unique>
+	</xs:element>
+	<xs:simpleType name="pulseshapeType">
+		<xs:annotation>
+			<xs:documentation>defines the pulse shape</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Gaussian"/>
+			<xs:enumeration value="trapezoidal"/>
+			<xs:enumeration value="triangular"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="geometrytypeType">
+		<xs:annotation>
+			<xs:documentation>defines the type of geometry</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Cornell"/>
+			<xs:enumeration value="IBM"/>
+			<xs:enumeration value="general"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--here ends geometry-->
+	<!--here starts instrument-->
+	<xs:element name="instrument">
+		<xs:annotation>
+			<xs:documentation>Instrument includes the accelerator, beam line and experimental chamber used. Instead of defining here, a reference to an instrument in the repository can be made</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="ionsource" type="xs:string" minOccurs="0"/>
+				<xs:element name="accelerator" type="xs:string" minOccurs="0"/>
+				<xs:element name="beamline" type="xs:string" minOccurs="0"/>
+				<xs:element name="chamber" type="xs:string" minOccurs="0"/>
+				<xs:element name="sampleholder" type="xs:string" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-instrument">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="ionsource">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:ionsource"/>
+		</xs:unique>
+		<xs:unique name="accelerator">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:accelerator"/>
+		</xs:unique>
+		<xs:unique name="beamline">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:beamline"/>
+		</xs:unique>
+		<xs:unique name="chamber">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:chamber"/>
+		</xs:unique>
+		<xs:unique name="sampleholder">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:sampleholder"/>
+		</xs:unique>
+	</xs:element>
+	<!--here ends instrument-->
+	<xs:element name="detection">
+		<xs:annotation>
+			<xs:documentation>detection includes everything that comes after the sample, such as slits, foils, detector, electronics. Instead of defining here, a reference to a detection data group in the repository can be made</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="slitsaftersample" type="slitsType" minOccurs="0"/>
+				<xs:element name="stoppingfoil" type="foilType" minOccurs="0"/>
+				<xs:element ref="detector" minOccurs="0"/>
+				<xs:element ref="electronics" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-detection">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="stoppingfoil">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:stoppingfoil/idf:foildistancetosample"/>
+		</xs:unique>
+		<xs:unique name="detector-detectortype">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:detector/idf:detectortype"/>
+		</xs:unique>
+		<xs:unique name="detector-solidangle">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:detector/idf:solidangle"/>
+		</xs:unique>
+		<xs:unique name="electronics-amplifiertype">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:electronics/idf:amplifier/idf:amplifiertype"/>
+		</xs:unique>
+		<xs:unique name="electronics-shapingtime">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:electronics/idf:amplifier/idf:shapingtime"/>
+		</xs:unique>
+		<xs:unique name="electronics-purtime">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:electronics/idf:amplifier/idf:purtime"/>
+		</xs:unique>
+		<xs:unique name="electronics-pur">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:electronics/idf:amplifier/idf:pur"/>
+		</xs:unique>
+	</xs:element>
+	<!--here starts detection-->
+	<xs:element name="detector">
+		<xs:annotation>
+			<xs:documentation>defines parameters of the detector</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="detectortype" type="detectortypeType" minOccurs="0"/>
+				<xs:element name="solidangle" type="solidanglevalueType" minOccurs="0"/>
+				<xs:element name="detectorshape" type="shape3dType" minOccurs="0"/>
+				<xs:element name="deadlayer" type="layerType" minOccurs="0"/>
+				<xs:element name="entrancewindow" type="layersType" minOccurs="0"/>
+				<xs:element name="detectorlayers" type="layersType" minOccurs="0"/>
+				<xs:element ref="tof" minOccurs="0"/>
+				<xs:element name="distancedetectortosample" type="thicknessvalueType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="detectortypeType">
+		<xs:annotation>
+			<xs:documentation>defines the detector type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="SSB"/>
+			<xs:enumeration value="SDD"/>
+			<xs:enumeration value="PINdiode"/>
+			<xs:enumeration value="Si(Li)"/>
+			<xs:enumeration value="Ge(Li)"/>
+			<xs:enumeration value="HPGe"/>
+			<xs:enumeration value="ToF"/>
+			<xs:enumeration value="EdE"/>
+			<xs:enumeration value="Bragg"/>
+			<xs:enumeration value="MagSpec"/>
+			<xs:enumeration value="ElSpec"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="tof">
+		<xs:annotation>
+			<xs:documentation>defines parameters relevant for time of flight detectors</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="toflength" type="thicknessvalueType" minOccurs="0"/>
+				<xs:element name="toftimeresolution" type="timevaluespreadType" minOccurs="0"/>
+				<xs:element name="startfoil" type="layersType" minOccurs="0"/>
+				<xs:element name="stoptfoil" type="layersType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="electronics">
+		<xs:annotation>
+			<xs:documentation>parameters referring to the electronics used, such as amplifier.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="amplifier" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="amplifier">
+		<xs:annotation>
+			<xs:documentation>Some parameters that describe the amplifier and are needed e.g. for pileup calculations are given here.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="amplifiertype" type="amplifiertypeType" minOccurs="0"/>
+				<xs:element name="pulseshape" type="pulseshapeType" minOccurs="0"/>
+				<xs:element name="shapingtime" type="timevalueType" minOccurs="0"/>
+				<xs:element name="risetime" type="timevalueType" minOccurs="0"/>
+				<xs:element name="flattoptime" type="timevalueType" minOccurs="0"/>
+				<xs:element name="pur" type="purType" minOccurs="0"/>
+				<xs:element name="purtime" type="timevalueType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="amplifiertypeType">
+		<xs:annotation>
+			<xs:documentation>defines the type of amplifier</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="analogue"/>
+			<xs:enumeration value="DSP"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="purType">
+		<xs:annotation>
+			<xs:documentation>whether PUR system is on, off, or absent</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="on"/>
+			<xs:enumeration value="off"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--here ends detection-->
+	<!--here starts calibrations-->
+	<xs:element name="calibrations">
+		<xs:annotation>
+			<xs:documentation>calibrations includes e.g. detector efficiency and resolution, and energy calibration. Often, samples measured in one batch share these parameters
+			Detector efficiencies and energy calibrations could also be given in the “detection” group. However, the calibrations depend not only on the aparatus, but also on the detected particle</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="detectorefficiencies" minOccurs="0"/>
+				<xs:element ref="detectorresolutions" minOccurs="0"/>
+				<xs:element ref="energycalibrations" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="detectorresolutions">
+		<xs:annotation>
+			<xs:documentation>data group containing all energy resolution</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="detectorresolution" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="detectorresolution">
+		<xs:annotation>
+			<xs:documentation>energy resolution for one given detected particle, may be energy-dependent, given as a polynomial</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="resolutionion" type="xs:string" minOccurs="0"/>
+				<xs:element ref="resolutionparameters" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-detectorresolution">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="resolutionion">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:resolutionion"/>
+		</xs:unique>
+	</xs:element>
+	<xs:element name="resolutionparameters">
+		<xs:annotation>
+			<xs:documentation>one coefficient of the polynomial</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="resolutionparameter" type="resolutionparameterType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="efficiencymodeType">
+		<xs:annotation>
+			<xs:documentation>specifies how the efficiency is given - for specific energies, or for specific x-ray lines</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="energy"/>
+			<xs:enumeration value="line"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="detectorefficiencies">
+		<xs:annotation>
+			<xs:documentation>data group containing all detection efficiencies</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="detectorefficiency" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="detectorefficiency">
+		<xs:annotation>
+			<xs:documentation>data group containing one given detection efficiency</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="efficiencyion" type="xs:string" minOccurs="0"/>
+				<xs:element name="efficiencymode" type="efficiencymodeType" minOccurs="0"/>
+				<xs:choice>
+					<xs:element name="efficiency" type="simpledataefficiencyType" minOccurs="0"/>
+					<xs:element name="lineefficiency" type="linedataType" minOccurs="0"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-detectorefficiency">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="efficiencyion">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:efficiencyion"/>
+		</xs:unique>
+		<xs:unique name="efficiencymode">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:efficiencymode"/>
+		</xs:unique>
+	</xs:element>
+	<xs:element name="energycalibrations">
+		<xs:annotation>
+			<xs:documentation>data group containing all energy calibrations</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="energycalibration" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="energycalibration">
+		<xs:annotation>
+			<xs:documentation>data group containing one given energy calibration for one given detected particle</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="calibrationion" type="xs:string" minOccurs="0"/>
+				<xs:element name="calibrationmode" type="calibrationmodeType" minOccurs="0"/>
+				<xs:element ref="calibrationparameters" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="id"/>
+			<xs:attributeGroup ref="ref"/>
+		</xs:complexType>
+		<xs:unique name="refid-energycalibration">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|@id"/>
+		</xs:unique>
+		<xs:unique name="calibrationion">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:calibrationion"/>
+		</xs:unique>
+		<xs:unique name="calibrationmode">
+			<xs:selector xpath="."/>
+			<xs:field xpath="@ref|idf:calibrationmode"/>
+		</xs:unique>
+	</xs:element>
+	<xs:simpleType name="calibrationmodeType">
+		<xs:annotation>
+			<xs:documentation>specifies how the calibration is given - energy, time, pulse height, other</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="energy"/>
+			<xs:enumeration value="time"/>
+			<xs:enumeration value="PH"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="calibrationparameters">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="calibrationparameter" type="energycalibrationType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts calibrations-->
+	<!--here ends experimental-->
+	<!--here starts reactions-->
+	<xs:element name="reactions">
+		<xs:annotation>
+			<xs:documentation>The reactions that occurr are listed in this data group. For RBS, ERDA, and PIXE, this is not strictly necessary, because the reactions can be deduced from kinematics.
+			 For NRA and NRP this is more important, even if some codes may have built-in lists of possible reactions. This could be a good place to specify cross section data to be used. 
+			 However, conceptually these are separate things. One thing is reactions that occurr and particles detected that make up the data, a different thing is how this data is analysed.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="technique" type="techniqueType" minOccurs="0"/>
+				<xs:element ref="reactionlist" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="techniqueType">
+		<xs:annotation>
+			<xs:documentation>Defines the technique, such as RBS, NRA, etc
+			technique considered, options are: 
+			RBS - including forward scattering and non-Rutherford elastic scattering
+			ERDA - no matter what the beam
+			NRA - for non-resonant i.e. particle-particle reactions, in which a single beam energy is used and an energy spectrum is collected
+			NRP - for resonant reactions, in which the result is the total yield for normally a sharp resonance, and often an excitation function is measured using a range of initial beam energies. This includes PIGE and RNRA.
+			PIXE - no matter what the beam
+			other
+			This is the main technique. Note however, for instance in ERDA, the forward scattered primary beam can also be detected.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="RBS"/>
+			<xs:enumeration value="ERDA"/>
+			<xs:enumeration value="NRA"/>
+			<xs:enumeration value="NRP"/>
+			<xs:enumeration value="PIXE"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="reactionlist">
+		<xs:annotation>
+			<xs:documentation>Contains all reactions of interest</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="reaction" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="reaction">
+		<xs:annotation>
+			<xs:documentation>Contains one given reaction of interest</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="initialtargetparticle" type="xs:string" minOccurs="0"/>
+				<xs:element name="incidentparticle" type="xs:string" minOccurs="0"/>
+				<xs:element name="exitparticle" type="xs:string" minOccurs="0"/>
+				<xs:element name="finaltargetparticle" type="xs:string" minOccurs="0"/>
+				<xs:element name="reactionQ" type="energyvalueType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here ends reactions-->
+	<!--here starts data-->
+	<xs:element name="data">
+		<xs:annotation>
+			<xs:documentation>There are many different types of data that can be measured, and it is difficult to find a universal representation. The IDF supports most normal types of data and some exotic ones as well 
+			The complex datamode can be used to document practically any type of multidimensional data.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="datamode" type="datamodeType" minOccurs="0"/>
+				<xs:element name="channelmode" type="channelmodeType" minOccurs="0"/>
+				<xs:choice>
+					<xs:element name="simpledata" type="simpledataType" minOccurs="0"/>
+					<xs:element name="complexdata" type="complexdataType" minOccurs="0"/>
+					<xs:element name="linedata" type="linedataType" minOccurs="0"/>
+					<xs:element name="datafile" type="fileType" minOccurs="0"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="datamodeType">
+		<xs:annotation>
+			<xs:documentation>Flag defining the type of data that follows (simple, complex, line)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="simple"/>
+			<xs:enumeration value="complex"/>
+			<xs:enumeration value="line"/>
+			<xs:enumeration value="file"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="channelmodeType">
+		<xs:annotation>
+			<xs:documentation>flag defining what a channel is. Values left, middle or right for indicate that the channel number gives the left, middle or right edge of a channel. Example: With an offset of 0 keV and 1 keV/channel channel #1 is from 1 – 2 keV for left, from 0 – 1 keV for right, and from 0.5 – 1.5 keV for middle. In the case of non-equidistant energy steps only left and right are allowed, because the original channel edges cannot be reconstructed if only the middle of each channel is given.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="left"/>
+			<xs:enumeration value="middle"/>
+			<xs:enumeration value="right"/>
+			<xs:enumeration value="other"/>
+			<xs:enumeration value="unknown"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="dataentries">
+		<xs:annotation>
+			<xs:documentation>For the complex data type, data is organised by many entries</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="dataentry" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="dataentry">
+		<xs:annotation>
+			<xs:documentation>One given data entry, containing an unlimited amount of quantites, including a time stamp</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="timestamp" type="dateType" minOccurs="0"/>
+				<xs:element name="line" type="xs:string" minOccurs="0"/>
+				<xs:element name="dataitem" type="anyrealvalueType" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="datadimensions">
+		<xs:annotation>
+			<xs:documentation>For the complex data type, gives the dimensions of the data to be stored</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="datadimensionx" type="xs:integer" minOccurs="0"/>
+				<xs:element name="datadimensiony" type="xs:integer" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here ends data-->
+	<!--here starts process-->
+	<xs:element name="process">
+		<xs:annotation>
+			<xs:documentation>here come the things that relate to the data analysis, including cross sections and stopping powers used, straggling models, simulations made, and anything else</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="physicsdefaults" minOccurs="0"/>
+				<xs:element ref="simulations" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts physicsdefaults-->
+	<xs:element name="physicsdefaults">
+		<xs:annotation>
+			<xs:documentation>the physicsdefaults data group defines defaults to be used for cross sections, stopping powers, energy spread, etc. They can be overriden for any given simulation</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="crosssectiondefault" type="crosssectiondefaultType" minOccurs="0"/>
+				<xs:element name="stoppingpowerdefault" type="stoppingpowerdefaultType" minOccurs="0"/>
+				<xs:element name="energyspreaddefault" type="energyspreaddefaultType" minOccurs="0"/>
+				<xs:element name="PIXEdefault" type="pixedefaultType" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="crosssectiondefaultType">
+		<xs:annotation>
+			<xs:documentation>Type to define the default for cross sections</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="Rutherford" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="screening" type="screeningType" minOccurs="0"/>
+			<xs:element name="computercode" type="codedatabaseType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="stoppingpowerdefaultType">
+		<xs:annotation>
+			<xs:documentation>Type to define the default for stopping powers</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="computercode" type="codedatabaseType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="energyspreaddefaultType">
+		<xs:annotation>
+			<xs:documentation>Type to define the default for energy spread. This group is mainly a series of flags that inform where some effect that affect the energy spread of the beam are included in any calculation.
+			 Actual calculation requires a series of values taken from different places in the file</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="energylossstraggling" type="xs:string" minOccurs="0"/>
+			<xs:element name="multiplescattering" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="Dopplereffect" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="beamangularspread" type="xs:boolean" minOccurs="0"/>
+			<xs:element ref="geometricspread" minOccurs="0"/>
+			<xs:element name="Tschalareffect" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="computercode" type="codedatabaseType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="pixedefaultType">
+		<xs:annotation>
+			<xs:documentation>Type to define the default for PIXE required parameters. This group is mainly a series of text tags that inform what are the data bases used in calculation.
+			 Actual calculation requires knowledge by the codes about how to read, process and use the databases</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="ionizationcrosssections" type="codedatabaseType" minOccurs="0"/>
+			<xs:element name="Xrayproductioncrosssections" type="codedatabaseType" minOccurs="0"/>
+			<xs:choice>
+				<xs:element name="totalabsorptioncrosssections" type="codedatabaseType" minOccurs="0"/>
+				<xs:element name="massabsorptioncoeffficients" type="codedatabaseType" minOccurs="0"/>
+			</xs:choice>
+			<xs:element name="fluorescenceyields" type="codedatabaseType" minOccurs="0"/>
+			<xs:element name="costerkroningyields" type="codedatabaseType" minOccurs="0"/>
+			<xs:element name="branchingratios" type="codedatabaseType" minOccurs="0"/>
+			<xs:choice>
+				<xs:element name="transitionratios" type="codedatabaseType" minOccurs="0"/>
+				<xs:element name="linewidths" type="codedatabaseType" minOccurs="0"/>
+			</xs:choice>
+			<xs:element name="photoelectricionizationcrosssections" type="codedatabaseType" minOccurs="0"/>
+			<xs:element name="jumpratios" type="codedatabaseType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--here ends physicsdefaults-->
+	<!--here starts simulations-->
+	<xs:element name="simulations">
+		<xs:annotation>
+			<xs:documentation>This data group contains all the simulations made</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="simulation" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="simulation">
+		<xs:annotation>
+			<xs:documentation>Contains one simulation made</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="physics" minOccurs="0"/>
+				<xs:element name="simulationtype" type="simulationtypeType" minOccurs="0"/>
+				<xs:choice>
+					<xs:group ref="simulationtypetotal" minOccurs="0"/>
+					<xs:group ref="simulationtypepartialelement" minOccurs="0"/>
+					<xs:group ref="simulationtypereaction" minOccurs="0"/>
+				</xs:choice>
+				<xs:choice>
+					<xs:element name="simpledata" type="simplesimulationType" minOccurs="0"/>
+					<xs:element name="complexdata" type="complexsimulationType" minOccurs="0"/>
+					<xs:element name="linedata" type="linesimulationType" minOccurs="0"/>
+					<xs:element name="datafile" type="fileType" minOccurs="0"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts physics-->
+	<xs:element name="physics">
+		<xs:annotation>
+			<xs:documentation>the physics data group defines what is to be used for cross sections, stopping powers, energy spread, etc., including any override of the given defaults</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="crosssections" minOccurs="0"/>
+				<xs:element ref="stoppingpowers" minOccurs="0"/>
+				<xs:element ref="energyspreads" minOccurs="0"/>
+				<xs:element ref="PIXE" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here starts crosssections-->
+	<xs:element name="crosssections">
+		<xs:annotation>
+			<xs:documentation>This data group contains all the cross sections for one given simulation, including any override of the default</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="crosssection" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="crosssection">
+		<xs:annotation>
+			<xs:documentation>This data group contains one given cross section for one given simulation, including any override of the default</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="crosssectionframe" type="crosssectionframeType" minOccurs="0"/>
+				<xs:element name="crosssectiontype" type="crosssectiontypeType" minOccurs="0"/>
+				<xs:element name="energyminimum" type="energyvalueType" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="energymaximum" type="energyvalueType" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="reaction" minOccurs="0"/>
+				<xs:choice>
+					<xs:element name="crosssectionoverride" type="crosssectiondefaultType" minOccurs="0"/>
+					<xs:element name="crosssectionfile" type="fileType" minOccurs="0"/>
+					<xs:element name="crosssectiondata" type="simpledatacrosssectionType" minOccurs="0"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="crosssectionframeType">
+		<xs:annotation>
+			<xs:documentation>Defines the frame of reference where the cross section is given</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="cm"/>
+			<xs:enumeration value="lab"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="crosssectiontypeType">
+		<xs:annotation>
+			<xs:documentation>Defines the cross section type (total or differential)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="total"/>
+			<xs:enumeration value="differential"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="screeningType">
+		<xs:annotation>
+			<xs:documentation>Defines whether electron screening is computed</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="none"/>
+			<xs:enumeration value="Andersen"/>
+			<xs:enumeration value="Ecuyer"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="codedatabaseType">
+		<xs:annotation>
+			<xs:documentation>Defines whether a computer code is used to calculate the cross section</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="name" type="xs:string" minOccurs="0"/>
+			<xs:element name="version" type="xs:string" minOccurs="0"/>
+			<xs:element name="builddate" type="dateType" minOccurs="0"/>
+			<xs:element name="releasedate" type="dateType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--here ends crosssections-->
+	<!--here starts stoppingpowers-->
+	<xs:element name="stoppingpowers">
+		<xs:annotation>
+			<xs:documentation>This data group contains all the stopping powers for one given simulation, including any override of the default</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="stoppingpower" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="stoppingpower">
+		<xs:annotation>
+			<xs:documentation>This data group contains one given stopping power for one given simulation, including any override of the default</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="ion" type="xs:string" minOccurs="0"/>
+				<xs:element name="ionchargestate" type="xs:integer" minOccurs="0"/>
+				<xs:choice>
+					<xs:element name="targetelement" type="xs:string" minOccurs="0"/>
+					<xs:element name="targetmolecule" type="xs:string" minOccurs="0"/>
+				</xs:choice>
+				<xs:element name="stoppingmode" type="stoppingmodeType" minOccurs="0"/>
+				<xs:choice>
+					<xs:element name="stoppingpoweroverride" type="stoppingpowerdefaultType" minOccurs="0"/>
+					<xs:element name="stoppingpowerfile" type="fileType" minOccurs="0"/>
+					<xs:element name="stoppingpowerdata" type="simpledatastoppingpowerType" minOccurs="0"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="stoppingmodeType">
+		<xs:annotation>
+			<xs:documentation>Defines whether the given stopping is total, nuclear or electronic</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="total"/>
+			<xs:enumeration value="nuclear"/>
+			<xs:enumeration value="electronic"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--here ends stoppingpowers-->
+	<!--here starts energyspread-->
+	<xs:element name="energyspreads">
+		<xs:annotation>
+			<xs:documentation>This data group contains all the energy spreads for one given simulation, including any override of the default</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element ref="energyspread" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="energyspread">
+		<xs:annotation>
+			<xs:documentation>Defines energy spread options. This group is mainly a series of flags that inform where some effect that affect the energy spread of the beam are included in any calculation. 
+			Actual calculation requires a series of values taken from different places in the file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="ion" type="xs:string" minOccurs="0"/>
+				<xs:element name="ionchargestate" type="xs:integer" minOccurs="0"/>
+				<xs:element name="targetelement" type="xs:string" minOccurs="0"/>
+				<xs:element name="energyspreadmode" type="stoppingmodeType" minOccurs="0"/>
+				<xs:choice>
+					<xs:element name="energyspreadoverride" type="energyspreaddefaultType" minOccurs="0"/>
+					<xs:element name="energyspreadfile" type="fileType" minOccurs="0"/>
+					<xs:element name="energyspreaddata" type="simpledataenergyspreadType" minOccurs="0"/>
+				</xs:choice>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="geometricspread">
+		<xs:annotation>
+			<xs:documentation>Defines geometric spread options</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:element name="beamsize" type="xs:boolean" minOccurs="0"/>
+				<xs:element name="detectoraperture" type="xs:boolean" minOccurs="0"/>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!--here ends energyspread-->
+	<!--here starts PIXE-->
+	<xs:element name="PIXE">
+		<xs:annotation>
+			<xs:documentation>This data group contains all parameters required for PIXE calculations</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="usersnotes"/>
+				<xs:sequence>
+					<xs:element name="PIXEoverride" type="pixedefaultType" minOccurs="0"/>
+					<xs:choice>
+						<xs:element name="totalabsorptioncrosssections" type="totalabsorptioncrosssectionsType" minOccurs="0"/>
+						<xs:element name="massabsorptioncoeffficients" type="massabsorptioncoeffficientsType" minOccurs="0"/>
+					</xs:choice>
+					<xs:element name="fluorescenceyields" type="fluorescenceyieldsType" minOccurs="0"/>
+					<xs:element name="costerkroningyields" type="costerkroningyieldsType" minOccurs="0"/>
+					<xs:element name="branchingratios" type="branchingratiosType" minOccurs="0"/>
+					<xs:choice>
+						<xs:element name="transitionratios" type="transitionratiosType" minOccurs="0"/>
+						<xs:element name="linewidths" type="linewidthsType" minOccurs="0"/>
+					</xs:choice>
+					<xs:element name="photoelectricionizationcrosssections" type="photoelectricionizationcrosssectionsType" minOccurs="0"/>
+					<xs:element name="jumpratios" type="jumpratiosType" minOccurs="0"/>
+				</xs:sequence>
+				<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="totalabsorptioncrosssectionsType">
+		<xs:annotation>
+			<xs:documentation>Total absorption cross sections can be introduced for individual elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="totalabsorptioncrosssection" type="totalabsorptioncrosssectionType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="totalabsorptioncrosssectionType">
+		<xs:annotation>
+			<xs:documentation>Total absorption cross section for one given individual element</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="element" type="xs:NMTOKEN" minOccurs="0"/>
+			<xs:choice>
+				<xs:element name="totalabsorptioncrosssectiondatabase" type="codedatabaseType" minOccurs="0"/>
+				<xs:element name="totalabsorptioncrosssectionfile" type="fileType" minOccurs="0"/>
+				<xs:element name="totalabsorptioncrosssectiondata" type="simpledatacrosssectionType" minOccurs="0"/>
+			</xs:choice>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="massabsorptioncoeffficientsType">
+		<xs:annotation>
+			<xs:documentation>Mass absorption coeffficients can be introduced for individual elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="massabsorptioncoeffficient" type="massabsorptioncoeffficientType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="massabsorptioncoeffficientType">
+		<xs:annotation>
+			<xs:documentation>Mass absorption coeffficients for one given individual element</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="element" type="xs:NMTOKEN" minOccurs="0"/>
+			<xs:choice>
+				<xs:element name="massabsorptioncoeffficientdatabase" type="codedatabaseType" minOccurs="0"/>
+				<xs:element name="massabsorptioncoeffficientfile" type="fileType" minOccurs="0"/>
+				<xs:element name="massabsorptioncoeffficientdata" type="simpledatacrosssectionType" minOccurs="0"/>
+			</xs:choice>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="fluorescenceyieldsType">
+		<xs:annotation>
+			<xs:documentation>Fluorescence yields can be introduced for individual atomic levels of given elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="fluorescenceyield" type="atomicparameter1levelType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="costerkroningyieldsType">
+		<xs:annotation>
+			<xs:documentation>Coster-Kroning_yields can be introduced for individual transitions between two atomic levels of given elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="costerkroningyield" type="atomicparameter2levelType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="branchingratiosType">
+		<xs:annotation>
+			<xs:documentation>Branching_ratios can be introduced for individual transitions between two atomic levels of given elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="branchingratio" type="atomicparameter2levelType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="transitionratiosType">
+		<xs:annotation>
+			<xs:documentation>Transition_ratios can be introduced for individual transitions between two atomic levels of given elements. This is equivalent to linewidths and is given as alternative, one or the other</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="transitionratio" type="atomicparameter2transitionType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="linewidthsType">
+		<xs:annotation>
+			<xs:documentation>Linewidths can be introduced for individual transitions between two atomic levels of given elements.This is equivalent to transitionratios and is given as alternative, one or the othe</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="linewidth" type="atomicparameter2transitionType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="photoelectricionizationcrosssectionsType">
+		<xs:annotation>
+			<xs:documentation> Photoelectric_ionization_cross_sections can be introduced for individual atomic levels of given elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="photoelectricionizationcrosssection" type="atomicparameter1levelType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="jumpratiosType">
+		<xs:annotation>
+			<xs:documentation>Jump_ratios can be introduced for individual transitions between two atomic levels of given elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="jumpratio" type="atomicparameter2levelType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="atomicparameter1levelType">
+		<xs:annotation>
+			<xs:documentation>element, atomic level, and parameter value</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="element" type="xs:NMTOKEN" minOccurs="0"/>
+			<xs:element name="level" type="levelType" minOccurs="0"/>
+			<xs:element name="value" type="adimensionalType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="atomicparameter2levelType">
+		<xs:annotation>
+			<xs:documentation>element, two atomic levels, and parameter value</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="element" type="xs:NMTOKEN" minOccurs="0"/>
+			<xs:element name="level1" type="levelType" minOccurs="0"/>
+			<xs:element name="level2" type="levelType" minOccurs="0"/>
+			<xs:element name="value" type="adimensionalType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="atomicparameter2transitionType">
+		<xs:annotation>
+			<xs:documentation>element, two transitions, and parameter value</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="element" type="xs:NMTOKEN" minOccurs="0"/>
+			<xs:element name="transition1" type="transitionType" minOccurs="0"/>
+			<xs:element name="transition2" type="transitionType" minOccurs="0"/>
+			<xs:element name="value" type="adimensionalType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--here ends PIXE-->
+	<!--here ends physics-->
+	<xs:simpleType name="simulationtypeType">
+		<xs:annotation>
+			<xs:documentation>Defines what type of simulation is given.
+			total: structure of the simulated data is identical to what was specified in the "datamode" group of the "data" group. In principle, the x entries should be exactly the same as given in the "data" group; 
+			and to write them here again is simple redundancy, for the purpose of ease of extracting the simulated data together with the x axes values
+			partialelement: the structure of the simulated data is similar to what was specified in the "datamode" group of the "data" group. 
+			The x and y axes are exactly the same, but the simulation is for scattering off one single target element. This is useful to output in a simple way the calculate partial spectrum of a given element in RBS or ERDA.
+			In principle, the x entries should be exactly the same as given in the "data" group; and to write them here again is simple redundancy, for the purpose of ease of extracting the simulated data together with the x axes values.
+			If a given targetlayer is also specified, then the simulation is for the contribution of the given element in the specified layer only.
+			reaction: This is the fourth way to present a simulation. When simulationtype is "reaction", then one given reaction is simulated and presented. 
+			This becomes quite independent of the structure given in the "data" group, because the quantities can be all different. Suppose an RBS spectrum given in "data" as channel and total yield. 
+			Here, the simulated partial spectrum of one of the elements  is to be presented as energy and elemental yield. Also, this can be used for a pure simulation, even for a complete spectrum; 
+			if in "reaction" only the incidentparticle is given, then all reactions are considered to be included
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="total"/>
+			<xs:enumeration value="partialelement"/>
+			<xs:enumeration value="reaction"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:group name="simulationtypetotal">
+		<xs:annotation>
+			<xs:documentation>structure of the simulated data is identical to what was specified in the "datamode" group of the "data" group. In principle, the x entries should be exactly the same as given in the "data" group; 
+			and to write them here again is simple redundancy, for the purpose of ease of extracting the simulated data together with the x axes values</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:group>
+	<xs:group name="simulationtypepartialelement">
+		<xs:annotation>
+			<xs:documentation>the structure of the simulated data is similar to what was specified in the "datamode" group of the "data" group. 
+			The x and y axes are exactly the same, but the simulation is for scattering off one single target element. This is useful to output in a simple way the calculate partial spectrum of a given element in RBS or ERDA.
+			In principle, the x entries should be exactly the same as given in the "data" group; and to write them here again is simple redundancy, for the purpose of ease of extracting the simulated data together with the x axes values. 
+			partialelementinlayer: if a given targetlayer is also specified, then the simulation is for the contribution of the given element in the specified layer onl</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="initialtargetparticle" type="xs:string"/>
+			<xs:element name="targetlayer" type="xs:integer" minOccurs="0"/>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="simulationtypereaction">
+		<xs:annotation>
+			<xs:documentation>reaction: This is the fourth way to present a simulation. When simulationtype is "reaction", then one given reaction is simulated and presented. 
+			This becomes quite independent of the structure given in the "data" group, because the quantities can be all different. Suppose an RBS spectrum given in "data" as channel and total yield. 
+			Here, the simulated partial spectrum of one of the elements  is to be presented as energy and elemental yield. Also, this can be used for a pure simulation, even for a complete spectrum; 
+			if in "reaction" only the incidentparticle is given, then all reactions are considered to be included</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="reaction" minOccurs="0"/>
+			<xs:element name="datamode" type="datamodeType" minOccurs="0"/>
+			<xs:element name="channelmode" type="channelmodeType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:group>
+	<!--here ends simulations-->
+	<!--here ends process-->
+	<!--here ends sample-->
+	<xs:complexType name="shape2dType">
+		<xs:annotation>
+			<xs:documentation>Defines a 2 dimensional shape</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="shape" type="shape2dtypeType" minOccurs="0"/>
+			<xs:element name="l1" type="thicknessvalueType" minOccurs="0"/>
+			<xs:element name="l2" type="thicknessvalueType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="shape3dType">
+		<xs:annotation>
+			<xs:documentation>Defines a 3 dimensional shape</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="shape" type="shape2dtypeType" minOccurs="0"/>
+			<xs:element name="l1" type="thicknessvalueType" minOccurs="0"/>
+			<xs:element name="l2" type="thicknessvalueType" minOccurs="0"/>
+			<xs:element name="l3" type="thicknessvalueType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="shape2dtypeType">
+		<xs:annotation>
+			<xs:documentation>Defines the type of a 2D shape</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="circular"/>
+			<xs:enumeration value="square"/>
+			<xs:enumeration value="elliptical"/>
+			<xs:enumeration value="rectangular"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="fileType">
+		<xs:annotation>
+			<xs:documentation>Defines a file reference</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="filename" type="xs:string" minOccurs="0"/>
+			<xs:element name="fileformat" type="xs:string" minOccurs="0"/>
+			<xs:element name="filesource" type="xs:string" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axesType">
+		<xs:annotation>
+			<xs:documentation>Contains any number of axes</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axis" type="axisType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisType">
+		<xs:annotation>
+			<xs:documentation>Contains one given axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="xs:string" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simpledataType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of x and y, eventually with error axes as well. Names and units for each axis must be defined</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisType"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axisType"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simpledatadepthconcentrationType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of x and y, eventually with error axes as well. Names and units for each axis must be defined</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisdepthType"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axisconcentrationType"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simpledataefficiencyType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of x and y, eventually with error axes as well. Names and units for each axis must be defined</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisenergyType"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axisefficiencyType"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simpledatacrosssectionType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of x and y, eventually with error axes as well. Names and units for each axis must be defined</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisenergyType"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axiscrosssectionType"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simpledatastoppingpowerType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of x and y, eventually with error axes as well. Names and units for each axis must be defined</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisenergyType"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axisstoppingpowerType"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simpledataenergyspreadType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of x and y, eventually with error axes as well. Names and units for each axis must be defined</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisenergyType"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axisenergyspreadType"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisenergyspreadType">
+		<xs:annotation>
+			<xs:documentation>Contains one given energy spread axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="energyunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisstoppingpowerType">
+		<xs:annotation>
+			<xs:documentation>Contains one given stopping power axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="stoppingpowerunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axiscrosssectionType">
+		<xs:annotation>
+			<xs:documentation>Contains one given cross section axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="crosssectionunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisenergyType">
+		<xs:annotation>
+			<xs:documentation>Contains one given depth axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="energyunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisefficiencyType">
+		<xs:annotation>
+			<xs:documentation>Contains one given depth axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="efficiencyunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisdepthType">
+		<xs:annotation>
+			<xs:documentation>Contains one given depth axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="arealdensityorthicknessunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axisconcentrationType">
+		<xs:annotation>
+			<xs:documentation>Contains one given concentration axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" type="xs:string" minOccurs="0"/>
+			<xs:element name="axisunit" type="concentrationunitsType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="axiserrorType">
+		<xs:annotation>
+			<xs:documentation>Contains one given error axis, with name and unit</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="axisname" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="FWHM"/>
+						<xs:enumeration value="sigma"/>
+						<xs:enumeration value="variance"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="axisunit" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="same"/>
+						<xs:enumeration value="%"/>
+						<xs:enumeration value="fraction"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="complexdataType">
+		<xs:annotation>
+			<xs:documentation>Multidimensional data can be introduced with this data type.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element ref="datadimensions"/>
+			<xs:element name="xaxes" type="axesType"/>
+			<xs:element name="yaxes" type="axesType"/>
+			<xs:element ref="dataentries"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="linedataType">
+		<xs:annotation>
+			<xs:documentation>The data are given as a list of text values for x and numerical values for y. Useful for instance to input or output the yield for a given line.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="lineaxis" type="axisType"/>
+			<xs:element name="yaxis" type="axisType"/>
+			<xs:element name="yerroraxis" type="axisType" minOccurs="0"/>
+			<xs:element name="line" type="tokenlistType"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simplesimulationType">
+		<xs:annotation>
+			<xs:documentation>Similar to simpledataType, but the axis do not necessarily need to be given, since they may match what is in data. Nevertheless, they can be given if desired.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xaxis" type="axisType" minOccurs="0"/>
+			<xs:element name="xerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="yaxis" type="axisType" minOccurs="0"/>
+			<xs:element name="yerroraxis" type="axiserrorType" minOccurs="0"/>
+			<xs:element name="x" type="floatordoublelistType"/>
+			<xs:element name="xerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:element name="y" type="floatordoublelistType"/>
+			<xs:element name="yerror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="complexsimulationType">
+		<xs:annotation>
+			<xs:documentation>Similar to complexdataType, but the axis do not necessarily need to be given, since they may match what is in data. Nevertheless, they can be given if desired.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element ref="datadimensions" minOccurs="0"/>
+			<xs:element name="xaxes" type="axesType" minOccurs="0"/>
+			<xs:element name="yaxes" type="axesType" minOccurs="0"/>
+			<xs:element ref="dataentries"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="linesimulationType">
+		<xs:annotation>
+			<xs:documentation>Similar to linedataType</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="usersnotes"/>
+			<xs:element name="xraylineaxis" type="axisType" minOccurs="0"/>
+			<xs:element name="yieldaxis" type="axisType" minOccurs="0"/>
+			<xs:element name="yielderroraxis" type="axisType" minOccurs="0"/>
+			<xs:element name="xrayline" type="tokenlistType"/>
+			<xs:element name="yield" type="floatordoublelistType"/>
+			<xs:element name="yielderror" type="floatordoublelistType" minOccurs="0"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:group name="usersnotes">
+		<xs:annotation>
+			<xs:documentation>Groups the users and notes elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="users" type="usersType" minOccurs="0"/>
+			<xs:element name="notes" type="notesType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:group>
+	<xs:complexType name="usersType">
+		<xs:annotation>
+			<xs:documentation>To introduce information on users. every single group of tags can start with the group “users”, where information on e.g. sample owner, experimentalist, data analyst can be given. Any number of tags “user” can be given.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="user" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="notesType">
+		<xs:annotation>
+			<xs:documentation>To introduce any other text information. every single group of tags can have the group “notes” just after the group “users”, where any information or comments can be given. Any number of tags “note” can be given.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="note" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:attributeGroup name="id">
+		<xs:annotation>
+			<xs:documentation>the id attribute to identify a given data group in the repository</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="id" type="xs:string" use="optional" form="unqualified"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="ref">
+		<xs:annotation>
+			<xs:documentation>the ref attribute to refer to a given data group in the repository</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="ref" type="xs:string" use="optional" form="unqualified"/>
+	</xs:attributeGroup>
+</xs:schema>

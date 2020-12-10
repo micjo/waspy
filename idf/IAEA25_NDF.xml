@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<idf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://idf.schemas.itn.pt" xmlns:ndf="http://ndf.schemas.itn.pt" xsi:schemaLocation="http://idf.schemas.itn.pt http://idf.schemas.itn.pt\idfv1.xsd http://ndf.schemas.itn.pt http://idf.schemas.itn.pt\ndfv0.xsd">
+  <users>
+		<user>maker of file: Nuno Pessoa Barradas</user>
+	</users>
+	<notes>
+		<note>This is calculation 25 of the IAEA intercomparison of IBA software as made by NDF version v9.2m build 26Jul09</note>
+		<note>sample: 20 nm Au / 200 nm SiO2 / Si  Natural isotopic distribution, densities:Si 4.978e22/cc, Au 5.905e22/cc SiO2: 6.600 E22 atoms/cc</note>
+		<note>This is grazing angle RBS, ideal sample, with all broadening options including multiple scattering, and including double scattering</note>
+		<note>This file adheres to the IBA Interchange Format IIF version 1</note>
+		<note>Creation date 12 August 2009</note>
+		<note>Revision date 13 August 2009</note>
+		<note>Revision date 02 September 2009</note>
+		<note>Revision date 07 October 2009</note>
+	</notes>
+	<attributes>
+		<idfversion>idf v1.0</idfversion>
+		<filename>IAEA25_NDF.xml</filename>
+	</attributes>
+	<sample>
+		<users>
+			<user>IAEA group of Experts for the IAEA intercomparison of IBA software</user>
+		</users>
+		<notes>
+			<note>There is no sample involved, this is a pure simulation</note>
+		</notes>
+		<description>This is calculation 25 of the IAEA intercomparison of IBA software as made by NDF version v9.2m build 26Jul09</description>
+        <!--<elementsandmolecules>-->
+            <!--<elements>-->
+                <!--<nelements>3</nelements>-->
+                <!--<element>-->
+                    <!--<name>Au</name>-->
+                <!--</element>-->
+                <!--<element>-->
+                    <!--<name>Si</name>-->
+                <!--</element>-->
+                <!--<element>-->
+                    <!--<name>O</name>-->
+                <!--</element>-->
+            <!--</elements>-->
+			<!-- <molecules>
+				<nmolecules>3</nmolecules>
+				<molecule>
+					<name>Au</name>
+				</molecule>
+				<molecule>
+					<name>Si</name>
+				</molecule>
+				<molecule>
+					<name>Si 1 O 2</name>
+					<density units="1e22at/cm3">6.6e0</density>
+				</molecule>
+			</molecules> -->
+        <!--</elementsandmolecules>-->
+		<structure>
+			<notes>
+				<note>Defined by the IAEA group of Experts for the IAEA intercomparison of IBA software</note>
+			</notes>
+			<layeredstructure>
+				<nlayers>3</nlayers>
+				<layers>
+					<layer>
+						<layerthickness units="1e15at/cm2">118</layerthickness>
+						<layeruniformity units="1e15at/cm2" mode="FWHM">0</layeruniformity>
+						<layerelements>
+							<layerelement>
+								<name>Au</name>
+								<concentration units="fraction">1</concentration>
+							</layerelement>
+						</layerelements>
+					</layer>
+					<layer>
+						<layerthickness units="1e15at/cm2">1320</layerthickness>
+						<layerdensity units="1e22at/cm3">6.6</layerdensity>
+						<layerelements>
+							<layerelement>
+								<name>Si</name>
+								<concentration units="fraction">0.3333333</concentration>
+							</layerelement>
+							<layerelement>
+								<name>O</name>
+								<concentration units="fraction">0.6666667</concentration>
+							</layerelement>
+						</layerelements>
+					</layer>
+					<layer>
+						<layerthickness units="1e15at/cm2">30000</layerthickness>
+						<layerelements>
+							<layerelement>
+								<name>Si</name>
+								<concentration units="fraction">1</concentration>
+							</layerelement>
+						</layerelements>
+					</layer>
+				</layers>
+			</layeredstructure>
+		</structure>
+		<spectra>
+			<spectrum>
+				<notes>
+					<note>pure simulation</note>
+				</notes>
+				<!--<beam>-->
+					<!--<beamparticle>4He</beamparticle>-->
+					<!--<beamZ>2</beamZ>-->
+					<!--<beammass units="amu">4.0</beammass>-->
+					<!--<beamenergy units="keV">1000.</beamenergy>-->
+					<!--<beamenergyspread mode="FWHM" units="keV">1.</beamenergyspread>-->
+					<!--<beamfluence units="uC">10</beamfluence>-->
+					<!--<beamangularspread units="degree" mode="sigma">0.05</beamangularspread>-->
+				<!--</beam>-->
+				<!--<geometry>-->
+					<!--<geometrytype>Cornell</geometrytype>-->
+					<!--<incidenceangle units="degree">80</incidenceangle>-->
+					<!--<scatteringangle units="degree">170</scatteringangle>-->
+					<!--<exitangle units="degree">80.153</exitangle>-->
+				<!--</geometry>-->
+				<!--<detection>-->
+					<!--<detector>-->
+						<!--<detectortype>SSB</detectortype>-->
+						<!--<solidangle units="msr">1</solidangle>-->
+						<!--<detectorshape>-->
+							<!--<shape>circular</shape>-->
+							<!--<l1 units="mm">1</l1>-->
+						<!--</detectorshape>-->
+					<!--</detector>-->
+				<!--</detection>-->
+				<calibrations>
+					<!--<detectorresolutions>-->
+						<!--<detectorresolution>-->
+							<!--<resolutionion>4He</resolutionion>-->
+							<!--<resolutionparameters>-->
+								<!--<resolutionparameter mode="FWHM" units="keV">16</resolutionparameter>-->
+							<!--</resolutionparameters>-->
+						<!--</detectorresolution>-->
+					<!--</detectorresolutions>-->
+					<!--<energycalibrations>-->
+						<!--<energycalibration>-->
+							<!--<calibrationmode>energy</calibrationmode>-->
+							<!--<calibrationparameters>-->
+								<!--<calibrationparameter units="keV">0.</calibrationparameter>-->
+								<!--<calibrationparameter units="keV/channel">3.</calibrationparameter>-->
+							<!--</calibrationparameters>-->
+						<!--</energycalibration>-->
+					<!--</energycalibrations>-->
+				</calibrations>
+				<reactions>
+					<technique>RBS</technique>
+				</reactions>
+				<process>
+					<physicsdefaults>
+						<crosssectiondefault>
+							<Rutherford>true</Rutherford>
+							<screening>none</screening>
+						</crosssectiondefault>
+						<stoppingpowerdefault>
+							<computercode>
+								<name>SRIM</name>
+								<version>SRIM-2008.03</version>
+							</computercode>
+						</stoppingpowerdefault>
+						<energyspreaddefault>
+							<energylossstraggling>Chu</energylossstraggling>
+							<multiplescattering>true</multiplescattering>
+							<Dopplereffect>false</Dopplereffect>
+							<beamangularspread>true</beamangularspread>
+							<geometricspread>
+								<beamsize>true</beamsize>
+								<detectoraperture>true</detectoraperture>
+							</geometricspread>
+							<Tschalareffect>true</Tschalareffect>
+						</energyspreaddefault>
+					</physicsdefaults>
+					<simulations>
+						<simulation>
+							<simulationtype>reaction</simulationtype>
+							<reaction>
+								<incidentparticle>4He</incidentparticle>
+							</reaction>
+							<datamode>simple</datamode>
+							<simpledata>
+								<xaxis>
+									<axisname>channel</axisname>
+									<axisunit>#</axisunit>
+								</xaxis>
+								<yaxis>
+									<axisname>yield</axisname>
+									<axisunit>counts</axisunit>
+								</yaxis>
+								<x>   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16
+  17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32
+  33   34   35   36   37   38   39   40   41   42   43   44   45   46   47   48
+  49   50   51   52   53   54   55   56   57   58   59   60   61   62   63   64
+  65   66   67   68   69   70   71   72   73   74   75   76   77   78   79   80
+  81   82   83   84   85   86   87   88   89   90   91   92   93   94   95   96
+  97   98   99  100  101  102  103  104  105  106  107  108  109  110  111  112
+ 113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128
+ 129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144
+ 145  146  147  148  149  150  151  152  153  154  155  156  157  158  159  160
+ 161  162  163  164  165  166  167  168  169  170  171  172  173  174  175  176
+ 177  178  179  180  181  182  183  184  185  186  187  188  189  190  191  192
+ 193  194  195  196  197  198  199  200  201  202  203  204  205  206  207  208
+ 209  210  211  212  213  214  215  216  217  218  219  220  221  222  223  224
+ 225  226  227  228  229  230  231  232  233  234  235  236  237  238  239  240
+ 241  242  243  244  245  246  247  248  249  250  251  252  253  254  255  256
+ 257  258  259  260  261  262  263  264  265  266  267  268  269  270  271  272
+ 273  274  275  276  277  278  279  280  281  282  283  284  285  286  287  288
+ 289  290  291  292  293  294  295  296  297  298  299  300  301  302  303  304
+ 305  306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
+ 321  322  323  324  325  326  327  328  329  330  331  332  333  334  335  336
+ 337  338  339  340  341  342  343  344  345  346  347  348  349  350  351  352
+ 353  354  355  356  357  358  359  360  361  362  363  364  365  366  367  368
+ 369  370  371  372  373  374  375  376  377  378  379  380  381  382  383  384
+ 385  386  387  388  389  390  391  392  393  394  395  396  397  398  399  400
+ 401  402  403  404  405  406  407  408  409  410  411  412  413  414  415  416
+ 417  418  419  420  421  422  423  424  425  426  427  428  429  430  431  432
+ 433  434  435  436  437  438  439  440  441  442  443  444  445  446  447  448
+ 449  450  451  452  453  454  455  456  457  458  459  460  461  462  463  464
+ 465  466  467  468  469  470  471  472  473  474  475  476  477  478  479  480
+ 481  482  483  484  485  486  487  488  489  490  491  492  493  494  495  496
+ 497  498  499  500  501  502  503  504  505  506  507  508  509  510  511  512</x>
+								<y>.19623E+06 .22508E+06 .25360E+06 .28067E+06 .30516E+06 .32601E+06 .34231E+06 .35339E+06 .35886E+06 .35865E+06 .35298E+06 .34237E+06 .32754E+06 .30937E+06 .28881E+06 .26680E+06
+.24422E+06 .22184E+06 .20028E+06 .17999E+06 .16129E+06 .14435E+06 .12921E+06 .11583E+06 .10411E+06 .93909E+05 .85058E+05 .77389E+05 .70740E+05 .64961E+05 .59919E+05 .55499E+05
+.51605E+05 .48154E+05 .45080E+05 .42328E+05 .39851E+05 .37611E+05 .35578E+05 .33724E+05 .32029E+05 .30472E+05 .29038E+05 .27712E+05 .26483E+05 .25339E+05 .24272E+05 .23275E+05
+.22339E+05 .21461E+05 .20634E+05 .19855E+05 .19120E+05 .18425E+05 .17767E+05 .17144E+05 .16553E+05 .15992E+05 .15458E+05 .14951E+05 .14468E+05 .14008E+05 .13570E+05 .13151E+05
+.12753E+05 .12372E+05 .12008E+05 .11662E+05 .11331E+05 .11015E+05 .10715E+05 .10428E+05 .10155E+05 .98946E+04 .96466E+04 .94101E+04 .91841E+04 .89677E+04 .87599E+04 .85596E+04
+.83659E+04 .81776E+04 .79939E+04 .78139E+04 .76369E+04 .74623E+04 .72897E+04 .71191E+04 .69504E+04 .67839E+04 .66201E+04 .64595E+04 .63027E+04 .61507E+04 .60040E+04 .58633E+04
+.57294E+04 .56025E+04 .54829E+04 .53708E+04 .52661E+04 .51685E+04 .50778E+04 .49934E+04 .49148E+04 .48414E+04 .47728E+04 .47082E+04 .46472E+04 .45891E+04 .45336E+04 .44801E+04
+.44282E+04 .43776E+04 .43279E+04 .42789E+04 .42302E+04 .41819E+04 .41336E+04 .40855E+04 .40374E+04 .39895E+04 .39417E+04 .38943E+04 .38473E+04 .38009E+04 .37552E+04 .37104E+04
+.36665E+04 .36235E+04 .35814E+04 .35399E+04 .34989E+04 .34578E+04 .34163E+04 .33738E+04 .33297E+04 .32832E+04 .32337E+04 .31805E+04 .31231E+04 .30611E+04 .29942E+04 .29226E+04
+.28466E+04 .27670E+04 .26846E+04 .26008E+04 .25170E+04 .24346E+04 .23550E+04 .22797E+04 .22096E+04 .21457E+04 .20885E+04 .20381E+04 .19946E+04 .19576E+04 .19266E+04 .19011E+04
+.18803E+04 .18637E+04 .18504E+04 .18400E+04 .18318E+04 .18253E+04 .18202E+04 .18161E+04 .18125E+04 .18093E+04 .18063E+04 .18032E+04 .18000E+04 .17967E+04 .17932E+04 .17897E+04
+.17862E+04 .17829E+04 .17798E+04 .17770E+04 .17747E+04 .17728E+04 .17714E+04 .17704E+04 .17698E+04 .17698E+04 .17702E+04 .17711E+04 .17727E+04 .17749E+04 .17777E+04 .17814E+04
+.17858E+04 .17911E+04 .17973E+04 .18042E+04 .18120E+04 .18204E+04 .18295E+04 .18391E+04 .18492E+04 .18597E+04 .18705E+04 .18816E+04 .18931E+04 .19048E+04 .19170E+04 .19296E+04
+.19428E+04 .19565E+04 .19707E+04 .19856E+04 .20010E+04 .20170E+04 .20337E+04 .20513E+04 .20698E+04 .20895E+04 .21105E+04 .21328E+04 .21565E+04 .21812E+04 .22068E+04 .22330E+04
+.22593E+04 .22854E+04 .23110E+04 .23358E+04 .23595E+04 .23823E+04 .24043E+04 .24256E+04 .24472E+04 .24701E+04 .24961E+04 .25282E+04 .25705E+04 .26290E+04 .27117E+04 .28293E+04
+.29954E+04 .32261E+04 .35402E+04 .39583E+04 .45017E+04 .51906E+04 .60423E+04 .70691E+04 .82763E+04 .96600E+04 .11207E+05 .12892E+05 .14684E+05 .16540E+05 .18416E+05 .20263E+05
+.22037E+05 .23696E+05 .25208E+05 .26548E+05 .27702E+05 .28666E+05 .29444E+05 .30049E+05 .30496E+05 .30805E+05 .30998E+05 .31096E+05 .31119E+05 .31084E+05 .31007E+05 .30898E+05
+.30769E+05 .30625E+05 .30472E+05 .30313E+05 .30153E+05 .29990E+05 .29827E+05 .29663E+05 .29497E+05 .29329E+05 .29157E+05 .28981E+05 .28799E+05 .28612E+05 .28420E+05 .28228E+05
+.28043E+05 .27870E+05 .27712E+05 .27572E+05 .27447E+05 .27334E+05 .27227E+05 .27119E+05 .27006E+05 .26886E+05 .26760E+05 .26626E+05 .26468E+05 .26246E+05 .25853E+05 .25081E+05
+.23618E+05 .21163E+05 .17638E+05 .13371E+05 .90377E+04 .53607E+04 .27563E+04 .12181E+04 .46066E+03 .14941E+03 .42265E+02 .10983E+02 .29568E+01 .95937E+00 .38284E+00 .16478E+00
+.73045E-01 .30649E-01 .12150E-01 .45400E-02 .15948E-02 .51971E-03 .14962E-03 .30192E-04 .13752E-05 .78768E-07 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00
+.00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00 .00000E+00</y>
+							</simpledata>
+						</simulation>
+					</simulations>
+					<!--<ndf:straggling>-->
+						<!--<ndf:stragglingdefault>-->
+							<!--<ndf:stragglingfactor units="none">1.</ndf:stragglingfactor>-->
+							<!--<ndf:stragglingoffset units="keV">0.</ndf:stragglingoffset>-->
+							<!--<ndf:stragglingmodel>-->
+								<!--<ndf:code>wdepth</ndf:code>-->
+								<!--<ndf:wdepthparameters>-->
+									<!--<ndf:wdepthfile>26.dpt</ndf:wdepthfile>-->
+									<!--<ndf:wdepthenergylevel units="none">0</ndf:wdepthenergylevel>-->
+								<!--</ndf:wdepthparameters>-->
+							<!--</ndf:stragglingmodel>-->
+						<!--</ndf:stragglingdefault>-->
+					<!--</ndf:straggling>-->
+					<!--<ndf:doublescattering>normal</ndf:doublescattering>-->
+				</process>
+			</spectrum>
+		</spectra>
+	</sample>
+</idf>
