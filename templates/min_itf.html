@@ -3,103 +3,62 @@
 {% block title %}Welcome{% endblock %}
 
 {% block content %}
+<h1>Motor Control</h1>
+<hr>
 
-
-<div class="row">
-    <div class="col">
-        
-        <h3>AML x_y </h3> 
-        <hr>
-        <div class="container"><label>13:44.12</label> </div>
-        <form method="POST">
-            <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>           
-            <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
-        </form>
-        <div class="input">
-            <button type="button" class="btn btn-primary padded">submit</button>
-            <button type="button" class="btn btn-primary padded">load/unload</button>
-            <button type="button" class="btn btn-primary padded">exit</button>
-        </div>
-        
-    </div>
-    <div class="col">
-        
-        <h3>AML det01_theta </h3> 
-        <hr>
-        <div class="container"><label>13:44.12</label> </div>
-        <form method="POST">
-            <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>           
-            <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
-        </form>
-        <div class="input">
-            <button type="button" class="btn btn-primary padded">submit</button>
-            <button type="button" class="btn btn-primary padded">load/unload</button>
-            <button type="button" class="btn btn-primary padded">exit</button>
-        </div>
-        
-    </div>
-    <div class="col">
-        <h3>AML phi_zeta </h3> 
-        <hr>
-        <div class="container"><label>13:44.12</label> </div>
-        <form method="POST">
-            <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>           
-            <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
-        </form>
-        <div class="input">
-            <button type="button" class="btn btn-primary padded">submit</button>
-            <button type="button" class="btn btn-primary padded">load/unload</button>
-            <button type="button" class="btn btn-primary padded">exit</button>
-        </div>
-    </div>
+<h5>AML x_y </h5>
+<hr>
+<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+    <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>
+    <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
+</form>
+<div class="input text-right">
+    <button type="button" class="btn btn-primary padded">submit</button>
+    <button type="button" class="btn btn-primary padded">load</button>
+    <button type="button" class="btn btn-primary padded">unload</button>
+    <button type="button" class="btn btn-primary padded">advanced</button>
 </div>
 
-<div class="row">
-    <div class="col">
-        
-        <h3>CAEN </h3> 
-        <hr>
-        <div class="container"><label>13:44.12</label> </div>
-        <form method="POST">
-            <div class="min-container"><label>... </label> <input type="text" id="set_m1_position"></div>           
-            <div class="min-container"><label>... </label> <input type="text" id="set_m2_position"> </div>
-        </form>
-        <div class="input">
-            <button type="button" class="btn btn-primary padded">submit</button>
-            <button type="button" class="btn btn-primary padded">load/unload</button>
-            <button type="button" class="btn btn-primary padded">exit</button>
-        </div>
-        
-    </div>
-    <div class="col">
-        
-        <h3>CANBERRA </h3> 
-        <hr>
-        <div class="container"><label>13:44.12</label> </div>
-        <form method="POST">
-            <div class="min-container"><label>...</label> <input type="text" id="set_m1_position"></div>           
-            <div class="min-container"><label>...</label> <input type="text" id="set_m2_position"> </div>
-        </form>
-        <div class="input">
-            <button type="button" class="btn btn-primary padded">submit</button>
-            <button type="button" class="btn btn-primary padded">load/unload</button>
-            <button type="button" class="btn btn-primary padded">exit</button>
-        </div>
-        
-    </div>
-    <div class="col">
-        <h3>MOTRONA </h3> 
-        <hr>
-        <div class="container"><label>13:44.12</label> </div>
-        <form method="POST">
-            <div class="min-container"><label>... </label> <input type="text" id="set_m1_position"></div>           
-            <div class="min-container"><label>... </label> <input type="text" id="set_m2_position"> </div>
-        </form>
-        <div class="input">
-            <button type="button" class="btn btn-primary padded">submit</button>
-            <button type="button" class="btn btn-primary padded">load/unload</button>
-            <button type="button" class="btn btn-primary padded">exit</button>
-        </div>
-    </div>
+<h5>AML det01_theta </h5>
+<hr>
+<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+    <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>
+    <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
+</form>
+<div class="input text-right">
+    <button type="button" class="btn btn-primary padded">submit</button>
+    <button type="button" class="btn btn-primary padded">load</button>
+    <button type="button" class="btn btn-primary padded">unload</button>
+    <button type="button" class="btn btn-primary padded">advanced</button>
 </div>
+
+<h5>AML phi_zeta </h5>
+<hr>
+<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+    <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>
+    <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
+</form>
+<div class="input text-right">
+    <button type="button" class="btn btn-primary padded">submit</button>
+    <button type="button" class="btn btn-primary padded">load</button>
+    <button type="button" class="btn btn-primary padded">unload</button>
+    <button type="button" class="btn btn-primary padded">advanced</button>
+</div>
+
+<h1>Data Acquisition</h1>
+<h5>CAEN</h5>
+<hr>
+<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+<div class="min-container"><label>histogram_id</label> <input type="text" id="set_m1_position"></div>
+<div class="min-container"><label>list_data_id</label> <input type="text" id="set_m1_position"></div>
+</form>
+<div class="input text-right">
+    <button type="button" class="btn btn-primary padded">Start Acquisition</button>
+    <button type="button" class="btn btn-primary padded">Stop Acquisition</button>
+    <button type="button" class="btn btn-primary padded">Clear Data</button>
+    <button type="button" class="btn btn-primary padded">Record List Data</button>
+    <button type="button" class="btn btn-primary padded">Save Histogram</button>
+</div>
+
+
 {% endblock %}
