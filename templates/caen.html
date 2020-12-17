@@ -12,9 +12,6 @@
     </div>
     <div id="actuals">
     </div>
-
-
-
   </div>
   <div class="column" style="background-color:paleturquoise;">
     <h2>Engine</h2>
@@ -35,7 +32,6 @@
     <button type="button" class="btn btn-primary" onclick="updateChannels()">Refresh</button>
     </div>
   </div>
-    <div class="padded-top"><label id="status"> status</label></div>
   </div>
 </div>
 
@@ -58,6 +54,9 @@ Chart.defaults.global.responsive = false;
 Chart.defaults.global.scaleLineColor = "black";
 Chart.defaults.global.scaleFontSize = 16;
 
+//let host = 'http://DESKTOP-GL7PJ05:22123'
+let host = 'http://ubuntu-desktop:22123'
+// let host = 'http://192.168.1.12:22123'
 
 let x_coordinates = [];
 let y_coordinates = [];
@@ -97,7 +96,7 @@ let lineChart = new Chart(ctx, {
 
 function sendEngine(textBody)
 {
-  fetch('http://DESKTOP-GL7PJ05:22123/engine', {
+  fetch(host + '/engine', {
     method: 'POST',
     headers: {
       'Content-Type': 'text/plain',
@@ -196,7 +195,7 @@ function updateGraph()
   updateEnable = document.getElementById("update_chart").checked;
 
   if (selectedChannel && updateEnable) {
-    fetch("http://192.168.178.29:22123/liveData_" +selectedChannel)
+    fetch(host + "/liveData_" +selectedChannel)
     .then(response => response.text())
     .then(drawGraph)
     .catch(error => {
@@ -208,7 +207,7 @@ function updateGraph()
 
 function updateChannelActivity()
 {
-  fetch("http://192.168.178.29:22123/actuals")
+  fetch(host + "/actuals")
     .then(response => response.json())
     .then(drawSpinners)
     .catch(error => {
@@ -297,7 +296,7 @@ function nrOfChannelsChanged(result)
 
 function updateChannels()
 {
-  fetch("http://192.168.178.29:22123/actuals")
+  fetch(host + "/actuals")
     .then(response => response.json())
     .then(nrOfChannelsChanged)
     .catch(error => {

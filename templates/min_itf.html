@@ -5,59 +5,59 @@
 {% block content %}
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
-    <h5><span class="badge badge-danger">Not connected</span></h5>
+    <h5><span class="badge badge-danger" id="aml_xy_con">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-    <div class="min-container"><label>X: 100 </label> <input type="text" id="set_m1_position" placeholder="X position"></div>
-    <div class="min-container"><label>Y: 15.00 </label> <input type="text" id="set_m2_position" placeholder="Y Position":> </div>
+<div class="min-container"><label>X: 100 </label> <input type="text" id="aml_x" placeholder="X"></div>
+<div class="min-container"><label>Y: 15.00 </label> <input type="text" id="aml_y" placeholder="Y":> </div>
 </form>
 <div class="input text-right">
-    <button type="button" class="btn btn-primary padded">submit</button>
-    <button type="button" class="btn btn-primary padded">load</button>
-    <button type="button" class="btn btn-primary padded">unload</button>
-    <button type="button" class="btn btn-primary padded">advanced</button>
+    <button type="button" class="btn btn-primary padded">Submit</button>
+    <button type="button" class="btn btn-primary padded">Load</button>
+    <button type="button" class="btn btn-primary padded">Unload</button>
+    <button type="button" class="btn btn-primary padded">Advanced</button>
 </div>
 
 <hr>
-<div class="left-to-right"><h5>AML det01_theta  </h5>
-    <h5><span class="badge badge-success">Connected</span></h5>
+<div class="left-to-right"><h5>AML det theta </h5>
+    <h5><span class="badge badge-danger" id="aml_det_theta_con">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-    <div class="min-container"><label>det: 100 </label> <input type="text" id="set_m1_position"></div>
-    <div class="min-container"><label>theta: 15.00 </label> <input type="text" id="set_m2_position"> </div>
+<div class="min-container"><label>det: 100 </label> <input type="text" id="aml_det" placeholder="det"></div>
+<div class="min-container"><label>theta: 15.00 </label> <input type="text" id="aml_theta" placeholder="theta"> </div>
 </form>
 <div class="input text-right">
-    <button type="button" class="btn btn-primary padded">submit</button>
-    <button type="button" class="btn btn-primary padded">load</button>
-    <button type="button" class="btn btn-primary padded">unload</button>
-    <button type="button" class="btn btn-primary padded">advanced</button>
+    <button type="button" class="btn btn-primary padded">Submit</button>
+    <button type="button" class="btn btn-primary padded">Load</button>
+    <button type="button" class="btn btn-primary padded">Unload</button>
+    <button type="button" class="btn btn-primary padded">Advanced</button>
 </div>
 
 <hr>
 <div class="left-to-right"><h5>AML phi_zeta  </h5>
-    <h5><span class="badge badge-success">Connected</span></h5>
+    <h5><span class="badge badge-danger" id="aml_phi_zeta_con">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-    <div class="min-container"><label>phi: 100 </label> <input type="text" id="set_m1_position"></div>
-    <div class="min-container"><label>zeta: 15.00 </label> <input type="text" id="set_m2_position"> </div>
+<div class="min-container"><label>phi: 100 </label> <input type="text" id="aml_phi" placeholder="phi"></div>
+<div class="min-container"><label>zeta: 15.00 </label> <input type="text" id="aml_zheta" placeholder="zeta"> </div>
 </form>
 <div class="input text-right">
-    <button type="button" class="btn btn-primary padded">submit</button>
-    <button type="button" class="btn btn-primary padded">load</button>
-    <button type="button" class="btn btn-primary padded">unload</button>
-    <button type="button" class="btn btn-primary padded">advanced</button>
+    <button type="button" class="btn btn-primary padded">Submit</button>
+    <button type="button" class="btn btn-primary padded">Load</button>
+    <button type="button" class="btn btn-primary padded">Unload</button>
+    <button type="button" class="btn btn-primary padded">Advanced</button>
 </div>
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
-    <h5><span class="badge badge-success">Connected</span></h5>
+    <h5><span class="badge badge-danger" id="caen_con">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="min-container"><label>Histogram Name</label> <input type="text" id="set_m1_position"></div>
-<div class="min-container"><label>List Data Name</label> <input type="text" id="set_m1_position"></div>
+<div class="min-container"><label>Histogram Name</label> <input type="text" id="caen_hist_id" placeholder="histogram id"></div>
+<div class="min-container"><label>List Data Name</label> <input type="text" id="caen_list_id" placeholder="list data id"></div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">Start Acquisition</button>
