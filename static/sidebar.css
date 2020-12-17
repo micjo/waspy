@@ -147,11 +147,10 @@
   padding: 2%;
 }
 
-
 .min-container {
   width: 100%;
   display: flex;
-  padding-bottom:1%;
+  padding-bottom:0.5%;
   flex-direction: row; 
   justify-content: space-between; 
   align-items: center;
