@@ -3,14 +3,14 @@
 {% block title %}Welcome{% endblock %}
 
 {% block content %}
-<h1>Motor Control</h1>
 <hr>
-
-<h5>AML x_y </h5>
+<div class="left-to-right"><h5>AML x_y  </h5>
+    <h5><span class="badge badge-danger">Not connected</span></h5>
+</div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-    <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>
-    <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
+    <div class="min-container"><label>X: 100 </label> <input type="text" id="set_m1_position" placeholder="X position"></div>
+    <div class="min-container"><label>Y: 15.00 </label> <input type="text" id="set_m2_position" placeholder="Y Position":> </div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">submit</button>
@@ -19,11 +19,14 @@
     <button type="button" class="btn btn-primary padded">advanced</button>
 </div>
 
-<h5>AML det01_theta </h5>
+<hr>
+<div class="left-to-right"><h5>AML det01_theta  </h5>
+    <h5><span class="badge badge-success">Connected</span></h5>
+</div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-    <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>
-    <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
+    <div class="min-container"><label>det: 100 </label> <input type="text" id="set_m1_position"></div>
+    <div class="min-container"><label>theta: 15.00 </label> <input type="text" id="set_m2_position"> </div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">submit</button>
@@ -32,11 +35,14 @@
     <button type="button" class="btn btn-primary padded">advanced</button>
 </div>
 
-<h5>AML phi_zeta </h5>
+<hr>
+<div class="left-to-right"><h5>AML phi_zeta  </h5>
+    <h5><span class="badge badge-success">Connected</span></h5>
+</div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-    <div class="min-container"><label>100 </label> <input type="text" id="set_m1_position"></div>
-    <div class="min-container"><label>15.00 </label> <input type="text" id="set_m2_position"> </div>
+    <div class="min-container"><label>phi: 100 </label> <input type="text" id="set_m1_position"></div>
+    <div class="min-container"><label>zeta: 15.00 </label> <input type="text" id="set_m2_position"> </div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">submit</button>
@@ -44,13 +50,14 @@
     <button type="button" class="btn btn-primary padded">unload</button>
     <button type="button" class="btn btn-primary padded">advanced</button>
 </div>
-
-<h1>Data Acquisition</h1>
-<h5>CAEN</h5>
+<hr>
+<div class="left-to-right"><h5>CAEN </h5>
+    <h5><span class="badge badge-success">Connected</span></h5>
+</div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="min-container"><label>histogram_id</label> <input type="text" id="set_m1_position"></div>
-<div class="min-container"><label>list_data_id</label> <input type="text" id="set_m1_position"></div>
+<div class="min-container"><label>Histogram Name</label> <input type="text" id="set_m1_position"></div>
+<div class="min-container"><label>List Data Name</label> <input type="text" id="set_m1_position"></div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">Start Acquisition</button>
@@ -58,7 +65,8 @@
     <button type="button" class="btn btn-primary padded">Clear Data</button>
     <button type="button" class="btn btn-primary padded">Record List Data</button>
     <button type="button" class="btn btn-primary padded">Save Histogram</button>
+    <button type="button" class="btn btn-primary padded">Advanced</button>
 </div>
 
-
+<script type="module" src={{url_for('static', filename='min_itf.js')}}></script>
 {% endblock %}
