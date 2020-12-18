@@ -1,5 +1,6 @@
 import * as con from './daemon_connection.js'
 
+export {onSubmitAmlXy}
 
 function setConnected(id, connected) {
     if (connected) {
@@ -14,6 +15,7 @@ function setConnected(id, connected) {
 }
 
 function updateConnection(url, id) {
+    console.log("update connection: " + url);
     fetch(url).then(response => {
         console.log(response);
         setConnected(id, response.ok);
@@ -24,13 +26,41 @@ function updateConnection(url, id) {
     });
 }
 
-function refreshData() {
-    updateConnection(con.aml_xy_act, "aml_xy_con");
-    updateConnection(con.aml_det_act, "aml_det_theta_con");
-    updateConnection(con.aml_phi_act, "aml_phi_zeta_con");
-    updateConnection(con.caen_host_1_act, "caen_con");
+function onSubmitAmlXy() {
+    console.log("submit aml xy");
+    let x_pos = document.getElementById("aml_x").value;
+    let y_pos = document.getElementById("aml_y").value;
+    console.log(x_pos);
+    console.log(y_pos);
+
+    let request = con.getUniqueIdentifier();
+    if (x_pos && y_pos) {
+        request += "set_m1_target_position=" + x_pos + "\n";
+        request += "set_m2_target_position=" + y_pos + "\n";
+        con.sendRequest(con.aml_xy_request, request);
+    }
+    else if (x_pos) {
+        request += "set_m1_target_position=" + x_pos + "\n";
+        con.sendRequest(con.aml_xy_request, request);
+    }
+    else if (y_pos) {
+        request += "set_m2_target_position=" + y_pos + "\n";
+        con.sendRequest(con.aml_xy_request, request);
+    }
+    else {
+        con.collapsableError("#collapseExample", "No input provided");
+    }
 }
+
+function refreshData() {
+    updateConnection(con.aml_xy_response, "aml_xy_con");
+    updateConnection(con.aml_det_response, "aml_det_theta_con");
+    updateConnection(con.aml_phi_response, "aml_phi_zeta_con");
+    updateConnection(con.caen_host_1_response, "caen_con");
+}
+
+//document.getElementById('aml_xy_submit').addEventListener('onclick', onSubmitAmlXy)
 
 window.setInterval(function() {
     refreshData();
-}, 1000);
+}, 5000);
