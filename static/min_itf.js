@@ -4,7 +4,6 @@ export {onSubmitAmlXy}
 
 function setConnected(id, connected) {
     if (connected) {
-        console.log("Setting connected !");
         document.getElementById(id).innerText="Connected";
         document.getElementById(id).setAttribute("class","badge badge-success");
     }
@@ -15,9 +14,7 @@ function setConnected(id, connected) {
 }
 
 function updateConnection(url, id) {
-    console.log("update connection: " + url);
     fetch(url).then(response => {
-        console.log(response);
         setConnected(id, response.ok);
     })
     .catch( error => {
@@ -52,8 +49,19 @@ function onSubmitAmlXy() {
     }
 }
 
+function updateActualsAmlXy() {
+    console.log("update actuals XY");
+    fetch(con.aml_xy_response)
+        .then(response => response.json())
+        .then(data => {
+            con.getEl("aml_x").innerText = data["motor1"]["position_real_world"];
+            con.getEl("aml_y").innerText = data["motor2"]["position_real_world"];
+        });
+}
+
 function refreshData() {
     updateConnection(con.aml_xy_response, "aml_xy_con");
+    updateActualsAmlXy();
     updateConnection(con.aml_det_response, "aml_det_theta_con");
     updateConnection(con.aml_phi_response, "aml_phi_zeta_con");
     updateConnection(con.caen_host_1_response, "caen_con");
@@ -63,4 +71,4 @@ function refreshData() {
 
 window.setInterval(function() {
     refreshData();
-}, 5000);
+}, 2000);
