@@ -13,18 +13,17 @@
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="min-container"><label>X: 100 </label> <input type="text" id="aml_x" placeholder="X"></div>
-<div class="min-container"><label>Y: 15.00 </label> <input type="text" id="aml_y" placeholder="Y":> </div>
-</form>
+<div class="label-with-input">X: <div id="aml_x" class="tab">100</div><input class="push" type="text" id="aml_x" placeholder="X"></div>
+<div class="label-with-input">Y: <div id="aml_y" class="tab">15</div><input class="push" type="text" id="aml_y" placeholder="Y"></div>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXy()">Submit</button>
     <button type="button" class="btn btn-primary padded" onclick="loadAmlXy()">Load</button>
-    <button type="button" class="btn btn-primary padded">Unload</button>
-    <button type="button" class="btn btn-primary padded">Advanced</button>
+    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlXy()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlXy()">Advanced</button>
 </div>
 <div class="collapse" id="collapseExample">
   <div class="card card-body" id="aml_xy_status">
-      Invalid input
+      status message input
   </div>
 </div>
 

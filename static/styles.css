@@ -11,6 +11,21 @@
 
 .close {
     font-size:unset;
-
 }
+
+.label-with-input {
+  display: flex;
+  padding-bottom:0.5%;
+  align-items: center;
+}
+
+.push {
+    margin-left: auto;
+}
+.tab {
+    margin-left: 10px;
+}
+
+.max-filler{flex-grow:9; text-align:center}
+.min-filler{flex-grow:1; text-align:center}
 

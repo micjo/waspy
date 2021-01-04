@@ -2,6 +2,7 @@ export {aml_xy_response, aml_det_response, aml_phi_response, caen_host_1_respons
 export {aml_xy_request, aml_det_request, aml_phi_request, caen_host_1_request}
 export {sendRequest, getUniqueIdentifier, collapsableError, collapsableSucess, collapsableNotify}
 export {MotorIndex}
+export {getEl}
 
 let aml_host = 'http://localhost'
 let caen_host = 'http://localhost'
@@ -96,4 +97,8 @@ function makeAlert(alertType, message) {
     alertDiv.append(closeDiv);
 
     return alertDiv;
+}
+
+function getEl(element) {
+    return document.getElementById(element);
 }
