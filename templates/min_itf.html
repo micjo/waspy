@@ -5,59 +5,86 @@
 {% block content %}
 <script type="module">
     import * as min_itf from '{{url_for('static', filename='min_itf.js')}}'
-    window.onSubmitAmlXy = min_itf.onSubmitAmlXy
+    window.onSubmitAmlXY = min_itf.onSubmitAmlXY
 </script>
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
-    <h5><span class="badge badge-danger" id="aml_xy_con">Disconnected</span></h5>
+    <h5><span class="badge badge-danger" id="amlXyConnected">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="label-with-input">X: <div id="aml_x" class="tab">100</div><input class="push" type="text" id="aml_x" placeholder="X"></div>
-<div class="label-with-input">Y: <div id="aml_y" class="tab">15</div><input class="push" type="text" id="aml_y" placeholder="Y"></div>
+<div class="label-with-input" >X:
+    <div id="aml_x" class="tab">-</div>
+    <input class="push" type="text" id="aml_x_request" placeholder="X">
+</div>
+<div class="label-with-input">Y:
+    <div id="aml_y" class="tab">-</div>
+    <input class="push" type="text" id="aml_y_request" placeholder="Y">
+</div>
 <div class="input text-right">
-    <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXy()">Submit</button>
-    <button type="button" class="btn btn-primary padded" onclick="loadAmlXy()">Load</button>
-    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlXy()">Unload</button>
-    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlXy()">Advanced</button>
+    <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXY()">Submit</button>
+    <button type="button" class="btn btn-primary padded" onclick="loadAmlXY()">Load</button>
+    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlXY()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlXY()">Advanced</button>
 </div>
 <div class="collapse" id="collapseExample">
   <div class="card card-body" id="aml_xy_status">
-      status message input
+      status
   </div>
 </div>
 
 <hr>
-<div class="left-to-right"><h5>AML det theta </h5>
-    <h5><span class="badge badge-danger" id="aml_det_theta_con">Disconnected</span></h5>
+<div class="left-to-right"><h5>AML det theta</h5>
+    <h5><span class="badge badge-danger" id="amlDetThetaConnected">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="min-container"><label>det: 100 </label> <input type="text" id="aml_det" placeholder="det"></div>
-<div class="min-container"><label>theta: 15.00 </label> <input type="text" id="aml_theta" placeholder="theta"> </div>
-</form>
+<div class="label-with-input">det:
+    <div id="aml_det" class="tab">-</div>
+    <input class="push" type="text" id="aml_det_request" placeholder="det">
+</div>
+<div class="label-with-input">theta:
+    <div id="aml_theta" class="tab">-</div>
+    <input class="push" type="text" id="aml_theta_request" placeholder="theta">
+</div>
 <div class="input text-right">
-    <button type="button" class="btn btn-primary padded">Submit</button>
-    <button type="button" class="btn btn-primary padded">Load</button>
-    <button type="button" class="btn btn-primary padded">Unload</button>
-    <button type="button" class="btn btn-primary padded">Advanced</button>
+    <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlDetTheta()">Submit</button>
+    <button type="button" class="btn btn-primary padded" onclick="loadAmlDetTheta()">Load</button>
+    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlDetTheta()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlDetTheta()">Advanced</button>
+</div>
+<div class="collapse" id="collapseDetTheta">
+  <div class="card card-body" id="amlDetThetaStatus">
+      status
+  </div>
 </div>
 
 <hr>
-<div class="left-to-right"><h5>AML phi_zeta  </h5>
-    <h5><span class="badge badge-danger" id="aml_phi_zeta_con">Disconnected</span></h5>
+<div class="left-to-right"><h5>AML phi zeta</h5>
+    <h5><span class="badge badge-danger" id="amlPhiZetaConnected">Disconnected</span></h5>
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="min-container"><label>phi: 100 </label> <input type="text" id="aml_phi" placeholder="phi"></div>
-<div class="min-container"><label>zeta: 15.00 </label> <input type="text" id="aml_zheta" placeholder="zeta"> </div>
-</form>
-<div class="input text-right">
-    <button type="button" class="btn btn-primary padded">Submit</button>
-    <button type="button" class="btn btn-primary padded">Load</button>
-    <button type="button" class="btn btn-primary padded">Unload</button>
-    <button type="button" class="btn btn-primary padded">Advanced</button>
+<div class="label-with-input">phi:
+    <div id="aml_phi" class="tab">-</div>
+    <input class="push" type="text" id="aml_phi_request" placeholder="phi">
 </div>
+<div class="label-with-input">zeta:
+    <div id="aml_zeta" class="tab">-</div>
+    <input class="push" type="text" id="aml_zeta_request" placeholder="zeta">
+</div>
+<div class="input text-right">
+    <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlPhiZeta()">Submit</button>
+    <button type="button" class="btn btn-primary padded" onclick="loadAmlPhiZeta()">Load</button>
+    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlPhiZeta()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlPhiZeta()">Advanced</button>
+</div>
+<div class="collapse" id="collapsePhiZeta">
+  <div class="card card-body" id="amlPhiZetaStatus">
+      status
+  </div>
+</div>
+
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
     <h5><span class="badge badge-danger" id="caen_con">Disconnected</span></h5>
@@ -66,6 +93,7 @@
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
 <div class="min-container"><label>Histogram Name</label> <input type="text" id="caen_hist_id" placeholder="histogram id"></div>
 <div class="min-container"><label>List Data Name</label> <input type="text" id="caen_list_id" placeholder="list data id"></div>
+<div class="min-container"><label>Acquiring: False</label></div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">Start Acquisition</button>

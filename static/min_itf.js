@@ -1,6 +1,15 @@
 import * as con from './daemon_connection.js'
 
-export {onSubmitAmlXy}
+export {onSubmitAmlXY}
+
+function updateConnection(url, id) {
+    fetch(url).then(response => {
+        setConnected(id, response.ok);
+    })
+    .catch( error => {
+        setConnected(id,false);
+    });
+}
 
 function setConnected(id, connected) {
     if (connected) {
@@ -13,20 +22,10 @@ function setConnected(id, connected) {
     }
 }
 
-function updateConnection(url, id) {
-    fetch(url).then(response => {
-        setConnected(id, response.ok);
-    })
-    .catch( error => {
-        console.log(error);
-        setConnected(id,false);
-    });
-}
-
-function onSubmitAmlXy() {
+function onSubmitAmlXY() {
     console.log("submit aml xy");
-    let x_pos = document.getElementById("aml_x").value;
-    let y_pos = document.getElementById("aml_y").value;
+    let x_pos = document.getElementById("aml_x_request").value;
+    let y_pos = document.getElementById("aml_y_request").value;
     console.log(x_pos);
     console.log(y_pos);
 
@@ -34,40 +33,43 @@ function onSubmitAmlXy() {
     if (x_pos && y_pos) {
         request += "set_m1_target_position=" + x_pos + "\n";
         request += "set_m2_target_position=" + y_pos + "\n";
-        con.sendRequest(con.aml_xy_request, request);
+        con.sendRequest(con.motors.xy.requestUrl, request);
     }
     else if (x_pos) {
         request += "set_m1_target_position=" + x_pos + "\n";
-        con.sendRequest(con.aml_xy_request, request);
+        con.sendRequest(con.motors.xy.requestUrl, request);
     }
     else if (y_pos) {
         request += "set_m2_target_position=" + y_pos + "\n";
-        con.sendRequest(con.aml_xy_request, request);
+        con.sendRequest(con.motors.xy.requestUrl, request);
     }
     else {
         con.collapsableError("#collapseExample", "No input provided");
     }
 }
 
-function updateActualsAmlXy() {
-    console.log("update actuals XY");
-    fetch(con.aml_xy_response)
-        .then(response => response.json())
-        .then(data => {
-            con.getEl("aml_x").innerText = data["motor1"]["position_real_world"];
-            con.getEl("aml_y").innerText = data["motor2"]["position_real_world"];
+function updateMotors(url, connectionId, firstMotorId, secondMotorId) {
+    fetch(url)
+        .then(response => {
+            setConnected(connectionId, response.ok);
+            return response.json();
+        })
+        .then( data => {
+            con.getEl(firstMotorId).innerText = data["motor1"]["position_real_world"];
+            con.getEl(secondMotorId).innerText = data["motor2"]["position_real_world"];
+        })
+        .catch( error => {
+            setConnected(connectionId, false);
         });
 }
 
-function refreshData() {
-    updateConnection(con.aml_xy_response, "aml_xy_con");
-    updateActualsAmlXy();
-    updateConnection(con.aml_det_response, "aml_det_theta_con");
-    updateConnection(con.aml_phi_response, "aml_phi_zeta_con");
-    updateConnection(con.caen_host_1_response, "caen_con");
-}
 
-//document.getElementById('aml_xy_submit').addEventListener('onclick', onSubmitAmlXy)
+function refreshData() {
+    updateMotors(con.motors.xy.responseUrl, "amlXyConnected", "aml_x", "aml_y");
+    updateMotors(con.motors.detTheta.responseUrl, "amlDetThetaConnected", "aml_det", "aml_theta");
+    updateMotors(con.motors.phiZeta.responseUrl, "amlPhiZetaConnected", "aml_phi", "aml_zeta");
+    updateConnection(con.dataAcq.caen.responseUrl, "caen_con");
+}
 
 window.setInterval(function() {
     refreshData();
