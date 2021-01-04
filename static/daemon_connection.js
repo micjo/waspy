@@ -1,30 +1,27 @@
-export {aml_xy_response, aml_det_response, aml_phi_response, caen_host_1_response}
-export {aml_xy_request, aml_det_request, aml_phi_request, caen_host_1_request}
 export {sendRequest, getUniqueIdentifier, collapsableError, collapsableSucess, collapsableNotify}
-export {MotorIndex}
 export {getEl}
+export {motors,dataAcq}
 
-let aml_host = 'http://localhost'
-let caen_host = 'http://localhost'
+let motors = {
+    xy : {
+        responseUrl : 'http://localhost:22000/actuals',
+        requestUrl : 'http://localhost:22000/engine'
+    },
+    detTheta : {
+        responseUrl : 'http://localhost:22001/actuals',
+        requestUrl : 'http://localhost:22001/engine'
+    },
+    phiZeta : {
+        responseUrl : 'http://localhost:22002/actuals',
+        requestUrl : 'http://localhost:22002/engine'
+    }
+};
 
-let aml_xy = aml_host + ":22000"
-let aml_det = aml_host + ":22001"
-let aml_phi = aml_host + ":22002"
-let caen_host_1 = caen_host + "22003"
-
-let aml_xy_response = aml_xy + "/actuals"
-let aml_det_response = aml_det + "/actuals"
-let aml_phi_response = aml_phi + "/actuals"
-let caen_host_1_response = caen_host_1 + "/actuals"
-
-let aml_xy_request = aml_xy + "/engine"
-let aml_det_request = aml_det + "/engine"
-let aml_phi_request = aml_phi + "/engine"
-let caen_host_1_request = caen_host_1 + "/engine"
-
-const MotorIndex = {
-    FIRST: "first",
-    SECOND: "second"
+let dataAcq = {
+    caen : {
+        responseUrl : 'http://localhost:22003/actuals',
+        requestUrl : 'http://localhost:22003/engine'
+    }
 }
 
 function sendRequest(host, textBody)
