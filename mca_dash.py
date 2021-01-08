@@ -1,8 +1,9 @@
-from flask import Flask, render_template, abort, request, jsonify, app, redirect, url_for, make_response
+from flask import Flask, render_template, abort, request, jsonify, app, redirect, url_for, make_response, send_from_directory
 from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/")
 def welcome():
@@ -27,6 +28,10 @@ def aml_x_y():
         return redirect((url_for('aml_x_y')))
     else:
         return render_template("aml_x_y.html")
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory('static','favicon.png')
 
 
 @app.route("/caen", methods=["GET", "POST"])
