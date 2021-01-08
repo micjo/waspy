@@ -6,6 +6,15 @@
 <script type="module">
     import * as min_itf from '{{url_for('static', filename='min_itf.js')}}'
     window.onSubmitAmlXY = min_itf.onSubmitAmlXY
+    window.onLoadAmlXY = min_itf.onLoadAmlXY
+    window.onUnLoadAmlXY = min_itf.onUnLoadAmlXY
+    window.onContinueAmlXY = min_itf.onContinueAmlXY
+    window.onSubmitAmlDetTheta = min_itf.onSubmitAmlDetTheta
+    window.onLoadAmlDetTheta = min_itf.onLoadAmlDetTheta
+    window.onUnLoadAmlDetTheta = min_itf.onUnLoadAmlDetTheta
+    window.onSubmitAmlPhiZeta = min_itf.onSubmitAmlPhiZeta
+    window.onLoadAmlPhiZeta = min_itf.onLoadAmlPhiZeta
+    window.onUnLoadAmlPhiZeta = min_itf.onUnLoadAmlPhiZeta
 </script>
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
@@ -23,15 +32,12 @@
 </div>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXY()">Submit</button>
-    <button type="button" class="btn btn-primary padded" onclick="loadAmlXY()">Load</button>
-    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlXY()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="onLoadAmlXY()">Load</button>
+    <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlXY()">Unload</button>
     <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlXY()">Advanced</button>
+    <button type="button" class="btn btn-primary padded" onclick="onContinueAmlXY()">Continue</button>
 </div>
-<div class="collapse" id="collapseExample">
-  <div class="card card-body" id="aml_xy_status">
-      status
-  </div>
-</div>
+<div id="aml_x_y_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>AML det theta</h5>
@@ -53,11 +59,7 @@
     <button type="button" class="btn btn-primary padded" onclick="unLoadAmlDetTheta()">Unload</button>
     <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlDetTheta()">Advanced</button>
 </div>
-<div class="collapse" id="collapseDetTheta">
-  <div class="card card-body" id="amlDetThetaStatus">
-      status
-  </div>
-</div>
+<div id="aml_det_theta_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>AML phi zeta</h5>
@@ -79,11 +81,7 @@
     <button type="button" class="btn btn-primary padded" onclick="unLoadAmlPhiZeta()">Unload</button>
     <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlPhiZeta()">Advanced</button>
 </div>
-<div class="collapse" id="collapsePhiZeta">
-  <div class="card card-body" id="amlPhiZetaStatus">
-      status
-  </div>
-</div>
+<div id="aml_phi_zeta_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
@@ -93,7 +91,7 @@
 <div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
 <div class="min-container"><label>Histogram Name</label> <input type="text" id="caen_hist_id" placeholder="histogram id"></div>
 <div class="min-container"><label>List Data Name</label> <input type="text" id="caen_list_id" placeholder="list data id"></div>
-<div class="min-container"><label>Acquiring: False</label></div>
+<div class="min-container"><label>Acquiring: -</label></div>
 </form>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded">Start Acquisition</button>
