@@ -1,6 +1,4 @@
 export {sendRequest, getUniqueIdentifier, collapsableError, collapsableSucess, collapsableNotify}
-export {checkErrorClear}
-export {checkRequest}
 export {getEl}
 export {motors,dataAcq}
 
@@ -23,25 +21,15 @@ let dataAcq = {
     }
 }
 
-function sendRequest(host, textBody, statusId)
+function postData(host, textBody)
 {
-    collapsableNotify(statusId, "Sending Request");
     fetch(host, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-    body: textBody
-  })
-  .then(response => {
-      if (!response.ok) {
-        throw new Error(response.text());
-      }
-      collapsableSucess(statusId, "Request received");
-  })
-  .catch(error => {
-      collapsableError(statusId, error);
-  });
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: textBody
+    });
 }
 
 function delay(ms) {
@@ -49,89 +37,33 @@ function delay(ms) {
 }
 
 
-function fetchWithRetry(url, id, retryLimit, retryCount) {
-    console.log("fetching id with retry");
+function getCompletionTime(url, requestId, retryLimit, retryCount) {
     return fetch(url)
-        .then( response => response.json())
+        .then (response => response.json())
         .then (data => {
             console.log(data);
-            if ( data["request_id"] === id) {
-                console.log("match with pass");
-                return data;
+            if ( data["request_id"] === requestId) {
+                console.log("match");
+                console.log(data);
+                return data["expiry_date"];
             }
-            else if ( data["error_status"] !== "Success") {
-                console.log("match with fail");
-                return data;
-            }
-            else if (retryCount < retryLimit ) {
-                return delay(100).then(() => fetchWithRetry(url, id, retryLimit, retryCount + 1));
+            else if (retryCount < retryLimit) {
+                return delay(100).then(() => getCompletionTime(url, requestId, retryLimit, retryCount+1));
             }
         });
 }
 
-function fetchDoneWithRetry(url, id, statusId, retryLimit, retryCount) {
-    console.log("fetching done with retry");
-    return fetch(url)
-        .then( response => response.json())
-        .then (data => {
-            console.log(data);
-            if ( data["status"] === "Done" && data["request_id"] === id) {
-                console.log("done with request");
-                collapsableSucess("The motor has arrived");
-                return data;
-            }
-            else if ( data["error_status"] !== "Success") {
-                console.log("match with fail");
-                collapsableError(data["error_status"]);
-                return data;
-            }
-            else if (retryCount < retryLimit ) {
-                console.log("are we there yet");
-                return delay(1000).then(() => fetchDoneWithRetry(url, id, statusId, retryLimit, retryCount + 1));
-            }
-        });
+async function sendRequest(url, requestId, request, statusId) {
+    postData(url+"/engine", request);
+    let expiry_date = await getCompletionTime(url+"/actuals", requestId, 10, 0);
+    if (expiry_date === undefined) {
+        collapsableError(statusId, "Failed to send request");
+    }
+    else {
+        collapsableSucess(statusId, "Request sent, should be done at: " + expiry_date);
+    }
 }
 
-
-function checkErrorClear(url, statusId, retryLimit, retryCount) {
-    return fetch(url)
-        .then( response => response.json())
-        .then (data => {
-            console.log(data);
-            if ( data["error_status"] === "Success" ) {
-                console.log("error cleared");
-                collapsableSucess(statusId, "Error cleared");
-                return data;
-            }
-            else if (retryCount < retryLimit ) {
-                return delay(100).then(() => fetchWithRetry(url, id, retryLimit, retryCount + 1));
-            }
-            else {
-                collapsableError(statusId, "Could not clear error");
-            }
-        });
-}
-
-
-function checkRequest(host, id, statusId)
-{
-    console.log("checking with id: " + id );
-    fetchWithRetry(host, id, 30, 0)
-        .then(data => {
-            console.log(data);
-            if ( data["error_status"] === "Success") {
-                collapsableSucess(statusId, "Request parsed and executing");
-            }
-            else {
-                collapsableError(statusId, data["error_status"]);
-            }
-        })
-        .then(fetchDoneWithRetry(host, id, statusId, 30, 0))
-        .catch( error => {
-            collapsableError(statusId, error);
-        });
-
-}
 
 function getUniqueIdentifier() {
     let timestamp = new Date(Date.now()).toLocaleTimeString("nl-BE");
@@ -147,11 +79,13 @@ function collapsableNotify(id,message) {
 }
 
 function collapsableError(id, message) {
+    getEl(id).innerHTML = "";
     let errorDiv = makeAlert("alert-danger", message);
     document.getElementById(id).appendChild(errorDiv);
 }
 
 function collapsableSucess(id, message) {
+    getEl(id).innerHTML = "";
     let successDiv = makeAlert("alert-success", message);
     document.getElementById(id).appendChild(successDiv);
     setTimeout(function() {

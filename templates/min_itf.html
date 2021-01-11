@@ -37,7 +37,11 @@
     <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlXY()">Advanced</button>
     <button type="button" class="btn btn-primary padded" onclick="onContinueAmlXY()">Continue</button>
 </div>
-<div id="aml_x_y_status"></div>
+<div id="aml_x_y_error_status"></div>
+<div id="aml_x_y_request_status"></div>
+<div id="aml_x_y_busy_status" class="spinner-border" role="status" style="display:none">
+    <span class="sr-only">Loading...</span>
+</div>
 
 <hr>
 <div class="left-to-right"><h5>AML det theta</h5>

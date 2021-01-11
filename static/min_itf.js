@@ -25,7 +25,7 @@ function setConnected(id, connected) {
 }
 
 function onSubmitAmlXY() {
-    onSubmitMotors(con.motors.xyUrl, 'aml_x_y_status', 'aml_x_request', 'aml_y_request');
+    onSubmitMotors(con.motors.xyUrl, 'aml_x_y_request_status', 'aml_x_request', 'aml_y_request');
 }
 
 function onLoadAmlXY() {
@@ -42,13 +42,12 @@ function onUnLoadAmlXY() {
 
 function onContinueAmlXY() {
     let url = con.motors.xyUrl;
-    let engineUrl = url + "/engine";
-    let actualsUrl = url + "/actuals";
 
-    let request = "continue=true\n";
+    let requestId = con.getUniqueIdentifier();
+    let request = "request_id="+requestId+"\n";
+    request += "continue=true";
     let statusId = "aml_x_y_status";
-    con.sendRequest(engineUrl, request, statusId);
-    con.checkErrorClear(actualsUrl, "aml_x_y_status", 30, 0);
+    con.sendRequest(url, requestId, request, "aml_x_y_request_status");
 }
 
 function onSubmitAmlDetTheta() {
@@ -84,36 +83,31 @@ function onUnLoadAmlPhiZeta() {
 }
 
 function onSubmitMotors(url, statusId, firstId, secondId) {
+    console.log("onsubmit motors");
     let first_pos = document.getElementById(firstId).value;
     let second_pos = document.getElementById(secondId).value;
     let requestId = con.getUniqueIdentifier();
 
     let request = "request_id="+requestId+"\n";
-    let engineUrl = url + "/engine";
-    let actualsUrl = url + "/actuals";
     if (first_pos && second_pos) {
         request += "set_m1_target_position=" + first_pos + "\n";
         request += "set_m2_target_position=" + second_pos + "\n";
-        con.sendRequest(engineUrl, request, statusId);
-        con.checkRequest(actualsUrl, requestId, statusId);
-
+        con.sendRequest(url, requestId, request, statusId);
     }
     else if (first_pos) {
         request += "set_m1_target_position=" + first_pos + "\n";
-        con.sendRequest(engineUrl, request, statusId);
-        con.checkRequest(actualsUrl, requestId, statusId);
+        con.sendRequest(url, requestId, request, statusId);
     }
     else if (second_pos) {
         request += "set_m2_target_position=" + second_pos + "\n";
-        con.sendRequest(engineUrl, request, statusId);
-        con.checkRequest(actualsUrl, requestId, statusId);
+        con.sendRequest(url, requestId, request, statusId);
     }
     else {
         con.collapsableError(statusId, "No input provided");
     }
 }
 
-function updateMotors(url, connectionId, firstMotorId, secondMotorId) {
+function updateMotors(url, connectionId, errorId, busyId, firstMotorId, secondMotorId) {
     fetch(url + "/actuals")
     .then(response => {
         setConnected(connectionId, response.ok);
@@ -122,17 +116,31 @@ function updateMotors(url, connectionId, firstMotorId, secondMotorId) {
     .then( data => {
         con.getEl(firstMotorId).innerText = data["motor1"]["position_real_world"];
         con.getEl(secondMotorId).innerText = data["motor2"]["position_real_world"];
+        if (data["error_status"] !== "Success") {
+            con.collapsableError(errorId, data["error_status"]);
+        }
+        else {
+            con.getEl(errorId).innerHTML="";
+        }
+
+        if (data["status"] === "Processing") {
+            con.getEl(busyId).style.display="block";
+        }
+        else if (data["status"] === "Done") {
+            con.getEl(busyId).style.display="none";
+        }
     })
     .catch( error => {
         setConnected(connectionId, false);
+        con.collapsableError(errorId, error);
     });
 }
 
 function refreshData() {
-    updateMotors(con.motors.xyUrl, "amlXyConnected", "aml_x", "aml_y");
-    updateMotors(con.motors.detTheta.responseUrl, "amlDetThetaConnected", "aml_det", "aml_theta");
-    updateMotors(con.motors.phiZeta.responseUrl, "amlPhiZetaConnected", "aml_phi", "aml_zeta");
-    updateConnection(con.dataAcq.caen.responseUrl, "caen_con");
+    updateMotors(con.motors.xyUrl, "amlXyConnected", "aml_x_y_error_status", "aml_x_y_busy_status", "aml_x", "aml_y");
+    //updateMotors(con.motors.detTheta.responseUrl, "amlDetThetaConnected", "aml_det", "aml_theta");
+    //updateMotors(con.motors.phiZeta.responseUrl, "amlPhiZetaConnected", "aml_phi", "aml_zeta");
+    //updateConnection(con.dataAcq.caen.responseUrl, "caen_con");
 }
 
 window.setInterval(function() {
