@@ -9,32 +9,35 @@
     window.onLoadAmlXY = min_itf.onLoadAmlXY
     window.onUnLoadAmlXY = min_itf.onUnLoadAmlXY
     window.onContinueAmlXY = min_itf.onContinueAmlXY
+
     window.onSubmitAmlDetTheta = min_itf.onSubmitAmlDetTheta
     window.onLoadAmlDetTheta = min_itf.onLoadAmlDetTheta
     window.onUnLoadAmlDetTheta = min_itf.onUnLoadAmlDetTheta
+    window.onContinueAmlDetTheta = min_itf.onContinueAmlDetTheta
+
     window.onSubmitAmlPhiZeta = min_itf.onSubmitAmlPhiZeta
     window.onLoadAmlPhiZeta = min_itf.onLoadAmlPhiZeta
     window.onUnLoadAmlPhiZeta = min_itf.onUnLoadAmlPhiZeta
+    window.onContinueAmlPhiZeta = min_itf.onContinueAmlPhiZeta
 </script>
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
-    <h5><span class="badge badge-danger" id="amlXyConnected">Disconnected</span></h5>
+    <h5><span class="badge badge-danger" id="aml_x_y_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+<div class="min-container"><label>Timestamp</label><label id="aml_x_y_request_id">-</label> </div>
 <div class="label-with-input" >X:
-    <div id="aml_x" class="tab">-</div>
-    <input class="push" type="text" id="aml_x_request" placeholder="X">
+    <div id="aml_x_y_first" class="tab">-</div>
+    <input class="push" type="text" id="aml_x_y_first_request" placeholder="X">
 </div>
 <div class="label-with-input">Y:
-    <div id="aml_y" class="tab">-</div>
-    <input class="push" type="text" id="aml_y_request" placeholder="Y">
+    <div id="aml_x_y_second" class="tab">-</div>
+    <input class="push" type="text" id="aml_x_y_second_request" placeholder="Y">
 </div>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXY()">Submit</button>
     <button type="button" class="btn btn-primary padded" onclick="onLoadAmlXY()">Load</button>
     <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlXY()">Unload</button>
-    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlXY()">Advanced</button>
     <button type="button" class="btn btn-primary padded" onclick="onContinueAmlXY()">Continue</button>
 </div>
 <div id="aml_x_y_error_status"></div>
@@ -45,47 +48,55 @@
 
 <hr>
 <div class="left-to-right"><h5>AML det theta</h5>
-    <h5><span class="badge badge-danger" id="amlDetThetaConnected">Disconnected</span></h5>
+    <h5><span class="badge badge-danger" id="aml_det_theta_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+<div class="min-container"><label>Timestamp</label><label id="aml_det_theta_request_id"l>-</label> </div>
 <div class="label-with-input">det:
-    <div id="aml_det" class="tab">-</div>
-    <input class="push" type="text" id="aml_det_request" placeholder="det">
+    <div id="aml_det_theta_first" class="tab">-</div>
+    <input class="push" type="text" id="aml_det_theta_first_request" placeholder="det">
 </div>
 <div class="label-with-input">theta:
-    <div id="aml_theta" class="tab">-</div>
-    <input class="push" type="text" id="aml_theta_request" placeholder="theta">
+    <div id="aml_det_theta_second" class="tab">-</div>
+    <input class="push" type="text" id="aml_det_theta_second_request" placeholder="theta">
 </div>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlDetTheta()">Submit</button>
-    <button type="button" class="btn btn-primary padded" onclick="loadAmlDetTheta()">Load</button>
-    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlDetTheta()">Unload</button>
-    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlDetTheta()">Advanced</button>
+    <button type="button" class="btn btn-primary padded" onclick="onLoadAmlDetTheta()">Load</button>
+    <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlDetTheta()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="onContinueAmlDetTheta()">Continue</button>
 </div>
-<div id="aml_det_theta_status"></div>
+<div id="aml_det_theta_error_status"></div>
+<div id="aml_det_theta_request_status"></div>
+<div id="aml_det_theta_busy_status" class="spinner-border" role="status" style="display:none">
+    <span class="sr-only">Loading...</span>
+</div>
 
 <hr>
 <div class="left-to-right"><h5>AML phi zeta</h5>
-    <h5><span class="badge badge-danger" id="amlPhiZetaConnected">Disconnected</span></h5>
+    <h5><span class="badge badge-danger" id="aml_phi_zeta_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
+<div class="min-container"><label>Timestamp</label><label id="aml_phi_zeta_request_id">-</label> </div>
 <div class="label-with-input">phi:
-    <div id="aml_phi" class="tab">-</div>
-    <input class="push" type="text" id="aml_phi_request" placeholder="phi">
+    <div id="aml_phi_zeta_first" class="tab">-</div>
+    <input class="push" type="text" id="aml_phi_zeta_first_request" placeholder="phi">
 </div>
 <div class="label-with-input">zeta:
-    <div id="aml_zeta" class="tab">-</div>
-    <input class="push" type="text" id="aml_zeta_request" placeholder="zeta">
+    <div id="aml_phi_zeta_second" class="tab">-</div>
+    <input class="push" type="text" id="aml_phi_zeta_second_request" placeholder="zeta">
 </div>
 <div class="input text-right">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlPhiZeta()">Submit</button>
-    <button type="button" class="btn btn-primary padded" onclick="loadAmlPhiZeta()">Load</button>
-    <button type="button" class="btn btn-primary padded" onclick="unLoadAmlPhiZeta()">Unload</button>
-    <button type="button" class="btn btn-primary padded" onclick="AdvancedAmlPhiZeta()">Advanced</button>
+    <button type="button" class="btn btn-primary padded" onclick="onLoadAmlPhiZeta()">Load</button>
+    <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlPhiZeta()">Unload</button>
+    <button type="button" class="btn btn-primary padded" onclick="onContinueAmlPhiZeta()">Continue</button>
 </div>
-<div id="aml_phi_zeta_status"></div>
+<div id="aml_phi_zeta_error_status"></div>
+<div id="aml_phi_zeta_request_status"></div>
+<div id="aml_phi_zeta_busy_status" class="spinner-border" role="status" style="display:none">
+    <span class="sr-only">Loading...</span>
+</div>
 
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
