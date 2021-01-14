@@ -1,6 +1,7 @@
 import * as con from './daemon_connection.js'
 
 export {onContinueAmlXY, onLoadAmlXY, onSubmitAmlXY, onUnLoadAmlXY};
+export {onToggleCaenAcquisition, onToggleCaenListData, onClearData, onSaveHistogram};
 export {
     onContinueAmlDetTheta,
     onLoadAmlDetTheta,
@@ -14,6 +15,7 @@ export {
     onUnLoadAmlPhiZeta
 };
 
+
 function onSubmitMotors(url, id) {
     let firstId = id + '_first_request';
     let secondId = id + '_second_request';
@@ -25,13 +27,13 @@ function onSubmitMotors(url, id) {
     if (first_pos && second_pos) {
         request += 'set_m1_target_position=' + first_pos + '\n';
         request += 'set_m2_target_position=' + second_pos + '\n';
-        con.sendRequest(url, request, id);
+        con.sendRequestWithExpiryDate(url, request, id);
     } else if (first_pos) {
         request += 'set_m1_target_position=' + first_pos + '\n';
-        con.sendRequest(url, request, id);
+        con.sendRequestWithExpiryDate(url, request, id);
     } else if (second_pos) {
         request += 'set_m2_target_position=' + second_pos + '\n';
-        con.sendRequest(url, request, id);
+        con.sendRequestWithExpiryDate(url, request, id);
     } else {
         con.collapsableError(requestStatusId, 'No input provided');
     }
@@ -52,7 +54,7 @@ function onUnLoadAmlXY() {
 }
 function onContinueAmlXY() {
     let request = 'continue=true';
-    con.sendRequest(con.motors.xyUrl, request, 'aml_x_y');
+    con.sendRequestWithExpiryDate(con.motors.xyUrl, request, 'aml_x_y');
 }
 
 
@@ -71,7 +73,7 @@ function onUnLoadAmlDetTheta() {
 }
 function onContinueAmlDetTheta() {
     let request = 'continue=true';
-    con.sendRequest(con.motors.detThetaUrl, request, 'aml_det_theta');
+    con.sendRequestWithExpiryDate(con.motors.detThetaUrl, request, 'aml_det_theta');
 }
 
 
@@ -90,13 +92,31 @@ function onUnLoadAmlPhiZeta() {
 }
 function onContinueAmlPhiZeta() {
     let request = 'continue=true';
-    con.sendRequest(con.motors.phiZetaUrl, request, 'aml_phi_zeta');
+    con.sendRequestWithExpiryDate(con.motors.phiZetaUrl, request, 'aml_phi_zeta');
 }
 function refreshData() {
-    con.getAmlActuals(con.motors.xyUrl, 'aml_x_y');
-    con.getAmlActuals(con.motors.detThetaUrl, 'aml_det_theta');
-    con.getAmlActuals(con.motors.phiZetaUrl, 'aml_phi_zeta');
+    //con.getAmlActuals(con.motors.xyUrl, 'aml_x_y');
+    //con.getAmlActuals(con.motors.detThetaUrl, 'aml_det_theta');
+    //con.getAmlActuals(con.motors.phiZetaUrl, 'aml_phi_zeta');
     // updateConnection(con.dataAcq.caen.responseUrl, "caen_con");
+    con.getCaenActuals(con.dataAcq.caenUrl, 'caen');
+}
+
+// this should also be updated from the actuals - in html default show '-' , then update based on actuals
+function onToggleCaenAcquisition() {
+    con.toggleCaenAcquisitionState('caen');
+}
+
+function onToggleCaenListData() {
+    con.toggleCaenListDataState('caen');
+}
+
+function onClearData() {
+
+}
+
+function onSaveHistogram() {
+
 }
 
 window.setInterval(function() {
