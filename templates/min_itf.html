@@ -4,21 +4,22 @@
 
 {% block content %}
 <script type="module">
+    // It is not recommended to add all the calls to the window as this pollutes the global namespace
+    // unfortunately my javascript knowledge is not sufficient to figure out a better way
     import * as min_itf from '{{url_for('static', filename='min_itf.js')}}'
     window.onSubmitAmlXY = min_itf.onSubmitAmlXY
     window.onLoadAmlXY = min_itf.onLoadAmlXY
     window.onUnLoadAmlXY = min_itf.onUnLoadAmlXY
     window.onContinueAmlXY = min_itf.onContinueAmlXY
-
     window.onSubmitAmlDetTheta = min_itf.onSubmitAmlDetTheta
     window.onLoadAmlDetTheta = min_itf.onLoadAmlDetTheta
     window.onUnLoadAmlDetTheta = min_itf.onUnLoadAmlDetTheta
     window.onContinueAmlDetTheta = min_itf.onContinueAmlDetTheta
-
     window.onSubmitAmlPhiZeta = min_itf.onSubmitAmlPhiZeta
     window.onLoadAmlPhiZeta = min_itf.onLoadAmlPhiZeta
     window.onUnLoadAmlPhiZeta = min_itf.onUnLoadAmlPhiZeta
     window.onContinueAmlPhiZeta = min_itf.onContinueAmlPhiZeta
+    window.min_itf = min_itf;
 </script>
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
@@ -100,21 +101,27 @@
 
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
-    <h5><span class="badge badge-danger" id="caen_con">Disconnected</span></h5>
+    <h5><span class="badge badge-danger" id="caen_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label>13:44.12</label> </div>
-<div class="min-container"><label>Histogram Name</label> <input type="text" id="caen_hist_id" placeholder="histogram id"></div>
-<div class="min-container"><label>List Data Name</label> <input type="text" id="caen_list_id" placeholder="list data id"></div>
-<div class="min-container"><label>Acquiring: -</label></div>
+<div class="min-container"><label>Timestamp</label><label id="caen_request_id">-</label> </div>
+<div class="min-container"><label>Acquiring Data:</label><label id="caen_acquiring_data">-</label> </div>
+<div class="label-with-input">Histogram name:
+    <div id="caen_histogram_id" class="tab">-</div>
+    <input class="push" type="text" id="caen_histogram_id_request" placeholder="histogram id">
+</div>
+<div class="label-with-input">List data name:
+    <div id="caen_list_data_id" class="tab">-</div>
+    <input class="push" type="text" id="caen_list_data_id_request" placeholder="listdata id">
+</div>
 </form>
 <div class="input text-right">
-    <button type="button" class="btn btn-primary padded">Start Acquisition</button>
-    <button type="button" class="btn btn-primary padded">Stop Acquisition</button>
-    <button type="button" class="btn btn-primary padded">Clear Data</button>
-    <button type="button" class="btn btn-primary padded">Record List Data</button>
-    <button type="button" class="btn btn-primary padded">Save Histogram</button>
-    <button type="button" class="btn btn-primary padded">Advanced</button>
+    <button type="button" class="btn btn-secondary padded" onclick="min_itf.onToggleCaenAcquisition()" id="caen_toggle_acquisition">Acquisition Stopped</button>
+    <button type="button" class="btn btn-secondary padded" onclick="min_itf.onToggleCaenListData()" id="caen_toggle_list_data">Not saving list data</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.onClearData()">Clear Data</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.onSaveHistogram()">Save Histogram</button>
 </div>
+<div id="caen_error_status"></div>
+<div id="caen_request_status"></div>
 
 {% endblock %}
