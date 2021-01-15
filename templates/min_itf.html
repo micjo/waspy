@@ -105,7 +105,8 @@
 </div>
 <hr>
 <div class="min-container"><label>Timestamp</label><label id="caen_request_id">-</label> </div>
-<div class="min-container"><label>Acquiring Data:</label><label id="caen_acquiring_data">-</label> </div>
+<div class="min-container"><label>Acquiring Data:</label><label id="caen_acquiring_data" class="tab">-</label><div class="push"></div> </div>
+<div class="min-container"><label>Storing List Data:</label><label id="caen_storing_list_data" class="tab">-</label><div class="push"></div> </div>
 <div class="label-with-input">Histogram name:
     <div id="caen_histogram_id" class="tab">-</div>
     <input class="push" type="text" id="caen_histogram_id_request" placeholder="histogram id">
@@ -114,12 +115,18 @@
     <div id="caen_list_data_id" class="tab">-</div>
     <input class="push" type="text" id="caen_list_data_id_request" placeholder="listdata id">
 </div>
+<div class="label-with-input">List data timeout (min):
+    <div id="caen_list_data_timeout" class="tab">-</div>
+    <input class="push" type="text" id="caen_list_data_timeout_request" placeholder="listdata timeout">
+</div>
 </form>
 <div class="input text-right">
-    <button type="button" class="btn btn-secondary padded" onclick="min_itf.onToggleCaenAcquisition()" id="caen_toggle_acquisition">Acquisition Stopped</button>
+    <button type="button" class="btn btn-secondary padded" onclick="min_itf.caen1.toggleAcquisition()" id="caen_toggle_acquisition">
+        Acquisition Stopped</label></button>
     <button type="button" class="btn btn-secondary padded" onclick="min_itf.onToggleCaenListData()" id="caen_toggle_list_data">Not saving list data</button>
     <button type="button" class="btn btn-primary padded" onclick="min_itf.onClearData()">Clear Data</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.onSaveHistogram()">Save Histogram</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.saveHistogram()">Save Histogram</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.onContinueCaen()">Continue</button>
 </div>
 <div id="caen_error_status"></div>
 <div id="caen_request_status"></div>
