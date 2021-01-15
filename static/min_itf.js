@@ -1,7 +1,14 @@
+import * as aml from './aml.js'
+import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
 export {onContinueAmlXY, onLoadAmlXY, onSubmitAmlXY, onUnLoadAmlXY};
-export {onToggleCaenAcquisition, onToggleCaenListData, onClearData, onSaveHistogram};
+export {
+    onContinueCaen,
+    onSaveHistogram,
+    onToggleCaenAcquisition,
+    onToggleCaenListData
+};
 export {
     onContinueAmlDetTheta,
     onLoadAmlDetTheta,
@@ -15,109 +22,78 @@ export {
     onUnLoadAmlPhiZeta
 };
 
+export {caen1}
 
-function onSubmitMotors(url, id) {
-    let firstId = id + '_first_request';
-    let secondId = id + '_second_request';
-    let first_pos = document.getElementById(firstId).value;
-    let second_pos = document.getElementById(secondId).value;
-    let requestStatusId = id + '_request_status';
-
-    let request = '';
-    if (first_pos && second_pos) {
-        request += 'set_m1_target_position=' + first_pos + '\n';
-        request += 'set_m2_target_position=' + second_pos + '\n';
-        con.sendRequestWithExpiryDate(url, request, id);
-    } else if (first_pos) {
-        request += 'set_m1_target_position=' + first_pos + '\n';
-        con.sendRequestWithExpiryDate(url, request, id);
-    } else if (second_pos) {
-        request += 'set_m2_target_position=' + second_pos + '\n';
-        con.sendRequestWithExpiryDate(url, request, id);
-    } else {
-        con.collapsableError(requestStatusId, 'No input provided');
-    }
-}
+let caen1 = new caen.caen('http://ubuntu-desktop:22123', 'caen');
+let amlXy = new aml.aml('http://localhost:22000', 'aml_x_y');
+let amlDettheta = new aml.aml('http://localhost:22001', 'aml_det_theta');
+let amlPhizeta = new aml.aml('http://localhost:22002', 'aml_phi_zeta');
 
 function onSubmitAmlXY() {
-    onSubmitMotors(con.motors.xyUrl, 'aml_x_y');
-}
-function onLoadAmlXY() {
-    con.getEl('aml_x_y_first_request').value = '60';
-    con.getEl('aml_x_y_second_request').value = '10';
-    onSubmitAmlXY()
-}
-function onUnLoadAmlXY() {
-    con.getEl('aml_x_y_first_request').value = '0';
-    con.getEl('aml_x_y_second_request').value = '0';
-    onSubmitAmlXY()
-}
-function onContinueAmlXY() {
-    let request = 'continue=true';
-    con.sendRequestWithExpiryDate(con.motors.xyUrl, request, 'aml_x_y');
+    amlXy.submitMotors();
 }
 
+function onLoadAmlXY() {
+    amlXy.loadMotors();
+}
+
+function onUnLoadAmlXY() {
+    amlXy.unLoadMotors();
+}
+
+function onContinueAmlXY() {
+    amlXy.continueOnError();
+}
 
 function onSubmitAmlDetTheta() {
-    onSubmitMotors(con.motors.detThetaUrl, 'aml_det_theta');
+    amlDettheta.submitMotors();
 }
 function onLoadAmlDetTheta() {
-    con.getEl('aml_det_theta_first_request').value = '60';
-    con.getEl('aml_det_theta_second_request').value = '10';
-    onSubmitAmlDetTheta()
+    amlDettheta.loadMotors();
 }
 function onUnLoadAmlDetTheta() {
-    con.getEl('aml_det_theta_first_request').value = '0';
-    con.getEl('aml_det_theta_second_request').value = '0';
-    onSubmitAmlDetTheta()
+    amlDettheta.unLoadMotors();
 }
 function onContinueAmlDetTheta() {
-    let request = 'continue=true';
-    con.sendRequestWithExpiryDate(con.motors.detThetaUrl, request, 'aml_det_theta');
+    amlDettheta.continueOnError();
 }
-
 
 function onSubmitAmlPhiZeta() {
-    onSubmitMotors(con.motors.phiZetaUrl, 'aml_phi_zeta');
+    amlPhizeta.submitMotors();
 }
 function onLoadAmlPhiZeta() {
-    con.getEl('aml_phi_zeta_first_request').value = '60';
-    con.getEl('aml_phi_zeta_second_request').value = '10';
-    onSubmitAmlPhiZeta()
+    amlPhiZeta.loadMotors();
 }
 function onUnLoadAmlPhiZeta() {
-    con.getEl('aml_phi_zeta_first_request').value = '0';
-    con.getEl('aml_phi_zeta_second_request').value = '0';
-    onSubmitAmlPhiZeta()
+    amlPhiZeta.unloadMotors();
 }
 function onContinueAmlPhiZeta() {
-    let request = 'continue=true';
-    con.sendRequestWithExpiryDate(con.motors.phiZetaUrl, request, 'aml_phi_zeta');
+    amlPhiZeta.continueOnError();
 }
 function refreshData() {
-    //con.getAmlActuals(con.motors.xyUrl, 'aml_x_y');
-    //con.getAmlActuals(con.motors.detThetaUrl, 'aml_det_theta');
-    //con.getAmlActuals(con.motors.phiZetaUrl, 'aml_phi_zeta');
-    // updateConnection(con.dataAcq.caen.responseUrl, "caen_con");
-    con.getCaenActuals(con.dataAcq.caenUrl, 'caen');
+    caen1.updateActuals();
+    // amlXy.updateActuals();
+    // amlDettheta.updateActuals();
+    // amlPhizeta.updateActuals();
 }
 
-// this should also be updated from the actuals - in html default show '-' , then update based on actuals
+// this should also be updated from the actuals - in html default show '-' ,
+// then update based on actuals
+//
+//
 function onToggleCaenAcquisition() {
-    con.toggleCaenAcquisitionState('caen');
+    caen1.toggleAcquisition();
 }
 
 function onToggleCaenListData() {
-    con.toggleCaenListDataState('caen');
+    caen1.toggleListData();
 }
 
-function onClearData() {
-
+function onContinueCaen() {
+    caen1.continueOnError();
 }
 
-function onSaveHistogram() {
-
-}
+function onSaveHistogram() {}
 
 window.setInterval(function() {
     refreshData();
