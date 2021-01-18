@@ -26,14 +26,21 @@
     <h5><span class="badge badge-danger" id="aml_x_y_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="left-to-right"><label>Timestamp</label><label id="aml_x_y_request_id">-</label> </div>
-<div class="left-to-right" >X:
-    <div id="aml_x_y_first" class="tab">-</div>
-    <input class="push" type="text" id="aml_x_y_first_request" placeholder="X">
-</div>
-<div class="left-to-right">Y:
-    <div id="aml_x_y_second" class="tab">-</div>
-    <input class="push" type="text" id="aml_x_y_second_request" placeholder="Y">
+<div class="full-width">
+    <div class="row justify-content-between">
+        <div class="col-2">Timestamp</div>
+        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_request_id">-</span></h5></div> 
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">X:</div>
+        <div class="col-6"><h5><span class="badge badge-info" id="aml_x_y_first">-</span></h5></div> 
+        <div class="col-4"><input class="float-right" type="text" id="aml_x_y_first_request" placeholder="X"></div>
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">Y:</div>
+        <div class="col-6"><h5><span class="badge badge-info" id="aml_x_y_second">-</span></h5></div> 
+        <div class="col-4"><input class="float-right" type="text" id="aml_x_y_second_request" placeholder="Y"></div>
+    </div>
 </div>
 <div class="input text-right push">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXY()">Submit</button>
@@ -52,14 +59,21 @@
     <h5><span class="badge badge-danger" id="aml_det_theta_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="left-to-right"><label>Timestamp</label><label id="aml_det_theta_request_id"l>-</label> </div>
-<div class="left-to-right">det:
-    <div id="aml_det_theta_first" class="tab">-</div>
-    <input class="push" type="text" id="aml_det_theta_first_request" placeholder="det">
-</div>
-<div class="left-to-right">theta:
-    <div id="aml_det_theta_second" class="tab">-</div>
-    <input class="push" type="text" id="aml_det_theta_second_request" placeholder="theta">
+<div class="full-width">
+    <div class="row justify-content-between">
+        <div class="col-2">Timestamp</div>
+        <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_request_id">-</span></h5></div> 
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">det:</div>
+        <div class="col-6"><h5><span class="badge badge-info" id="aml_det_theta_first">-</span></h5></div> 
+        <div class="col-4"><input class="float-right" type="text" id="aml_det_theta_first_request" placeholder="det"></div>
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">theta:</div>
+        <div class="col-6"><h5><span class="badge badge-info" id="aml_det_theta_second">-</span></h5></div> 
+        <div class="col-4"><input class="float-right" type="text" id="aml_det_theta_second_request" placeholder="theta"></div>
+    </div>
 </div>
 <div class="input text-right push">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlDetTheta()">Submit</button>
@@ -78,14 +92,21 @@
     <h5><span class="badge badge-danger" id="aml_phi_zeta_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="left-to-right"><label>Timestamp</label><label id="aml_phi_zeta_request_id">-</label> </div>
-<div class="left-to-right">phi:
-    <div id="aml_phi_zeta_first" class="tab">-</div>
-    <input class="push" type="text" id="aml_phi_zeta_first_request" placeholder="phi">
+<div class="full-width">
+<div class="row justify-content-between">
+    <div class="col-2">Timestamp</div>
+    <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_request_id">-</span></h5></div> 
 </div>
-<div class="left-to-right">zeta:
-    <div id="aml_phi_zeta_second" class="tab">-</div>
-    <input class="push" type="text" id="aml_phi_zeta_second_request" placeholder="zeta">
+<div class="row justify-content-between">
+    <div class="col-2">phi:</div>
+    <div class="col-6"><h5><span class="badge badge-info" id="aml_phi_zeta_first">-</span></h5></div> 
+    <div class="col-4"><input class="float-right" type="text" id="aml_phi_zeta_first_request" placeholder="phi"></div>
+</div>
+<div class="row justify-content-between">
+    <div class="col-2">zeta:</div>
+    <div class="col-6"><h5><span class="badge badge-info" id="aml_phi_zeta_second">-</span></h5></div> 
+    <div class="col-4"><input class="float-right" type="text" id="aml_phi_zeta_second_request" placeholder="zeta"></div>
+</div>
 </div>
 <div class="input text-right push">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlPhiZeta()">Submit</button>
@@ -104,33 +125,32 @@
     <h5><span class="badge badge-danger" id="caen_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-
 <div class="full-width">
 <div class="row justify-content-between">
-    <div class="col-4">Timestamp</div>
-    <div class="col-8"><span class="badge badge-light" id="caen_request_id">-</span></div> 
+    <div class="col-2">Timestamp</div>
+    <div class="col-10"><h5><span class="badge badge-info" id="caen_request_id">-</span></h5></div> 
 </div>
 <div class="row justify-content-between">
-    <div class="col-4">Acquiring Data:</div>
-    <div class="col-8"><span class="badge badge-light" id="caen_acquiring_data">-</span></div>
+    <div class="col-2">Acquiring Data:</div>
+    <div class="col-10"><h5><span class="badge badge-info" id="caen_acquiring_data">-</span></h5></div>
 </div>
 <div class="row justify-content-between">
-    <div class="col-4">Storing List Data:</div>
-    <div class="col-8"><span class="badge badge-light" id="caen_storing_list_data">-</span></div>
+    <div class="col-2">Storing List Data:</div>
+    <div class="col-10"><h5><span class="badge badge-info" id="caen_storing_list_data">-</span></h5></div>
 </div>
 <div class="row justify-content-between">
-    <div class="col-4">Histogram name:</div>
-    <div class="col-4"><span class="badge badge-light" id="caen_histogram_id">-</span></div>
+    <div class="col-2">Histogram name:</div>
+    <div class="col-6"><h5><span class="badge badge-info" id="caen_histogram_id">-</span></h5></div>
     <div class="col-4"><input type="text" id="caen_histogram_id_request" placeholder="histogram id" class="float-right"></div>
 </div>
 <div class="row justify-content-between">
-    <div class="col-4">List data name:</div>
-    <div class="col-4"><span class="badge badge-light" id="caen_list_data_id">-</span></div>
+    <div class="col-2">List data name:</div>
+    <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_id">-</span></h5></div>
     <div class="col-4"><input type="text" id="caen_list_data_id_request" placeholder="listdata id" class="float-right"></div>
 </div>
 <div class="row justify-content-between">
-    <div class="col-4">List data timeout (min):</div>
-    <div class="col-4"><span class="badge badge-light" id="caen_list_data_timeout">-</span></div>
+    <div class="col-2">List data timeout (min):</div>
+    <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_timeout">-</span></h5></div>
     <div class="col-4"><input type="text" id="caen_list_data_timeout_request" placeholder="listdata id" class="float-right"></div>
 </div>
 </div>
