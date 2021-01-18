@@ -26,16 +26,16 @@
     <h5><span class="badge badge-danger" id="aml_x_y_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label id="aml_x_y_request_id">-</label> </div>
-<div class="label-with-input" >X:
+<div class="left-to-right"><label>Timestamp</label><label id="aml_x_y_request_id">-</label> </div>
+<div class="left-to-right" >X:
     <div id="aml_x_y_first" class="tab">-</div>
     <input class="push" type="text" id="aml_x_y_first_request" placeholder="X">
 </div>
-<div class="label-with-input">Y:
+<div class="left-to-right">Y:
     <div id="aml_x_y_second" class="tab">-</div>
     <input class="push" type="text" id="aml_x_y_second_request" placeholder="Y">
 </div>
-<div class="input text-right">
+<div class="input text-right push">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXY()">Submit</button>
     <button type="button" class="btn btn-primary padded" onclick="onLoadAmlXY()">Load</button>
     <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlXY()">Unload</button>
@@ -52,16 +52,16 @@
     <h5><span class="badge badge-danger" id="aml_det_theta_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label id="aml_det_theta_request_id"l>-</label> </div>
-<div class="label-with-input">det:
+<div class="left-to-right"><label>Timestamp</label><label id="aml_det_theta_request_id"l>-</label> </div>
+<div class="left-to-right">det:
     <div id="aml_det_theta_first" class="tab">-</div>
     <input class="push" type="text" id="aml_det_theta_first_request" placeholder="det">
 </div>
-<div class="label-with-input">theta:
+<div class="left-to-right">theta:
     <div id="aml_det_theta_second" class="tab">-</div>
     <input class="push" type="text" id="aml_det_theta_second_request" placeholder="theta">
 </div>
-<div class="input text-right">
+<div class="input text-right push">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlDetTheta()">Submit</button>
     <button type="button" class="btn btn-primary padded" onclick="onLoadAmlDetTheta()">Load</button>
     <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlDetTheta()">Unload</button>
@@ -78,16 +78,16 @@
     <h5><span class="badge badge-danger" id="aml_phi_zeta_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label id="aml_phi_zeta_request_id">-</label> </div>
-<div class="label-with-input">phi:
+<div class="left-to-right"><label>Timestamp</label><label id="aml_phi_zeta_request_id">-</label> </div>
+<div class="left-to-right">phi:
     <div id="aml_phi_zeta_first" class="tab">-</div>
     <input class="push" type="text" id="aml_phi_zeta_first_request" placeholder="phi">
 </div>
-<div class="label-with-input">zeta:
+<div class="left-to-right">zeta:
     <div id="aml_phi_zeta_second" class="tab">-</div>
     <input class="push" type="text" id="aml_phi_zeta_second_request" placeholder="zeta">
 </div>
-<div class="input text-right">
+<div class="input text-right push">
     <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlPhiZeta()">Submit</button>
     <button type="button" class="btn btn-primary padded" onclick="onLoadAmlPhiZeta()">Load</button>
     <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlPhiZeta()">Unload</button>
@@ -104,31 +104,49 @@
     <h5><span class="badge badge-danger" id="caen_connect_status">Disconnected</span></h5>
 </div>
 <hr>
-<div class="min-container"><label>Timestamp</label><label id="caen_request_id">-</label> </div>
-<div class="min-container"><label>Acquiring Data:</label><label id="caen_acquiring_data" class="tab">-</label><div class="push"></div> </div>
-<div class="min-container"><label>Storing List Data:</label><label id="caen_storing_list_data" class="tab">-</label><div class="push"></div> </div>
-<div class="label-with-input">Histogram name:
-    <div id="caen_histogram_id" class="tab">-</div>
-    <input class="push" type="text" id="caen_histogram_id_request" placeholder="histogram id">
+
+<div class="full-width">
+<div class="row justify-content-between">
+    <div class="col-4">Timestamp</div>
+    <div class="col-8"><span class="badge badge-light" id="caen_request_id">-</span></div> 
 </div>
-<div class="label-with-input">List data name:
-    <div id="caen_list_data_id" class="tab">-</div>
-    <input class="push" type="text" id="caen_list_data_id_request" placeholder="listdata id">
+<div class="row justify-content-between">
+    <div class="col-4">Acquiring Data:</div>
+    <div class="col-8"><span class="badge badge-light" id="caen_acquiring_data">-</span></div>
 </div>
-<div class="label-with-input">List data timeout (min):
-    <div id="caen_list_data_timeout" class="tab">-</div>
-    <input class="push" type="text" id="caen_list_data_timeout_request" placeholder="listdata timeout">
+<div class="row justify-content-between">
+    <div class="col-4">Storing List Data:</div>
+    <div class="col-8"><span class="badge badge-light" id="caen_storing_list_data">-</span></div>
 </div>
-</form>
-<div class="input text-right">
+<div class="row justify-content-between">
+    <div class="col-4">Histogram name:</div>
+    <div class="col-4"><span class="badge badge-light" id="caen_histogram_id">-</span></div>
+    <div class="col-4"><input type="text" id="caen_histogram_id_request" placeholder="histogram id" class="float-right"></div>
+</div>
+<div class="row justify-content-between">
+    <div class="col-4">List data name:</div>
+    <div class="col-4"><span class="badge badge-light" id="caen_list_data_id">-</span></div>
+    <div class="col-4"><input type="text" id="caen_list_data_id_request" placeholder="listdata id" class="float-right"></div>
+</div>
+<div class="row justify-content-between">
+    <div class="col-4">List data timeout (min):</div>
+    <div class="col-4"><span class="badge badge-light" id="caen_list_data_timeout">-</span></div>
+    <div class="col-4"><input type="text" id="caen_list_data_timeout_request" placeholder="listdata id" class="float-right"></div>
+</div>
+</div>
+
+
+<div class="input text-right push">
     <button type="button" class="btn btn-secondary padded" onclick="min_itf.caen1.toggleAcquisition()" id="caen_toggle_acquisition">
         Acquisition Stopped</label></button>
-    <button type="button" class="btn btn-secondary padded" onclick="min_itf.onToggleCaenListData()" id="caen_toggle_list_data">Not saving list data</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.onClearData()">Clear Data</button>
+    <button type="button" class="btn btn-secondary padded" onclick="min_itf.caen1.toggleListData()" id="caen_toggle_list_data">Not saving list data</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.clearData()">Clear Data</button>
     <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.saveHistogram()">Save Histogram</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.onContinueCaen()">Continue</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.continueOnError()">Continue</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.saveRegistry()">Save Registry</button>
 </div>
 <div id="caen_error_status"></div>
 <div id="caen_request_status"></div>
+</div>
 
 {% endblock %}

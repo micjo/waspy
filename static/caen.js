@@ -142,4 +142,12 @@ class caen {
     continueOnError() {
         this.sendRequest('continue=true');
     }
+
+    clearData() {
+        this.sendRequest('clear_acquisition=true');
+    }
+
+    saveRegistry() {
+        this.sendRequest('store_registry=true');
+    }
 }

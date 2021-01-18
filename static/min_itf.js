@@ -79,8 +79,6 @@ function refreshData() {
 
 // this should also be updated from the actuals - in html default show '-' ,
 // then update based on actuals
-//
-//
 function onToggleCaenAcquisition() {
     caen1.toggleAcquisition();
 }
