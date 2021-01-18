@@ -3,31 +3,35 @@ import * as con from './daemon_connection.js'
 export {caen}
 
 class caen {
-    constructor(url, elementPrefix) {
+    constructor(url) {
         this.url = url;
-        this.elementPrefix = elementPrefix;
-        this.connectionEl = this.elementPrefix + '_connect_status';
-        this.errorEl = this.elementPrefix + '_error_status';
-        this.requestEl = this.elementPrefix + '_request_id';
-        this.acquiringDataEl = this.elementPrefix + "_acquiring_data";
-        this.acquiringDataButtonEl = this.elementPrefix + "_toggle_acquisition";
-        this.listDataButtonEl = this.elementPrefix + "_toggle_list_data";
-        this.requestStatus = this.elementPrefix + "_request_status";
+        this.connected = '-';
+        this.error = 'Success';
+        this.requestId = '-';
+        this.acquiringData = '-';
+        this.requestStatus = '-';
+        this.histogramLocation = '-';
+        this.listDataLocation = '-';
+        this.listDataTimeout = '-';
+        this.listDataStoring = '-';
+        this.listDataSaving = false;
+        this.acquiringData = false;
+        this.requestAcknowledge = true;
+    }
 
-        this.histogramNameEl = this.elementPrefix + "_histogram_id";
-        this.histogramIdRequest = this.elementPrefix + "_histogram_id_request";
-
-        this.listDataEl = this.elementPrefix + "_list_data_id";
-        this.listDataIdRequest = this.elementPrefix + "_list_data_id_request";
-        this.listDataTimeout = this.elementPrefix + "_list_data_timeout";
-        this.listDataTimeoutRequest = this.elementPrefix + "_list_data_timeout_request";
-
-        this.storingListData = this.elementPrefix + "_storing_list_data";
-
-        this.acquiringText = "Acquisition started";
-        this.notAcquiringText = "Acquisition stopped";
-        this.savingListDataText = "Saving list data";
-        this.notSavingListDataText = "Not saving list data";
+    removeData() {
+        this.connected = '-';
+        this.error = 'Success';
+        this.requestId = '-';
+        this.acquiringData = '-';
+        this.requestStatus = '-';
+        this.histogramLocation = '-';
+        this.listDataLocation = '-';
+        this.listDataTimeout = '-';
+        this.listDataSaving = '-';
+        this.savingListData = false;
+        this.acquiringData = false;
+        this.requestAcknowledge = true;
     }
 
     async init() {
@@ -37,106 +41,77 @@ class caen {
     async updateActuals() {
         return fetch(this.url + '/actuals')
             .then(response => {
-                con.setConnected(this.connectionEl, true);
+                this.connected = true;
                 return response.json();
             })
             .catch(() => {
-                con.setConnected(this.connectionEl, false);
+                this.connected = false;
             })
             .then(data => {
-                if (data === undefined) { throw("Cannot reach daemon"); }
-                con.getEl(this.requestEl).innerText = data['request_id'];
-                con.getEl(this.histogramNameEl).innerText = data['histogram']['location'];
-                con.getEl(this.listDataEl).innerText = data['list_data']['location'];
-                con.getEl(this.acquiringDataEl).innerText = data['acquiring_data'];
-                con.getEl(this.storingListData).innerText = data['list_data']['storing'];
-
-                this.acquiring = data['acquiring_data'];
-                this.updateAcquireButton();
-
-                this.savingListData = data['list_data']['storing'];
-                this.updateListDataButton();
-
-                con.getEl(this.listDataTimeout).innerText = data['list_data']['timeout_minutes'];
-
-                if (data['error_status'] !== 'Success') {
-                    con.collapsableError(this.errorEl, data['error_status']);
-                } else {
-                    con.getEl(this.errorEl).innerHTML = '';
-                }
+                this.requestId = data['request_id'];
+                this.acquiringData = data['acquiring_data'];
+                this.histogramLocation = data['histogram']['location'];
+                this.listDataSaving = data['list_data']['storing'];
+                this.listDataLocation= data['list_data']['location'];
+                this.listDataTimeout = data['list_data']['timeout_minutes'];
+                this.error = data['error_status'];
             })
-            .catch(error => {
-                con.collapsableError(this.errorEl, error);
-                con.getEl(this.requestEl).innerText = '-';
-                con.getEl(this.histogramNameEl).innerText = '-';
-                con.getEl(this.listDataEl).innerText = '-';
-                con.getEl(this.acquiringDataEl).innerText = '-';
+            .catch(() => {
+                this.removeData();
             });
     }
 
-    updateAcquireButton() {
-        con.setButtonOnOrOff(this.acquiringDataButtonEl, this.acquiring, this.acquiringText, this.notAcquiringText);
+    async waitForCompleted(requestId, retryLimit, retryCount) {
+        return this.updateActuals().then( () => {
+            if (this.requestId === requestId) {
+                return;
+            }
+            else if (retryCount < retryLimit) {
+                return con.delay(100)
+                    .then( () => this.waitForCompleted(requestId, retryLimit, retryCount + 1));
+            }
+            else {
+                this.requestAcknowledge = false;
+            }
+        })
     }
 
-    updateListDataButton() {
-        con.setButtonOnOrOff(this.listDataButtonEl, this.savingListData, this.savingListDataText, this.notSavingListDataText);
-    }
-
-    saveHistogram() {
-        let id = con.getEl(this.histogramIdRequest).value;
-        if(id) {
-            let request = "store_histogram=true\n";
-            request += "store_histogram_id=" + id; + "\n";
-            this.sendRequest(request);
-        }
-        else {
-            con.collapsableError(this.requestStatus, "To store histogram, " +
-                "you need to specify to histogram id");
-        }
+    saveHistogram(histogramFolder) {
+        let request = "store_histogram=true\n";
+        request += "store_histogram_folder=" + histogramFolder; + "\n";
+        this.sendRequest(request);
     }
 
     async sendRequest(request) {
+        this.requestAcknowledge = true;
         let requestId = con.getUniqueIdentifier();
         let fullRequest = 'request_id=' + requestId + '\n';
         fullRequest += request;
-        console.log(fullRequest);
         con.postData(this.url + '/engine', fullRequest);
+        await this.waitForCompleted(requestId, 30, 0);
     }
 
-    toggleAcquisition() {
-        this.acquiring = !this.acquiring;
-        if (this.acquiring) {
-            let request = "start_acquisition=true";
-            this.sendRequest(request);
+    async toggleAcquire() {
+        let acquireTry = this.acquiringData;
+        acquireTry = !acquireTry;
+        if (acquireTry) {
+            await this.sendRequest("start_acquisition=true");
         }
         else {
-            let request = "stop_acquisition=true";
-            this.sendRequest(request);
+            await this.sendRequest("stop_acquisition=true");
         }
-        this.updateAcquireButton();
     }
 
-    toggleListData() {
-        this.savingListData = !this.savingListData;
-        if (this.savingListData) {
-            let timeout = con.getEl(this.listDataTimeoutRequest).value;
-            let id = con.getEl(this.listDataIdRequest).value;
+    async startStoringListData(listDataFolder, timeout) {
+        let request = "store_list_data=true\n";
+        request += "store_list_data_folder=" + listDataFolder + "\n";
+        request += "store_list_data_timeout_minutes=" + timeout + "\n";
+        await this.sendRequest(request);
+    }
 
-            if (timeout && id) {
-                let request = "store_list_data=true\n";
-                request += "store_list_data_timeout_minutes=" + timeout + "\n";
-                request += "store_list_data_id=" + id + "\n";
-                this.sendRequest(request);
-            }
-            else {
-                con.collapsableError(this.requestStatus, "To store list data, " +
-                    "you need to specify timeout and id.");
-            }
-        }
-        else {
-            let request = "store_list_data=false\n";
-            this.sendRequest(request);
-        }
+    async stopStoringListData() {
+        let request = "store_list_data=false\n";
+        await this.sendRequest(request);
     }
 
     continueOnError() {

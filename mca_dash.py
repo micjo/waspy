@@ -6,8 +6,8 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route("/")
-def welcome():
-    return render_template("welcome.html",
+def dashboard():
+    return render_template("dashboard.html",
         array=(0,1,2,5,6,8))
 
 @app.route("/det01_theta/<int:index>")
@@ -63,13 +63,6 @@ def min_itf():
         return redirect((url_for('min_itf')))
     else:
         return render_template("min_itf.html")
-
-@app.route("/dashboard_v2", methods=["GET", "POST"])
-def dashboard_v2():
-    if request.method == "POST":
-        return redirect((url_for('dashboard_v2')))
-    else:
-        return render_template("dashboard_v2.html")
 
 labels = [
     '0', '1', '2', '3',

@@ -26,22 +26,16 @@
     <p class="text-gray font-weight-bold text-uppercase px-3 small pb-4 mb-0">Main</p>
     <ul class="nav flex-column bg-white mb-0">
       
-        <li class="nav-item  {% if request.path == url_for('welcome')%} active {%endif%}">
-        <a href="{{url_for('welcome')}}" class="nav-link text-dark">
+        <li class="nav-item  {% if request.path == url_for('dashboard')%} active {%endif%}">
+        <a href="{{url_for('dashboard')}}" class="nav-link text-dark">
                   <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>
-                  {% if request.path == url_for('welcome')%} > {%endif%} Dashboard
-              </a>
-      </li>
-      <li class="nav-item  {% if request.path == url_for('dashboard_v2')%} active {%endif%}">
-        <a href="{{url_for('dashboard_v2')}}" class="nav-link text-dark">
-                  <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>
-                  {% if request.path == url_for('dashboard_v2')%} > {%endif%} Dashboard v2
+                  {% if request.path == url_for('dashboard')%} > {%endif%} Dashboard
               </a>
       </li>
       <li class="nav-item  {% if request.path == url_for('min_itf')%} active {%endif%}">
         <a href="{{url_for('min_itf')}}" class="nav-link text-dark">
                   <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>
-                  {% if request.path == url_for('min_itf')%} > {%endif%} Minimal Interface
+                  {% if request.path == url_for('min_itf')%} > {%endif%} IMEC 1 RBS Minimal 
               </a>
       </li>
       <li class="nav-item  {% if request.path == url_for('aml_x_y')%} active {%endif%}">
