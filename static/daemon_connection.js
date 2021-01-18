@@ -7,10 +7,12 @@ export {
 
 export {getEl};
 export {dataAcq, motors};
-export {setButtonOnOrOff};
+export {setButtonOn, setButtonOff};
 export {setConnected};
 export {delay};
 export {postData};
+
+export {hide, show};
 
 let motors = {
     xyUrl: 'http://169.254.166.218:22800',
@@ -76,20 +78,18 @@ function collapsableSucess(id, message) {
     }, 5000);
 }
 
-function setButtonOnOrOff(id, isOn, textOn, textOff) {
+function setButtonOn(id) {
     let button = getEl(id);
-    if (isOn) {
-        button.innerText = textOn;
-        button.classList.remove("btn-secondary");
-        button.classList.add("btn-primary");
-        button.classList.add("active");
-    }
-    else {
-        button.innerText = textOff;
-        button.classList.remove("btn-primary");
-        button.classList.remove("active");
-        button.classList.add("btn-secondary");
-    }
+    button.classList.remove("btn-secondary");
+    button.classList.add("btn-primary");
+    button.classList.add("active");
+}
+
+function setButtonOff(id) {
+    let button = getEl(id);
+    button.classList.remove("btn-primary");
+    button.classList.remove("active");
+    button.classList.add("btn-secondary");
 }
 
 function makeAlert(alertType, message) {
@@ -108,6 +108,14 @@ function makeAlert(alertType, message) {
     alertDiv.append(closeDiv);
 
     return alertDiv;
+}
+
+function hide(element) {
+    getEl(element).setAttribute("style", "display:none");
+}
+
+function show(element) {
+    getEl(element).setAttribute("style", "display:inline-block");
 }
 
 function getEl(element) {

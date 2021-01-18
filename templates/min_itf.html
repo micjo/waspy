@@ -140,13 +140,13 @@
 </div>
 <div class="row justify-content-between">
     <div class="col-2">Histogram name:</div>
-    <div class="col-6"><h5><span class="badge badge-info" id="caen_histogram_id">-</span></h5></div>
-    <div class="col-4"><input type="text" id="caen_histogram_id_request" placeholder="histogram id" class="float-right"></div>
+    <div class="col-6"><h5><span class="badge badge-info" id="caen_histogram_folder">-</span></h5></div>
+    <div class="col-4"><input type="text" id="caen_histogram_folder_request" placeholder="histogram folder" class="float-right"></div>
 </div>
 <div class="row justify-content-between">
     <div class="col-2">List data name:</div>
-    <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_id">-</span></h5></div>
-    <div class="col-4"><input type="text" id="caen_list_data_id_request" placeholder="listdata id" class="float-right"></div>
+    <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_folder">-</span></h5></div>
+    <div class="col-4"><input type="text" id="caen_list_data_folder_request" placeholder="listdata folder" class="float-right"></div>
 </div>
 <div class="row justify-content-between">
     <div class="col-2">List data timeout (min):</div>
@@ -157,11 +157,16 @@
 
 
 <div class="input text-right push">
-    <button type="button" class="btn btn-secondary padded" onclick="min_itf.caen1.toggleAcquisition()" id="caen_toggle_acquisition">
-        Acquisition Stopped</label></button>
-    <button type="button" class="btn btn-secondary padded" onclick="min_itf.caen1.toggleListData()" id="caen_toggle_list_data">Not saving list data</button>
+    <button type="button" class="btn btn-secondary" onclick="min_itf.toggleAcquisition()" id="caen_toggle_acquisition">
+         <span class="spinner-border spinner-border-sm" id="caen_toggle_acquisition_spinner" role="status" style="display:none"></span>
+         <span id="caen_toggle_acquisition_text" >Not acquiring data</span>
+    </button>
+    <button type="button" class="btn btn-secondary padded" onclick="min_itf.toggleListData()" id="caen_toggle_list_data">
+         <span class="spinner-border spinner-border-sm" id="caen_toggle_list_data_spinner" role="status" style="display:none"></span>
+         <span id="caen_toggle_list_data_text" >Not acquiring data</span>
+    </button>
     <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.clearData()">Clear Data</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.saveHistogram()">Save Histogram</button>
+    <button type="button" class="btn btn-primary padded" onclick="min_itf.saveHistogram()">Save Histogram</button>
     <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.continueOnError()">Continue</button>
     <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.saveRegistry()">Save Registry</button>
 </div>

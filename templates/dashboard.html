@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<script type="module">
+    import * as dashboard from '{{url_for('static', filename='dashboard.js')}}'
+    window.dashboard = dashboard;
+</script>
+
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Connection state</th>
+      <th scope="col">Error State</th>
+      <th scope="col">Last request id</th>
+      <th scope="col">Other</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>caen</td>
+      <td><h5><span class="badge badge-success" id="caen_connect_status">-<span></h5></td>
+      <td><h5><span class="badge badge-success" id="caen_error_stats">-<span></h5></td>
+      <td><h5><span class="badge badge-info" id="caen_request_id">-<span></h5></td>
+      <td><h5>Acquiring Data:<span class="badge badge-info" id="caen_acquiring_data">-<span></h5></td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>aml_x_y</td>
+      <td><h5><span class="badge badge-success">connected<span></h5></td>
+      <td><h5><span class="badge badge-danger">Failed to convert position to float<span></h5></td>
+      <td><h5><span class="badge badge-info">15:20.40<span></h5></td>
+      <td><h5><span class="badge badge-info">Processing<span></h5></td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>aml_det_theta</td>
+      <td><h5><span class="badge badge-danger">disconnected<span></h5></td>
+      <td><h5><span class="badge badge-danger">-<span></h5></td>
+      <td><h5><span class="badge badge-info">-<span></h5></td>
+      <td><h5><span class="badge badge-info">-<span></h5></td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>aml_phi_zeta</td>
+      <td><h5><span class="badge badge-success">connected<span></h5></td>
+      <td><h5><span class="badge badge-success">No error<span></h5></td>
+      <td><h5><span class="badge badge-info">15:20.40<span></h5></td>
+      <td><h5><span class="badge badge-info">Done<span></h5></td>
+    </tr>
+  </tbody>
+</table>
+
+{% endblock %}
