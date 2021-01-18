@@ -101,40 +101,11 @@
     line-height: 100%;
   
   }
-  .row {
-  display: flex;
-  line-height: 100%;
-  padding-bottom:5%
-  } 
-  /* Create two equal columns that sits next to each other */
-  .column {
-  flex: 1%;
-  padding: 1%;
-  color: black;
-  }
-  .column-values {
-  flex: 1%;
-  padding: 1%;
-  color: mediumblue;
-  }
   
   /* firefox is special */
   hr {
   clear: both;
   }
-
-
-  
- .container {
-  width: 100%;
-  clear: both;
-  display: flex;
-  float:left;
-  padding-bottom:2%;
-  flex-direction: row; 
-  justify-content: space-between; 
-  align-items: center;
-  } 
 
 .daemon-list-ok {
   background-color: #f8f9fa;;
@@ -147,14 +118,6 @@
   padding: 2%;
 }
 
-.min-container {
-  width: 100%;
-  display: flex;
-  padding-bottom:0.5%;
-  flex-direction: row; 
-  justify-content: space-between; 
-  align-items: center;
-  } 
 
   .justify-right{
     justify-items: right;
