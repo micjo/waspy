@@ -3,15 +3,14 @@ import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
 export {onContinueAmlXY, onLoadAmlXY, onSubmitAmlXY, onUnLoadAmlXY};
-export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry};
 export {onContinueAmlDetTheta, onLoadAmlDetTheta, onSubmitAmlDetTheta, onUnLoadAmlDetTheta};
 export {onContinueAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta, onUnLoadAmlPhiZeta};
-export {caen1};
+export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry};
 
 let caen1 = new caen.caen('http://ubuntu-desktop:22123');
 let amlXy = new aml.aml('http://localhost:22000');
-let amlDettheta = new aml.aml('http://localhost:22001');
-let amlPhizeta = new aml.aml('http://localhost:22002');
+let amlDetTheta = new aml.aml('http://localhost:22001');
+let amlPhiZeta = new aml.aml('http://localhost:22002');
 
 async function onMoveAml(prefix, activeAml) {
     let firstMotorRequest = con.getEl(prefix + '_first_request').value;
@@ -92,39 +91,49 @@ function onContinueAmlXY() {
 }
 
 function onSubmitAmlDetTheta() {
-    amlDettheta.submitMotors();
+    onSubmitAml('aml_det_theta', amlDetTheta);
 }
+
 function onLoadAmlDetTheta() {
-    amlDettheta.loadMotors();
+    onLoadAml('aml_det_theta', amlDetTheta, 50, 30);
 }
+
 function onUnLoadAmlDetTheta() {
-    amlDettheta.unLoadMotors();
+    onUnloadAml('aml_det_theta', amlDetTheta, 40, 20);
 }
+
 function onContinueAmlDetTheta() {
-    amlDettheta.continueOnError();
+    onContinueAml('aml_det_theta', amlDetTheta);
 }
 
 function onSubmitAmlPhiZeta() {
-    amlPhizeta.submitMotors();
+    onSubmitAml('aml_phi_zeta', amlPhiZeta);
 }
+
 function onLoadAmlPhiZeta() {
-    amlPhiZeta.loadMotors();
+    onLoadAml('aml_phi_zeta', amlPhiZeta, 50, 30);
 }
+
 function onUnLoadAmlPhiZeta() {
-    amlPhiZeta.unloadMotors();
+    onUnloadAml('aml_phi_zeta', amlPhiZeta, 40, 20);
 }
+
 function onContinueAmlPhiZeta() {
-    amlPhiZeta.continueOnError();
+    onContinueAml('aml_phi_zeta', amlPhiZeta);
 }
+
 async function refreshData() {
     await caen1.updateActuals();
     updateCaen();
 
     await amlXy.updateActuals();
     updateAml('aml_x_y', amlXy);
-    // amlXy.updateActuals();
-    // amlDettheta.updateActuals();
-    // amlPhizeta.updateActuals();
+
+    await amlDetTheta.updateActuals();
+    updateAml('aml_det_theta', amlDetTheta);
+
+    await amlPhiZeta.updateActuals();
+    updateAml('aml_phi_zeta', amlPhiZeta);
 }
 
 
@@ -145,8 +154,8 @@ function updateCaen() {
         caen1.requestAcknowledge = true;
     }
 
+    con.getEl("caen_error_status").innerHTML='';
     if (caen1.error !== "Success") {
-        con.getEl("caen_error_status").innerHTML='';
         con.collapsableError("caen_error_status", "Daemon error: " + caen1.error);
         caen1.error = "Success";
     }
