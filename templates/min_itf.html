@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 
+{% macro buttonSpinner(text, onclick, spinnerId) -%}
+    <button type="button" class="btn btn-primary" onclick="{{ onclick }}">
+        <span class="spinner-border spinner-border-sm" id="{{ spinnerId }}" role="status" style="display:none"></span>
+         {{ text }}
+    </button>
+{% endmacro -%}
+
 {% block title %}Welcome{% endblock %}
 
 {% block content %}
@@ -28,8 +35,20 @@
 <hr>
 <div class="full-width">
     <div class="row justify-content-between">
-        <div class="col-2">Timestamp</div>
+        <div class="col-2">Time:</div>
+        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_time">-</span></h5></div> 
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">Request acknowledge:</div>
         <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_request_id">-</span></h5></div> 
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">Expiry Date:</div>
+        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_expiry_date">-</span></h5></div> 
+    </div>
+    <div class="row justify-content-between">
+        <div class="col-2">Busy:</div>
+        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_busy_status">-</span></h5></div> 
     </div>
     <div class="row justify-content-between">
         <div class="col-2">X:</div>
@@ -43,16 +62,13 @@
     </div>
 </div>
 <div class="input text-right push">
-    <button type="button" class="btn btn-primary padded" onclick="onSubmitAmlXY()">Submit</button>
-    <button type="button" class="btn btn-primary padded" onclick="onLoadAmlXY()">Load</button>
-    <button type="button" class="btn btn-primary padded" onclick="onUnLoadAmlXY()">Unload</button>
-    <button type="button" class="btn btn-primary padded" onclick="onContinueAmlXY()">Continue</button>
+    {{ buttonSpinner('Submit', 'min_itf.onSubmitAmlXY()', 'aml_x_y_submit_spinner') }}
+    {{ buttonSpinner('Load', 'min_itf.onLoadAmlXY()', 'aml_x_y_load_spinner') }}
+    {{ buttonSpinner('Unload', 'min_itf.onUnLoadAmlXY()', 'aml_x_y_unload_spinner') }}
+    {{ buttonSpinner('Continue', 'min_itf.onContinueAmlXY()', 'aml_x_y_continue_spinner') }}
 </div>
 <div id="aml_x_y_error_status"></div>
 <div id="aml_x_y_request_status"></div>
-<div id="aml_x_y_busy_status" class="spinner-border" role="status" style="display:none">
-    <span class="sr-only">Loading...</span>
-</div>
 
 <hr>
 <div class="left-to-right"><h5>AML det theta</h5>
@@ -127,7 +143,11 @@
 <hr>
 <div class="full-width">
 <div class="row justify-content-between">
-    <div class="col-2">Timestamp</div>
+    <div class="col-2">Time:</div>
+    <div class="col-10"><h5><span class="badge badge-info" id="caen_time">-</span></h5></div> 
+</div>
+<div class="row justify-content-between">
+    <div class="col-2">Request acknowledge:</div>
     <div class="col-10"><h5><span class="badge badge-info" id="caen_request_id">-</span></h5></div> 
 </div>
 <div class="row justify-content-between">
@@ -151,10 +171,9 @@
 <div class="row justify-content-between">
     <div class="col-2">List data timeout (min):</div>
     <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_timeout">-</span></h5></div>
-    <div class="col-4"><input type="text" id="caen_list_data_timeout_request" placeholder="listdata id" class="float-right"></div>
+    <div class="col-4"><input type="text" id="caen_list_data_timeout_request" placeholder="listdata timeout" class="float-right"></div>
 </div>
 </div>
-
 
 <div class="input text-right push">
     <button type="button" class="btn btn-secondary" onclick="min_itf.toggleAcquisition()" id="caen_toggle_acquisition">
@@ -165,10 +184,10 @@
          <span class="spinner-border spinner-border-sm" id="caen_toggle_list_data_spinner" role="status" style="display:none"></span>
          <span id="caen_toggle_list_data_text" >Not acquiring data</span>
     </button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.clearData()">Clear Data</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.saveHistogram()">Save Histogram</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.continueOnError()">Continue</button>
-    <button type="button" class="btn btn-primary padded" onclick="min_itf.caen1.saveRegistry()">Save Registry</button>
+    {{ buttonSpinner('Clear Data', 'min_itf.caenClearData()', 'caen_clear_data_spinner') }}
+    {{ buttonSpinner('Save histogram', 'min_itf.caenSaveHistogram()', 'caen_save_histogram_spinner') }}
+    {{ buttonSpinner('Continue', 'min_itf.caenContinueOnError()', 'caen_continue_spinner') }}
+    {{ buttonSpinner('Save registry', 'min_itf.caenSaveRegistry()', 'caen_save_registry_spinner') }}
 </div>
 <div id="caen_error_status"></div>
 <div id="caen_request_status"></div>
