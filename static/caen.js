@@ -5,11 +5,10 @@ export {caen}
 class caen {
     constructor(url) {
         this.url = url;
-        this.connected = '-';
-        this.error = 'Success';
+        this.connected = false;
+        this.error = '-';
         this.requestId = '-';
         this.acquiringData = '-';
-        this.requestStatus = '-';
         this.histogramLocation = '-';
         this.listDataLocation = '-';
         this.listDataTimeout = '-';
@@ -20,16 +19,12 @@ class caen {
     }
 
     removeData() {
-        this.connected = '-';
-        this.error = 'Success';
         this.requestId = '-';
         this.acquiringData = '-';
-        this.requestStatus = '-';
         this.histogramLocation = '-';
         this.listDataLocation = '-';
         this.listDataTimeout = '-';
-        this.listDataSaving = '-';
-        this.savingListData = false;
+        this.listDataSaving = false;
         this.acquiringData = false;
         this.requestAcknowledge = true;
     }
@@ -57,6 +52,7 @@ class caen {
                 this.error = data['error_status'];
             })
             .catch(() => {
+                this.error = "Problem when parsing data";
                 this.removeData();
             });
     }
@@ -64,9 +60,11 @@ class caen {
     async waitForCompleted(requestId, retryLimit, retryCount) {
         return this.updateActuals().then( () => {
             if (this.requestId === requestId) {
+                this.requestAcknowledge = true;
                 return;
             }
             else if (retryCount < retryLimit) {
+                console.log('wait for complete');
                 return con.delay(100)
                     .then( () => this.waitForCompleted(requestId, retryLimit, retryCount + 1));
             }
@@ -76,10 +74,10 @@ class caen {
         })
     }
 
-    saveHistogram(histogramFolder) {
+    async saveHistogram(histogramFolder) {
         let request = "store_histogram=true\n";
         request += "store_histogram_folder=" + histogramFolder; + "\n";
-        this.sendRequest(request);
+        await this.sendRequest(request);
     }
 
     async sendRequest(request) {
@@ -87,7 +85,7 @@ class caen {
         let requestId = con.getUniqueIdentifier();
         let fullRequest = 'request_id=' + requestId + '\n';
         fullRequest += request;
-        con.postData(this.url + '/engine', fullRequest);
+        await con.postData(this.url + '/engine', fullRequest);
         await this.waitForCompleted(requestId, 30, 0);
     }
 
@@ -114,15 +112,15 @@ class caen {
         await this.sendRequest(request);
     }
 
-    continueOnError() {
-        this.sendRequest('continue=true');
+    async continueOnError() {
+        await this.sendRequest('continue=true');
     }
 
-    clearData() {
-        this.sendRequest('clear_acquisition=true');
+    async clearData() {
+        await this.sendRequest('clear_acquisition=true');
     }
 
-    saveRegistry() {
-        this.sendRequest('store_registry=true');
+    async saveRegistry() {
+        await this.sendRequest('store_registry=true');
     }
 }

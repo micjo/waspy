@@ -8,7 +8,7 @@ export {
 export {getEl};
 export {dataAcq, motors};
 export {setButtonOn, setButtonOff};
-export {setConnected};
+export {setConnected, setBadgeState};
 export {delay};
 export {postData};
 
@@ -24,7 +24,7 @@ let dataAcq =
     {caenUrl: 'http://ubuntu-desktop:22123'}
 
 
-function postData(host, textBody) {
+async function postData(host, textBody) {
     fetch(host, {
         method: 'POST',
         headers: {
@@ -49,9 +49,29 @@ function setConnected(id, connected) {
     }
 }
 
+function setBadgeState(id, errored) {
+    if (errored) {
+        getEl(id).setAttribute('class', 'badge badge-danger');
+    }
+    else {
+        getEl(id).setAttribute('class', 'badge badge-success');
+    }
+}
+
 function getUniqueIdentifier() {
-    // TODO: Check existing hta for javascript to generate timestamp
-    let timestamp = new Date(Date.now()).toLocaleTimeString('nl-BE');
+    let date = new Date();
+
+    // 0 + with slice(-2) ensures you have a leading 0 if needed
+    let year = date.getFullYear();
+    let month = ("0" + date.getMonth() + 1).slice(-2);
+    let day = ("0" + date.getDay() + 1).slice(-2);
+
+    let hours = ("0" + date.getHours()).slice(-2);
+    let minutes = ("0" + date.getMinutes()).slice(-2);
+    let seconds = ("0" + date.getSeconds()).slice(-2);
+
+    let timestamp = year + "." + month + "." + day + "__" + hours + ":" + minutes + "__" + seconds;
+
     return timestamp;
 }
 
