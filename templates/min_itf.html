@@ -1,11 +1,5 @@
 {% extends "base.html" %}
-
-{% macro buttonSpinner(text, onclick, spinnerId) -%}
-    <button type="button" class="btn btn-primary" onclick="{{ onclick }}">
-        <span class="spinner-border spinner-border-sm" id="{{ spinnerId }}" role="status" style="display:none"></span>
-         {{ text }}
-    </button>
-{% endmacro -%}
+{% import "ui_elements.html" as ui_elements %}
 
 {% block title %}Welcome{% endblock %}
 
@@ -47,7 +41,7 @@
         <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_expiry_date">-</span></h5></div>
     </div>
     <div class="row justify-content-between">
-        <div class="col-2">Busy:</div>
+        <div class="col-2">Status:</div>
         <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_busy_status">-</span></h5></div>
     </div>
     <div class="row justify-content-between">
@@ -62,10 +56,10 @@
     </div>
 </div>
 <div class="input text-right push">
-    {{ buttonSpinner('Submit', 'min_itf.onSubmitAmlXY()', 'aml_x_y_submit_spinner') }}
-    {{ buttonSpinner('Load', 'min_itf.onLoadAmlXY()', 'aml_x_y_load_spinner') }}
-    {{ buttonSpinner('Unload', 'min_itf.onUnLoadAmlXY()', 'aml_x_y_unload_spinner') }}
-    {{ buttonSpinner('Continue', 'min_itf.onContinueAmlXY()', 'aml_x_y_continue_spinner') }}
+    {{ ui_elements.buttonSpinner('Submit', 'min_itf.onSubmitAmlXY()', 'aml_x_y_submit_spinner') }}
+    {{ ui_elements.buttonSpinner('Load', 'min_itf.onLoadAmlXY()', 'aml_x_y_load_spinner') }}
+    {{ ui_elements.buttonSpinner('Unload', 'min_itf.onUnLoadAmlXY()', 'aml_x_y_unload_spinner') }}
+    {{ ui_elements.buttonSpinner('Continue', 'min_itf.onContinueAmlXY()', 'aml_x_y_continue_spinner') }}
 </div>
 <div id="aml_x_y_error_status"></div>
 <div id="aml_x_y_request_status"></div>
@@ -89,7 +83,7 @@
         <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_expiry_date">-</span></h5></div>
     </div>
     <div class="row justify-content-between">
-        <div class="col-2">Busy:</div>
+        <div class="col-2">Status:</div>
         <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_busy_status">-</span></h5></div>
     </div>
     <div class="row justify-content-between">
@@ -104,10 +98,10 @@
     </div>
 </div>
 <div class="input text-right push">
-    {{ buttonSpinner('Submit', 'min_itf.onSubmitAmlDetTheta()', 'aml_det_theta_submit_spinner') }}
-    {{ buttonSpinner('Load', 'min_itf.onLoadAmlDetTheta()', 'aml_det_theta_load_spinner') }}
-    {{ buttonSpinner('Unload', 'min_itf.onUnLoadAmlDetTheta()', 'aml_det_theta_unload_spinner') }}
-    {{ buttonSpinner('Continue', 'min_itf.onContinueAmlDetTheta()', 'aml_det_theta_continue_spinner') }}
+    {{ ui_elements.buttonSpinner('Submit', 'min_itf.onSubmitAmlDetTheta()', 'aml_det_theta_submit_spinner') }}
+    {{ ui_elements.buttonSpinner('Load', 'min_itf.onLoadAmlDetTheta()', 'aml_det_theta_load_spinner') }}
+    {{ ui_elements.buttonSpinner('Unload', 'min_itf.onUnLoadAmlDetTheta()', 'aml_det_theta_unload_spinner') }}
+    {{ ui_elements.buttonSpinner('Continue', 'min_itf.onContinueAmlDetTheta()', 'aml_det_theta_continue_spinner') }}
 </div>
 <div id="aml_det_theta_error_status"></div>
 <div id="aml_det_theta_request_status"></div>
@@ -131,7 +125,7 @@
         <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_expiry_date">-</span></h5></div>
     </div>
     <div class="row justify-content-between">
-        <div class="col-2">Busy:</div>
+        <div class="col-2">Status:</div>
         <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_busy_status">-</span></h5></div>
     </div>
     <div class="row justify-content-between">
@@ -146,10 +140,10 @@
     </div>
 </div>
 <div class="input text-right push">
-    {{ buttonSpinner('Submit', 'min_itf.onSubmitAmlPhiZeta()', 'aml_phi_zeta_submit_spinner') }}
-    {{ buttonSpinner('Load', 'min_itf.onLoadAmlPhiZeta()', 'aml_phi_zeta_load_spinner') }}
-    {{ buttonSpinner('Unload', 'min_itf.onUnLoadAmlPhiZeta()', 'aml_phi_zeta_unload_spinner') }}
-    {{ buttonSpinner('Continue', 'min_itf.onContinueAmlPhiZeta()', 'aml_phi_zeta_continue_spinner') }}
+    {{ ui_elements.buttonSpinner('Submit', 'min_itf.onSubmitAmlPhiZeta()', 'aml_phi_zeta_submit_spinner') }}
+    {{ ui_elements.buttonSpinner('Load', 'min_itf.onLoadAmlPhiZeta()', 'aml_phi_zeta_load_spinner') }}
+    {{ ui_elements.buttonSpinner('Unload', 'min_itf.onUnLoadAmlPhiZeta()', 'aml_phi_zeta_unload_spinner') }}
+    {{ ui_elements.buttonSpinner('Continue', 'min_itf.onContinueAmlPhiZeta()', 'aml_phi_zeta_continue_spinner') }}
 </div>
 <div id="aml_phi_zeta_error_status"></div>
 <div id="aml_phi_zeta_request_status"></div>
@@ -202,10 +196,10 @@
          <span class="spinner-border spinner-border-sm" id="caen_toggle_list_data_spinner" role="status" style="display:none"></span>
          <span id="caen_toggle_list_data_text" >Not acquiring data</span>
     </button>
-    {{ buttonSpinner('Clear Data', 'min_itf.caenClearData()', 'caen_clear_data_spinner') }}
-    {{ buttonSpinner('Save histogram', 'min_itf.caenSaveHistogram()', 'caen_save_histogram_spinner') }}
-    {{ buttonSpinner('Continue', 'min_itf.caenContinueOnError()', 'caen_continue_spinner') }}
-    {{ buttonSpinner('Save registry', 'min_itf.caenSaveRegistry()', 'caen_save_registry_spinner') }}
+    {{ ui_elements.buttonSpinner('Clear Data', 'min_itf.caenClearData()', 'caen_clear_data_spinner') }}
+    {{ ui_elements.buttonSpinner('Save histogram', 'min_itf.caenSaveHistogram()', 'caen_save_histogram_spinner') }}
+    {{ ui_elements.buttonSpinner('Continue', 'min_itf.caenContinueOnError()', 'caen_continue_spinner') }}
+    {{ ui_elements.buttonSpinner('Save registry', 'min_itf.caenSaveRegistry()', 'caen_save_registry_spinner') }}
 </div>
 <div id="caen_error_status"></div>
 <div id="caen_request_status"></div>
