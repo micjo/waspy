@@ -7,8 +7,7 @@ CORS(app)
 
 @app.route("/")
 def dashboard():
-    return render_template("dashboard.html",
-        array=(0,1,2,5,6,8))
+    return render_template("dashboard.html")
 
 @app.route("/det01_theta/<int:index>")
 def det01_theta(index):
@@ -20,6 +19,10 @@ def phi_zeta():
         return redirect((url_for('welcome')))
     else:
         return render_template("phi_zeta.html")
+
+@app.route('/caen_max')
+def caen_max():
+    return render_template("caen_max.html")
 
 
 @app.route("/aml_x_y", methods=["GET", "POST"])

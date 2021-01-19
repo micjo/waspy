@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% import "ui_elements.html" as ui_elements %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<script type="module">
+    import * as caen_max from '{{url_for('static', filename='caen_max.js')}}'
+    window.caen_max = caen_max;
+</script>
+<hr>
+<div class="left-to-right"><h5>CAEN </h5>
+    <h5><span class="badge badge-danger" id="caen_connect_status">Disconnected</span></h5>
+</div>
+<hr>
+<div class="full-width">
+    {{ ui_elements.dataLabelWithBadge('Time:', 'caen_time') }}
+    {{ ui_elements.dataLabelWithBadge('Request Acknowledge:', 'caen_request_id') }}
+    {{ ui_elements.dataLabelWithBadge('Acquiring Data:', 'caen_acquiring_data') }}
+    {{ ui_elements.dataLabelWithBadge('Storing List Data:', 'caen_storing_list_data') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('Histogram name:',
+        'caen_histogram_folder','caen_histogram_folder_request','histogram folder') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('List data name:',
+        'caen_list_data_folder','caen_list_data_folder_request','listdata folder') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('List data timeout(min):',
+        'caen_list_data_timeout','caen_list_data_timeout_request','listdata timeout') }}
+</div>
+
+<div class="input text-right push">
+    {{ ui_elements.toggleButtonSpinner('Not acquiring data', 'caen_toggle_acquisition_text',
+        'caen_toggle_acquisition','caen_toggle_acquisition_spinner', 'caen_max.toggleAcquisition()') }}
+    {{ ui_elements.toggleButtonSpinner('Not saving list data', 'caen_toggle_list_data_text',
+        'caen_toggle_list_data','caen_toggle_list_data_spinner', 'caen_max.toggleListData()') }}
+    {{ ui_elements.buttonSpinner('Clear Data', 'caen_max.caenClearData()', 'caen_clear_data_spinner') }}
+    {{ ui_elements.buttonSpinner('Save histogram', 'caen_max.caenSaveHistogram()', 'caen_save_histogram_spinner') }}
+    {{ ui_elements.buttonSpinner('Continue', 'caen_max.caenContinueOnError()', 'caen_continue_spinner') }}
+    {{ ui_elements.buttonSpinner('Save registry', 'caen_max.caenSaveRegistry()', 'caen_save_registry_spinner') }}
+</div>
+<div id="caen_error_status"></div>
+<div id="caen_request_status"></div>
+
+<hr>
+<div class="left-to-right"><h5>Histogram </h5></div>
+<hr>
+    {{ ui_elements.dataLabelWithBadgeAndInput('Board:',
+        'caen_histogram_plot_board','caen_histogram_plot_board_request','board number') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('Channel:',
+        'caen_histogram_plot_channel','caen_histogram_plot_channel_request','channel number') }}
+<div class="input text-right push">
+    {{ ui_elements.toggleButton('Not plotting histogram', 'caen_toggle_plot_histogram_text',
+        'caen_toggle_plot_histogram', 'caen_max.togglePlotHistogram()') }}
+</div>
+<div class="chart-container" style="position: relative; height:400px; width:100%;">
+    <canvas id="chart"></canvas>
+</div>
+{% endblock %}
