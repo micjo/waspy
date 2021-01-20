@@ -2,10 +2,13 @@ import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
 export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry, togglePlotHistogram};
+export {getActuals};
+
+window.setInterval(function() {
+    refreshData();
+}, 2000);
 
 let caen1 = new caen.caen('http://ubuntu-desktop:22123');
-
-
 let ctx = document.getElementById('chart').getContext('2d');
 let plotHistogram = false;
 let lineChart = new Chart(ctx, {
@@ -14,8 +17,9 @@ let lineChart = new Chart(ctx, {
       labels: [],
       datasets: [{
           label: 'Histogram',
-          backgroundColor: 'rgba(242, 207, 222, 0.40)'
-      }]
+          backgroundColor: 'rgba(242, 207, 222, 0.40)',
+          pointRadius: 2
+      }],
   },
   options: {
     maintainAspectRatio: false,
@@ -35,34 +39,61 @@ let lineChart = new Chart(ctx, {
 });
 
 async function refreshData() {
-    await caen1.updateActuals();
-    updateCaen();
-
+    getActuals();
     if (plotHistogram) {
         drawGraph();
+    }
+}
+
+async function getActuals() {
+    await caen1.updateActuals();
+    updateCaen();
+}
+
+function updatePlotButton() {
+    if (plotHistogram) {
+        con.setButtonOn("caen_toggle_plot_histogram");
+        con.getEl("caen_toggle_plot_histogram_text").innerText = "Plotting histogram";
+    }
+    else {
+        con.setButtonOff("caen_toggle_plot_histogram");
+        con.getEl("caen_toggle_plot_histogram_text").innerText = "Not plotting histogram";
     }
 }
 
 function togglePlotHistogram() {
     console.log("toggle plot histogram");
     plotHistogram = !plotHistogram;
-    if (plotHistogram) {
-        con.setButtonOn("caen_toggle_plot_histogram");
-        con.getEl("caen_toggle_plot_histogram_text").innerText = "Plotting histogram";
-        drawGraph();
-    }
-    else {
-        con.setButtonOff("caen_toggle_plot_histogram");
-        con.getEl("caen_toggle_plot_histogram_text").innerText = "Not plotting histogram";
-    }
-
-
+    updatePlotButton();
 }
 
-function drawGraph() {
+async function drawGraph() {
     console.log("TODO: parse data from caen");
-    lineChart.data.datasets[0].label = "Histogram";
-    lineChart.data.datasets[0].data = [{x:0,y:10},{x:1,y:11}];
+
+    let boardNr = con.getEl("caen_histogram_plot_board_request").value;
+    let channelNr = con.getEl("caen_histogram_plot_channel_request").value;
+
+    con.getEl("caen_chart_error_status").innerHTML = "";
+    if (!(boardNr && channelNr)) {
+        plotHistogram = false;
+        updatePlotButton();
+        con.collapsableError("caen_chart_error_status", "To plot the histogram, you need to specify" +
+            " a board number and a channel number");
+        return;
+    }
+
+    lineChart.data.datasets[0].label = "Histogram board: " + boardNr + ", " + channelNr;
+    lineChart.data.datasets[0].data = [];
+    let data = await caen1.getHistogram(boardNr, channelNr);
+    let i = 0;
+    for (const datapoint of data.split(",")) {
+        let element = {
+            x: i,
+            y: parseInt(datapoint)
+        }
+        lineChart.data.datasets[0].data.push(element);
+        i++;
+    }
     lineChart.update();
 }
 
@@ -177,7 +208,4 @@ function updateAcquireButton() {
     }
 }
 
-window.setInterval(function() {
-    refreshData();
-}, 2000);
 

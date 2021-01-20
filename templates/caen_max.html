@@ -26,15 +26,16 @@
         'caen_list_data_timeout','caen_list_data_timeout_request','listdata timeout') }}
 </div>
 
+    {{ ui_elements.buttonSpinner('Get Actuals', 'caen_get_actuals_spinner', 'caen_max.getActuals()') }}
 <div class="input text-right push">
     {{ ui_elements.toggleButtonSpinner('Not acquiring data', 'caen_toggle_acquisition_text',
         'caen_toggle_acquisition','caen_toggle_acquisition_spinner', 'caen_max.toggleAcquisition()') }}
     {{ ui_elements.toggleButtonSpinner('Not saving list data', 'caen_toggle_list_data_text',
         'caen_toggle_list_data','caen_toggle_list_data_spinner', 'caen_max.toggleListData()') }}
-    {{ ui_elements.buttonSpinner('Clear Data', 'caen_max.caenClearData()', 'caen_clear_data_spinner') }}
-    {{ ui_elements.buttonSpinner('Save histogram', 'caen_max.caenSaveHistogram()', 'caen_save_histogram_spinner') }}
-    {{ ui_elements.buttonSpinner('Continue', 'caen_max.caenContinueOnError()', 'caen_continue_spinner') }}
-    {{ ui_elements.buttonSpinner('Save registry', 'caen_max.caenSaveRegistry()', 'caen_save_registry_spinner') }}
+    {{ ui_elements.buttonSpinner('Clear Data', 'caen_clear_data_spinner', 'caen_max.caenClearData()') }}
+    {{ ui_elements.buttonSpinner('Save histogram', 'caen_save_histogram_spinner', 'caen_max.caenSaveHistogram()') }}
+    {{ ui_elements.buttonSpinner('Continue', 'caen_continue_spinner', 'caen_max.caenContinueOnError()') }}
+    {{ ui_elements.buttonSpinner('Save registry', 'caen_save_registry_spinner', 'caen_max.caenSaveRegistry()') }}
 </div>
 <div id="caen_error_status"></div>
 <div id="caen_request_status"></div>
@@ -50,6 +51,7 @@
     {{ ui_elements.toggleButton('Not plotting histogram', 'caen_toggle_plot_histogram_text',
         'caen_toggle_plot_histogram', 'caen_max.togglePlotHistogram()') }}
 </div>
+<div id="caen_chart_error_status"></div>
 <div class="chart-container" style="position: relative; height:400px; width:100%;">
     <canvas id="chart"></canvas>
 </div>
