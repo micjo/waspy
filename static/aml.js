@@ -95,7 +95,6 @@ class aml {
                 return;
             }
             else if (retryCount < retryLimit) {
-                console.log('wait for complete');
                 return con.delay(100)
                     .then( () => this.waitForCompleted(requestId, retryLimit, retryCount + 1));
             }
@@ -179,7 +178,7 @@ class aml {
         await this.sendRequest(request);
     }
 
-    async redefineSecondPos(newValue) {
+    async redefineSecondPosition(newValue) {
         let request = 'redefine_m2_position=' + newValue + '\n';
         await this.sendRequest(request);
     }

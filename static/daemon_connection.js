@@ -1,7 +1,5 @@
 export {
     collapsableError,
-    collapsableNotify,
-    collapsableSucess,
     getUniqueIdentifier,
 };
 
@@ -42,19 +40,19 @@ function setConnected(id, connected) {
     if (connected) {
         document.getElementById(id).innerText = 'Connected';
         document.getElementById(id).setAttribute(
-            'class', 'badge badge-success');
+            'class', 'badge bg-success');
     } else {
         document.getElementById(id).innerText = 'Disconnected';
-        document.getElementById(id).setAttribute('class', 'badge badge-danger');
+        document.getElementById(id).setAttribute('class', 'badge bg-danger');
     }
 }
 
 function setBadgeState(id, errored) {
     if (errored) {
-        getEl(id).setAttribute('class', 'badge badge-danger');
+        getEl(id).setAttribute('class', 'badge bg-danger');
     }
     else {
-        getEl(id).setAttribute('class', 'badge badge-success');
+        getEl(id).setAttribute('class', 'badge bg-success');
     }
 }
 
@@ -75,27 +73,19 @@ function getUniqueIdentifier() {
     return timestamp;
 }
 
-function collapsableNotify(id, message) {
-    let notifyDiv = makeAlert('alert-secondary', message);
-    document.getElementById(id).appendChild(notifyDiv);
-    setTimeout(function() {
-        document.getElementById(id).removeChild(notifyDiv);
-    }, 5000);
-}
-
 function collapsableError(id, message) {
     getEl(id).innerHTML = '';
-    let errorDiv = makeAlert('alert-danger', message);
-    document.getElementById(id).appendChild(errorDiv);
-}
-
-function collapsableSucess(id, message) {
-    getEl(id).innerHTML = '';
-    let successDiv = makeAlert('alert-success', message);
-    document.getElementById(id).appendChild(successDiv);
-    setTimeout(function() {
-        document.getElementById(id).removeChild(successDiv);
-    }, 5000);
+    let errorDiv = document.createElement('div');
+    errorDiv.classList.add('alert', 'alert-danger', 'alert-dismissible', 'show');
+    errorDiv.setAttribute('role', 'alert');
+    errorDiv.innerText = message;
+    let closeButton = document.createElement("button");
+    closeButton.classList.add('btn-close');
+    closeButton.setAttribute("type","button");
+    closeButton.setAttribute("data-bs-dismiss","alert");
+    closeButton.setAttribute("aria-label","Close");
+    errorDiv.appendChild(closeButton);
+    getEl(id).appendChild(errorDiv);
 }
 
 function setButtonOn(id) {

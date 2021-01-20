@@ -26,8 +26,7 @@
         'caen_list_data_timeout','caen_list_data_timeout_request','listdata timeout') }}
 </div>
 
-    {{ ui_elements.buttonSpinner('Get Actuals', 'caen_get_actuals_spinner', 'caen_max.getActuals()') }}
-<div class="input text-right push">
+<div class="push-right">
     {{ ui_elements.toggleButtonSpinner('Not acquiring data', 'caen_toggle_acquisition_text',
         'caen_toggle_acquisition','caen_toggle_acquisition_spinner', 'caen_max.toggleAcquisition()') }}
     {{ ui_elements.toggleButtonSpinner('Not saving list data', 'caen_toggle_list_data_text',
@@ -47,7 +46,7 @@
         'caen_histogram_plot_board','caen_histogram_plot_board_request','board number') }}
     {{ ui_elements.dataLabelWithBadgeAndInput('Channel:',
         'caen_histogram_plot_channel','caen_histogram_plot_channel_request','channel number') }}
-<div class="input text-right push">
+<div class="push-right">
     {{ ui_elements.toggleButton('Not plotting histogram', 'caen_toggle_plot_histogram_text',
         'caen_toggle_plot_histogram', 'caen_max.togglePlotHistogram()') }}
 </div>

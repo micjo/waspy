@@ -10,12 +10,17 @@
 
 .push-right {
     text-align:right;
+    display:flex;
+    justify-content: flex-end;
+    margin-top:0.5%;
+    margin-bottom:0.5%;
 }
 
 .push {
     margin-top:0.2%;
     margin-bottom:0.2%;
     margin-left: auto;
+    margin-right: 0;
 }
 .tab {
     margin-left: 10px;
@@ -23,6 +28,10 @@
 
 .pad-bottom {
     margin-bottom: .5rem;
+}
+
+.btn {
+    margin-left: 0.5%;
 }
 
 .max-filler{flex-grow:9; text-align:center}
