@@ -18,7 +18,8 @@ let lineChart = new Chart(ctx, {
       datasets: [{
           label: 'Histogram',
           backgroundColor: 'rgba(242, 207, 222, 0.40)',
-          pointRadius: 2
+          pointRadius: 3,
+          showLine: true
       }],
   },
   options: {
@@ -34,12 +35,40 @@ let lineChart = new Chart(ctx, {
           tension: 0 // disables bezier curves
       }
     },
-    responsiveAnimationDuration: 0 // animation duration after a resize
+    responsiveAnimationDuration: 0, // animation duration after a resize,
+    pan: {
+      enabled: true,
+      mode: "x",
+      speed: 100,
+      threshold: 100
+    },
+    zoom: {
+      enabled: true,
+      drag: false,
+      mode: "x",
+      limits: {
+        max: 10,
+        min: 0.5
+      }
+    }
   }
 });
 
+
+let i = 0;
+function randomstuff() {
+    let element = {
+        x: i,
+        y: Math.random()*100
+    }
+    lineChart.data.datasets[0].data.push(element);
+    i++;
+    lineChart.update();
+}
+
 async function refreshData() {
     getActuals();
+    randomstuff();
     if (plotHistogram) {
         drawGraph();
     }

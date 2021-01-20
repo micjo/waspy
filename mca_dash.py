@@ -19,11 +19,11 @@ def aml_x_y():
 
 @app.route("/aml_det_theta")
 def aml_det_theta():
-    return render_template("aml_max.html", prefix="aml_det_theta");
+    return render_template("aml_max.html", prefix="aml_det_theta", url='http://localhost:22001');
 
 @app.route("/aml_phi_zeta")
 def aml_phi_zeta():
-    return render_template("aml_max.html", prefix="aml_det_theta");
+    return render_template("aml_max.html", prefix="aml_phi_zeta", url='http://localhost:22002');
 
 @app.route("/favicon.ico")
 def favicon():

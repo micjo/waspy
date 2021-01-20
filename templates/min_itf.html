@@ -12,187 +12,103 @@
         itf.refreshData();
     }, 2000);
 </script>
+
+<!-- For future use: these should come from the flask server -->
+{% set prefix1 = 'aml_x_y' %}
+{% set prefix2 = 'aml_det_theta' %}
+{% set prefix3 = 'aml_phi_zeta' %}
+{% set prefix4 = 'caen' %}
+
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
-    <h5><span class="badge badge-danger" id="aml_x_y_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix1}}_connect_status">Disconnected</span></h5>
 </div>
 <hr>
 <div class="full-width">
-    <div class="row justify-content-between">
-        <div class="col-2">Time:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_time">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Request acknowledge:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_request_id">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Expiry Date:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_expiry_date">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Status:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_x_y_busy_status">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">X:</div>
-        <div class="col-6"><h5><span class="badge badge-info" id="aml_x_y_first">-</span></h5></div>
-        <div class="col-4"><input class="float-right" type="text" id="aml_x_y_first_request" placeholder="X"></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Y:</div>
-        <div class="col-6"><h5><span class="badge badge-info" id="aml_x_y_second">-</span></h5></div>
-        <div class="col-4"><input class="float-right" type="text" id="aml_x_y_second_request" placeholder="Y"></div>
-    </div>
+    {{ ui_elements.dataLabelWithBadge("Time:", prefix1+"_time") }}
+    {{ ui_elements.dataLabelWithBadge("Request Acknowledge:", prefix1+"_request_id") }}
+    {{ ui_elements.dataLabelWithBadge("Expiry Date:", prefix1+"_expiry_date") }}
+    {{ ui_elements.dataLabelWithBadge("Status:", prefix1+"_busy_status") }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('X:', prefix1+'_first', prefix1+'_first_request', 'X') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('Y:', prefix1+'_second', prefix1+'_second_request', 'Y') }}
 </div>
-<div class="input text-right push">
-    {{ ui_elements.buttonSpinner('Submit', 'aml_x_y_submit_spinner', 'itf.onSubmitAmlXY()') }}
-    {{ ui_elements.buttonSpinner('Load', 'aml_x_y_load_spinner', 'itf.onLoadAmlXY()') }}
-    {{ ui_elements.buttonSpinner('Unload', 'aml_x_y_unload_spinner', 'itf.onUnLoadAmlXY()') }}
-    {{ ui_elements.buttonSpinner('Continue', 'aml_x_y_continue_spinner', 'itf.onContinueAmlXY()') }}
+<div class="push-right">
+    {{ ui_elements.buttonSpinner('Submit', prefix1 + '_submit_spinner', 'itf.onSubmitAmlXY()') }}
+    {{ ui_elements.buttonSpinner('Load/Unload', prefix1 + '_load_spinner', 'itf.onLoadAmlXY()') }}
+    {{ ui_elements.buttonSpinner('Continue', prefix1 + '_continue_spinner', 'itf.onContinueAmlXY()') }}
 </div>
-<div id="aml_x_y_error_status"></div>
-<div id="aml_x_y_request_status"></div>
+<div id="{{prefix1}}_error_status" ></div>
+<div id="{{prefix1}}_request_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>AML det_theta  </h5>
-    <h5><span class="badge badge-danger" id="aml_det_theta_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix2}}_connect_status">Disconnected</span></h5>
 </div>
 <hr>
 <div class="full-width">
-    <div class="row justify-content-between">
-        <div class="col-2">Time:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_time">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Request acknowledge:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_request_id">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Expiry Date:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_expiry_date">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Status:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_det_theta_busy_status">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">X:</div>
-        <div class="col-6"><h5><span class="badge badge-info" id="aml_det_theta_first">-</span></h5></div>
-        <div class="col-4"><input class="float-right" type="text" id="aml_det_theta_first_request" placeholder="det"></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Y:</div>
-        <div class="col-6"><h5><span class="badge badge-info" id="aml_det_theta_second">-</span></h5></div>
-        <div class="col-4"><input class="float-right" type="text" id="aml_det_theta_second_request" placeholder="theta"></div>
-    </div>
+    {{ ui_elements.dataLabelWithBadge("Time:", prefix2+"_time") }}
+    {{ ui_elements.dataLabelWithBadge("Request Acknowledge:", prefix2+"_request_id") }}
+    {{ ui_elements.dataLabelWithBadge("Expiry Date:", prefix2+"_expiry_date") }}
+    {{ ui_elements.dataLabelWithBadge("Status:", prefix2+"_busy_status") }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('X:', prefix2+'_first', prefix2+'_first_request', 'X') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('Y:', prefix2+'_second', prefix2+'_second_request', 'Y') }}
 </div>
-<div class="input text-right push">
-    {{ ui_elements.buttonSpinner('Submit', 'aml_det_theta_submit_spinner', 'itf.onSubmitAmlDetTheta()') }}
-    {{ ui_elements.buttonSpinner('Load', 'aml_det_theta_load_spinner', 'itf.onLoadAmlDetTheta()') }}
-    {{ ui_elements.buttonSpinner('Unload', 'aml_det_theta_unload_spinner', 'itf.onUnLoadAmlDetTheta()') }}
-    {{ ui_elements.buttonSpinner('Continue', 'aml_det_theta_continue_spinner', 'itf.onContinueAmlDetTheta()') }}
+<div class="push-right">
+    {{ ui_elements.buttonSpinner('Submit', prefix2 + '_submit_spinner', 'itf.onSubmitAmlDetTheta()') }}
+    {{ ui_elements.buttonSpinner('Load/Unload', prefix2 + '_load_spinner', 'itf.onLoadAmlDetTheta()') }}
+    {{ ui_elements.buttonSpinner('Continue', prefix2 + '_continue_spinner', 'itf.onContinueAmlDetTheta()') }}
 </div>
-<div id="aml_det_theta_error_status"></div>
-<div id="aml_det_theta_request_status"></div>
+<div id="{{prefix2}}_error_status" ></div>
+<div id="{{prefix2}}_request_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>AML phi_zeta  </h5>
-    <h5><span class="badge badge-danger" id="aml_phi_zeta_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix3}}_connect_status">Disconnected</span></h5>
 </div>
 <hr>
 <div class="full-width">
-    <div class="row justify-content-between">
-        <div class="col-2">Time:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_time">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Request acknowledge:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_request_id">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Expiry Date:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_expiry_date">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Status:</div>
-        <div class="col-10"><h5><span class="badge badge-info" id="aml_phi_zeta_busy_status">-</span></h5></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">X:</div>
-        <div class="col-6"><h5><span class="badge badge-info" id="aml_phi_zeta_first">-</span></h5></div>
-        <div class="col-4"><input class="float-right" type="text" id="aml_phi_zeta_first_request" placeholder="det"></div>
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-2">Y:</div>
-        <div class="col-6"><h5><span class="badge badge-info" id="aml_phi_zeta_second">-</span></h5></div>
-        <div class="col-4"><input class="float-right" type="text" id="aml_phi_zeta_second_request" placeholder="theta"></div>
-    </div>
+    {{ ui_elements.dataLabelWithBadge("Time:", prefix3+"_time") }}
+    {{ ui_elements.dataLabelWithBadge("Request Acknowledge:", prefix3+"_request_id") }}
+    {{ ui_elements.dataLabelWithBadge("Expiry Date:", prefix3+"_expiry_date") }}
+    {{ ui_elements.dataLabelWithBadge("Status:", prefix3+"_busy_status") }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('X:', prefix3+'_first', prefix3+'_first_request', 'X') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput('Y:', prefix3+'_second', prefix3+'_second_request', 'Y') }}
 </div>
-<div class="input text-right push">
-    {{ ui_elements.buttonSpinner('Submit', 'aml_phi_zeta_submit_spinner', 'itf.onSubmitAmlPhiZeta()') }}
-    {{ ui_elements.buttonSpinner('Load', 'aml_phi_zeta_load_spinner', 'itf.onLoadAmlPhiZeta()') }}
-    {{ ui_elements.buttonSpinner('Unload', 'aml_phi_zeta_unload_spinner', 'itf.onUnLoadAmlPhiZeta()') }}
-    {{ ui_elements.buttonSpinner('Continue', 'aml_phi_zeta_continue_spinner', 'itf.onContinueAmlPhiZeta()') }}
+<div class="push-right">
+    {{ ui_elements.buttonSpinner('Submit', prefix3 + '_submit_spinner', 'itf.onSubmitAmlPhiZeta()') }}
+    {{ ui_elements.buttonSpinner('Load/Unload', prefix3 + '_load_spinner', 'itf.onLoadAmlPhiZeta()') }}
+    {{ ui_elements.buttonSpinner('Continue', prefix3 + '_continue_spinner', 'itf.onContinueAmlPhiZeta()') }}
 </div>
-<div id="aml_phi_zeta_error_status"></div>
-<div id="aml_phi_zeta_request_status"></div>
-
+<div id="{{prefix3}}_error_status"></div>
+<div id="{{prefix3}}_request_status"></div>
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
-    <h5><span class="badge badge-danger" id="caen_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix4}}_connect_status">Disconnected</span></h5>
 </div>
 <hr>
 <div class="full-width">
-<div class="row justify-content-between">
-    <div class="col-2">Time:</div>
-    <div class="col-10"><h5><span class="badge badge-info" id="caen_time">-</span></h5></div>
-</div>
-<div class="row justify-content-between">
-    <div class="col-2">Request acknowledge:</div>
-    <div class="col-10"><h5><span class="badge badge-info" id="caen_request_id">-</span></h5></div>
-</div>
-<div class="row justify-content-between">
-    <div class="col-2">Acquiring Data:</div>
-    <div class="col-10"><h5><span class="badge badge-info" id="caen_acquiring_data">-</span></h5></div>
-</div>
-<div class="row justify-content-between">
-    <div class="col-2">Storing List Data:</div>
-    <div class="col-10"><h5><span class="badge badge-info" id="caen_storing_list_data">-</span></h5></div>
-</div>
-<div class="row justify-content-between">
-    <div class="col-2">Histogram name:</div>
-    <div class="col-6"><h5><span class="badge badge-info" id="caen_histogram_folder">-</span></h5></div>
-    <div class="col-4"><input type="text" id="caen_histogram_folder_request" placeholder="histogram folder" class="float-right"></div>
-</div>
-<div class="row justify-content-between">
-    <div class="col-2">List data name:</div>
-    <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_folder">-</span></h5></div>
-    <div class="col-4"><input type="text" id="caen_list_data_folder_request" placeholder="listdata folder" class="float-right"></div>
-</div>
-<div class="row justify-content-between">
-    <div class="col-2">List data timeout (min):</div>
-    <div class="col-6"><h5><span class="badge badge-info" id="caen_list_data_timeout">-</span></h5></div>
-    <div class="col-4"><input type="text" id="caen_list_data_timeout_request" placeholder="listdata timeout" class="float-right"></div>
-</div>
+    {{ ui_elements.dataLabelWithBadge("Time:", prefix4+"_time") }}
+    {{ ui_elements.dataLabelWithBadge("Request Acknowledge:", prefix4+"_request_id") }}
+    {{ ui_elements.dataLabelWithBadge("Acquiring Data:", prefix4+"_acquiring_data") }}
+    {{ ui_elements.dataLabelWithBadge("Storing list data:", prefix4+"_storing_list_data") }}
+    {{ ui_elements.dataLabelWithBadgeAndInput("Histogram folder:", prefix4+"_histogram_folder", "histogram folder") }}
+    {{ ui_elements.dataLabelWithBadgeAndInput("List data folder:", prefix4+"_list_data_folder", "list data folder") }}
+    {{ ui_elements.dataLabelWithBadgeAndInput("List data timeout (min):", prefix4+"_list_data_timeout", "list data timeout") }}
 </div>
 
-<div class="input text-right push">
-    <button type="button" class="btn btn-secondary" onclick="itf.toggleAcquisition()" id="caen_toggle_acquisition">
-         <span class="spinner-border spinner-border-sm" id="caen_toggle_acquisition_spinner" role="status" style="display:none"></span>
-         <span id="caen_toggle_acquisition_text" >Not acquiring data</span>
-    </button>
-    <button type="button" class="btn btn-secondary padded" onclick="itf.toggleListData()" id="caen_toggle_list_data">
-         <span class="spinner-border spinner-border-sm" id="caen_toggle_list_data_spinner" role="status" style="display:none"></span>
-         <span id="caen_toggle_list_data_text" >Not acquiring data</span>
-    </button>
+<div class="push-right">
+    {{ ui_elements.toggleButtonSpinner("Not acquiring data", prefix4+"_toggle_acquisition_text", prefix4+"_toggle_acquisition",
+    prefix4+"_toggle_acquisition_spinner", "itf.toggleAcquisition()")}}
+    {{ ui_elements.toggleButtonSpinner("Not storing list data", prefix4+"_toggle_list_data_text", prefix4+"_toggle_list_data",
+    prefix4+"_toggle_list_data_spinner", "itf.toggleListData()")}}
+
     {{ ui_elements.buttonSpinner('Clear Data', 'caen_clear_data_spinner', 'itf.caenClearData()') }}
     {{ ui_elements.buttonSpinner('Save histogram', 'caen_save_histogram_spinner', 'itf.caenSaveHistogram()') }}
     {{ ui_elements.buttonSpinner('Continue', 'caen_continue_spinner', 'itf.caenContinueOnError()') }}
     {{ ui_elements.buttonSpinner('Save registry', 'caen_save_registry_spinner', 'itf.caenSaveRegistry()') }}
 </div>
-<div id="caen_error_status"></div>
-<div id="caen_request_status"></div>
+<div id="{{prefix4}}_error_status"></div>
+<div id="{{prefix4}}_request_status"></div>
 </div>
 
 {% endblock %}
