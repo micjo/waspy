@@ -107,6 +107,12 @@ class caen {
         await this.sendRequest(request);
     }
 
+    async getHistogram(boardNr, channelNr) {
+        return fetch(this.url + "/histogram/" + boardNr + "-" + channelNr)
+            .then(response => {return response.text();})
+            .catch(error => console.log(error));
+    }
+
     async stopStoringListData() {
         let request = "store_list_data=false\n";
         await this.sendRequest(request);

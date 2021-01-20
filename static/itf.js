@@ -2,10 +2,12 @@ import * as aml from './aml.js'
 import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
+export {onContinueAml, onLoadAml, onSubmitAml, onUnloadAml};
 export {onContinueAmlXY, onLoadAmlXY, onSubmitAmlXY, onUnLoadAmlXY};
 export {onContinueAmlDetTheta, onLoadAmlDetTheta, onSubmitAmlDetTheta, onUnLoadAmlDetTheta};
 export {onContinueAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta, onUnLoadAmlPhiZeta};
 export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry};
+export {refreshData, updateAml};
 
 let caen1 = new caen.caen('http://ubuntu-desktop:22123');
 let amlXy = new aml.aml('http://localhost:22000');
@@ -247,7 +249,4 @@ function updateAcquireButton() {
     }
 }
 
-window.setInterval(function() {
-    refreshData();
-}, 2000);
 
