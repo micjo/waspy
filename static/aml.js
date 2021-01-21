@@ -79,6 +79,7 @@ class aml {
                 this.secondMotorStepCounter = data['motor2']['position_steps'];
                 this.secondMotorOffset = data['motor2']['offset'];
                 this.error = data['error_status'];
+		if (this.error === "No error") { this.error = "Success"; }
                 this.busy = data['status'];
                 this.completionTime = data['expiry_date'];
 

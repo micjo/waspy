@@ -2,7 +2,7 @@ import * as aml from './aml.js'
 import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
-let caen1 = new caen.caen('http://ubuntu-desktop:22123', 'caen');
+let caen1 = new caen.caen('http://169.254.13.109:22123', 'caen');
 
 let amlXy = new aml.aml('http://localhost:22000');
 let amlDetTheta = new aml.aml('http://localhost:22001');

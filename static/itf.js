@@ -9,7 +9,7 @@ export {onContinueAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta, onUnLoadAmlP
 export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry};
 export {refreshData, updateAml};
 
-let caen1 = new caen.caen('http://ubuntu-desktop:22123');
+let caen1 = new caen.caen('http://169.254.13.109:22123');
 let amlXy = new aml.aml('http://localhost:22000');
 let amlDetTheta = new aml.aml('http://localhost:22001');
 let amlPhiZeta = new aml.aml('http://localhost:22002');

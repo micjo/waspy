@@ -8,7 +8,7 @@ window.setInterval(function() {
     refreshData();
 }, 2000);
 
-let caen1 = new caen.caen('http://ubuntu-desktop:22123');
+let caen1 = new caen.caen('http://169.254.13.109:22123');
 let ctx = document.getElementById('chart').getContext('2d');
 let plotHistogram = false;
 let lineChart = new Chart(ctx, {
@@ -55,20 +55,8 @@ let lineChart = new Chart(ctx, {
 });
 
 
-let i = 0;
-function randomstuff() {
-    let element = {
-        x: i,
-        y: Math.random()*100
-    }
-    lineChart.data.datasets[0].data.push(element);
-    i++;
-    lineChart.update();
-}
-
 async function refreshData() {
     getActuals();
-    randomstuff();
     if (plotHistogram) {
         drawGraph();
     }
