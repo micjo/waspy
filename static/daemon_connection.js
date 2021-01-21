@@ -4,22 +4,12 @@ export {
 };
 
 export {getEl};
-export {dataAcq, motors};
 export {setButtonOn, setButtonOff};
 export {setConnected, setBadgeState};
 export {delay};
 export {postData};
 
 export {hide, show};
-
-let motors = {
-    xyUrl: 'http://169.254.166.218:22800',
-    detThetaUrl: 'http://169.254.166.218:22802',
-    phiZetaUrl: 'http://169.254.166.218:22801'
-};
-
-let dataAcq =
-    {caenUrl: 'http://ubuntu-desktop:22123'}
 
 
 async function postData(host, textBody) {
