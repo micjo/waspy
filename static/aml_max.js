@@ -24,10 +24,14 @@ export { submit, load, continueOnError };
 
 let currentAml;
 let prefix;
+let firstLoadPos;
+let secondLoadPos;
 
-function makeAml(pref, url) {
+function makeAml(pref, url, loadFirst, loadSecond) {
     currentAml = new aml.aml(url);
     prefix = pref;
+    firstLoadPos = loadFirst;
+    secondLoadPos = loadSecond;
 }
 
 function updateAmlExtended() {
@@ -58,7 +62,7 @@ function submit() {
 }
 
 function load() {
-    itf.onLoadAml(prefix, currentAml, 10, 10);
+    itf.onLoadAml(prefix, currentAml, firstLoadPos, secondLoadPos);
 }
 
 async function toggleFirstPos() {

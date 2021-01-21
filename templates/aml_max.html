@@ -6,7 +6,7 @@
 <script type="module">
     import * as aml_max from '{{url_for('static', filename='aml_max.js')}}'
     window.aml_max = aml_max;
-    aml_max.makeAml('{{prefix}}', '{{url}}');
+    aml_max.makeAml('{{prefix}}', '{{url}}', {{load_first}}, {{load_second}});
 
     window.setInterval(function() {
         aml_max.refreshData();

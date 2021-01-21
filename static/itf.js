@@ -2,10 +2,10 @@ import * as aml from './aml.js'
 import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
-export {onContinueAml, onLoadAml, onSubmitAml, onUnloadAml};
-export {onContinueAmlXY, onLoadAmlXY, onSubmitAmlXY, onUnLoadAmlXY};
-export {onContinueAmlDetTheta, onLoadAmlDetTheta, onSubmitAmlDetTheta, onUnLoadAmlDetTheta};
-export {onContinueAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta, onUnLoadAmlPhiZeta};
+export {onContinueAml, onLoadAml, onSubmitAml};
+export {onContinueAmlXY, onSubmitAmlXY, onLoadAmlXY};
+export {onContinueAmlDetTheta, onLoadAmlDetTheta, onSubmitAmlDetTheta};
+export {onContinueAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta};
 export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry};
 export {refreshData, updateAml};
 
@@ -54,19 +54,6 @@ async function onSubmitAml(prefix, activeAml) {
 async function onLoadAml(prefix, activeAml, firstPos, secondPos) {
     con.getEl(prefix + "_first_request").value = firstPos;
     con.getEl(prefix + "_second_request").value = secondPos;
-    con.show(prefix + "_load_spinner", activeAml);
-    await onMoveAml(prefix, activeAml);
-    con.hide(prefix + "_load_spinner", activeAml);
-    updateAml(prefix, activeAml);
-}
-
-async function onUnloadAml(prefix, activeAml, firstPos, secondPos) {
-    con.getEl(prefix + "_first_request").value = firstPos;
-    con.getEl(prefix + "_second_request").value = secondPos;
-    con.show(prefix + "_unload_spinner", activeAml);
-    await onMoveAml(prefix, activeAml);
-    con.hide(prefix + "_unload_spinner", activeAml);
-    updateAml(prefix, activeAml);
 }
 
 async function onContinueAml(prefix, activeAml) {
@@ -81,11 +68,7 @@ function onSubmitAmlXY() {
 }
 
 function onLoadAmlXY() {
-    onLoadAml('aml_x_y', amlXy, 50, 30);
-}
-
-function onUnLoadAmlXY() {
-    onUnloadAml('aml_x_y', amlXy, 40, 20);
+    onLoadAml('aml_x_y', amlXy, 72.50, 61.7);
 }
 
 function onContinueAmlXY() {
@@ -97,11 +80,7 @@ function onSubmitAmlDetTheta() {
 }
 
 function onLoadAmlDetTheta() {
-    onLoadAml('aml_det_theta', amlDetTheta, 50, 30);
-}
-
-function onUnLoadAmlDetTheta() {
-    onUnloadAml('aml_det_theta', amlDetTheta, 40, 20);
+    onLoadAml('aml_det_theta', amlDetTheta, 170.00, -180.50);
 }
 
 function onContinueAmlDetTheta() {
@@ -113,11 +92,7 @@ function onSubmitAmlPhiZeta() {
 }
 
 function onLoadAmlPhiZeta() {
-    onLoadAml('aml_phi_zeta', amlPhiZeta, 50, 30);
-}
-
-function onUnLoadAmlPhiZeta() {
-    onUnloadAml('aml_phi_zeta', amlPhiZeta, 40, 20);
+    onLoadAml('aml_phi_zeta', amlPhiZeta, 0.00, -1.00);
 }
 
 function onContinueAmlPhiZeta() {
