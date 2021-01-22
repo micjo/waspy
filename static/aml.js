@@ -130,6 +130,16 @@ class aml {
         await this.sendRequest(request);
     }
 
+    async hide() {
+        let request = 'hide=true\n';
+        await this.sendRequest(request);
+    }
+
+    async show() {
+        let request = 'hide=false\n';
+        await this.sendRequest(request);
+    }
+
     async redefineFirstPosition(newValue) {
         let request = 'redefine_m1_position=' + newValue + '\n';
         await this.sendRequest(request);

@@ -2,7 +2,6 @@ import * as aml from './aml.js'
 import * as itf from './itf.js'
 import * as con from './daemon_connection.js'
 
-
 // TODO: move itf functionality in here gradually:
 // add function : makeAml('prefix','url') and add this to a dictionary
 // then all onclick calls in html will have to specify what the prefix is to select the wanted aml
@@ -17,10 +16,10 @@ export {makeAml, refreshData};
 export { toggleFirstPos, toggleFirstTemperature, getFirstPos, getFirstTemp};
 export { redefineFirstStep, redefineFirstPos, redefineFirstOffset };
 
+
 export { toggleSecondPos, toggleSecondTemperature, getSecondPos, getSecondTemp};
 export { redefineSecondStep, redefineSecondPos, redefineSecondOffset };
-export { submit, load, continueOnError };
-
+export { submit, load, continueOnError, hide, show };
 
 let currentAml;
 let prefix;
@@ -63,6 +62,14 @@ function submit() {
 
 function load() {
     itf.onLoadAml(prefix, currentAml, firstLoadPos, secondLoadPos);
+}
+
+function hide() {
+    itf.onHideAml(prefix, currentAml);
+}
+
+function show() {
+    itf.onShowAml(prefix, currentAml);
 }
 
 async function toggleFirstPos() {
@@ -134,6 +141,7 @@ async function redefineFirstPos() {
     con.hide(prefix + "_first_position_spinner");
     updateAmlExtended();
 }
+
 async function redefineFirstOffset() {
     let newValue = con.getEl(prefix+'_first_offset_request').value;
     if (!newValue) {

@@ -3,10 +3,9 @@ import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
 let caen1 = new caen.caen('http://169.254.13.109:22123', 'caen');
-
-let amlXy = new aml.aml('http://localhost:22000');
-let amlDetTheta = new aml.aml('http://localhost:22001');
-let amlPhiZeta = new aml.aml('http://localhost:22002');
+let amlXy = new aml.aml('http://169.254.166.218:22000');
+let amlDetTheta = new aml.aml('http://169.254.166.218:22001');
+let amlPhiZeta = new aml.aml('http://169.254.166.218:22002');
 
 function updateCaen() {
     con.setConnected("caen_connect_status", caen1.connected);

@@ -11,12 +11,11 @@
     window.setInterval(function() {
         aml_max.refreshData();
     }, 2000);
-    
 
 </script>
 
 <div class="left-to-right"><h5> {{ prefix }}  </h5>
-    <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Disconnected</span></h5>
+    <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>
 </div>
 <hr>
 <div class="full-width">
@@ -31,6 +30,8 @@
     {{ ui_elements.buttonSpinner('Submit', prefix+'_submit_spinner', 'aml_max.submit()') }}
     {{ ui_elements.buttonSpinner('Load/Unload', prefix+'_clear_data_spinner', 'aml_max.load()') }}
     {{ ui_elements.buttonSpinner('Continue', prefix+'_continue_spinner', 'aml_max.continueOnError()') }}
+    {{ ui_elements.buttonSpinner('Hide', prefix+'_hide_spinner', 'aml_max.hide()') }}
+    {{ ui_elements.buttonSpinner('Show', prefix+'_show_spinner', 'aml_max.show()') }}
 </div>
 <div id="{{prefix}}_request_status"></div>
 <div id="{{prefix}}_error_status"></div>
