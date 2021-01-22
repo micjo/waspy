@@ -21,7 +21,7 @@
 
 <hr>
 <div class="left-to-right"><h5>AML x_y  </h5>
-    <h5><span class="badge bg-danger" id="{{prefix1}}_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix1}}_connect_status">Not running</span></h5>
 </div>
 <hr>
 <div class="full-width">
@@ -36,13 +36,15 @@
     {{ ui_elements.buttonSpinner('Submit', prefix1 + '_submit_spinner', 'itf.onSubmitAmlXY()') }}
     {{ ui_elements.buttonSpinner('Load/Unload', prefix1 + '_load_spinner', 'itf.onLoadAmlXY()') }}
     {{ ui_elements.buttonSpinner('Continue', prefix1 + '_continue_spinner', 'itf.onContinueAmlXY()') }}
+    {{ ui_elements.buttonSpinner('Hide', prefix1 + '_hide_spinner', 'itf.onHideAmlXY()') }}
+    {{ ui_elements.buttonSpinner('Show', prefix1 + '_show_spinner', 'itf.onShowAmlXY()') }}
 </div>
 <div id="{{prefix1}}_error_status" ></div>
 <div id="{{prefix1}}_request_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>AML det_theta  </h5>
-    <h5><span class="badge bg-danger" id="{{prefix2}}_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix2}}_connect_status">Not running</span></h5>
 </div>
 <hr>
 <div class="full-width">
@@ -57,13 +59,15 @@
     {{ ui_elements.buttonSpinner('Submit', prefix2 + '_submit_spinner', 'itf.onSubmitAmlDetTheta()') }}
     {{ ui_elements.buttonSpinner('Load/Unload', prefix2 + '_load_spinner', 'itf.onLoadAmlDetTheta()') }}
     {{ ui_elements.buttonSpinner('Continue', prefix2 + '_continue_spinner', 'itf.onContinueAmlDetTheta()') }}
+    {{ ui_elements.buttonSpinner('Hide', prefix2 + '_hide_spinner', 'itf.onHideAmlDetTheta()') }}
+    {{ ui_elements.buttonSpinner('Show', prefix2 + '_show_spinner', 'itf.onShowAmlDetTheta()') }}
 </div>
 <div id="{{prefix2}}_error_status" ></div>
 <div id="{{prefix2}}_request_status"></div>
 
 <hr>
 <div class="left-to-right"><h5>AML phi_zeta  </h5>
-    <h5><span class="badge bg-danger" id="{{prefix3}}_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix3}}_connect_status">Not running</span></h5>
 </div>
 <hr>
 <div class="full-width">
@@ -78,12 +82,14 @@
     {{ ui_elements.buttonSpinner('Submit', prefix3 + '_submit_spinner', 'itf.onSubmitAmlPhiZeta()') }}
     {{ ui_elements.buttonSpinner('Load/Unload', prefix3 + '_load_spinner', 'itf.onLoadAmlPhiZeta()') }}
     {{ ui_elements.buttonSpinner('Continue', prefix3 + '_continue_spinner', 'itf.onContinueAmlPhiZeta()') }}
+    {{ ui_elements.buttonSpinner('Hide', prefix3 + '_hide_spinner', 'itf.onHideAmlPhiZeta()') }}
+    {{ ui_elements.buttonSpinner('Show', prefix3 + '_show_spinner', 'itf.onShowAmlPhiZeta()') }}
 </div>
 <div id="{{prefix3}}_error_status"></div>
 <div id="{{prefix3}}_request_status"></div>
 <hr>
 <div class="left-to-right"><h5>CAEN </h5>
-    <h5><span class="badge bg-danger" id="{{prefix4}}_connect_status">Disconnected</span></h5>
+    <h5><span class="badge bg-danger" id="{{prefix4}}_connect_status">Not running</span></h5>
 </div>
 <hr>
 <div class="full-width">

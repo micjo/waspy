@@ -15,15 +15,15 @@ def caen_max():
 
 @app.route("/aml_x_y")
 def aml_x_y():
-    return render_template("aml_max.html", prefix="aml_x_y", url='http://localhost:22000', load_first='72.50', load_second='61.7');
+    return render_template("aml_max.html", prefix="aml_x_y", url='http://169.254.166.218:22000', load_first='72.50', load_second='61.7');
 
 @app.route("/aml_det_theta")
 def aml_det_theta():
-    return render_template("aml_max.html", prefix="aml_det_theta", url='http://localhost:22001', load_first='170.00', load_second='-180.50');
+    return render_template("aml_max.html", prefix="aml_det_theta", url='http://169.254.166.218:22001', load_first='170.00', load_second='-180.50');
 
 @app.route("/aml_phi_zeta")
 def aml_phi_zeta():
-    return render_template("aml_max.html", prefix="aml_phi_zeta", url='http://localhost:22002', load_first='0.00', load_second='-1.00');
+    return render_template("aml_max.html", prefix="aml_phi_zeta", url='http://169.254.166.218:22002', load_first='0.00', load_second='-1.00');
 
 @app.route("/favicon.ico")
 def favicon():

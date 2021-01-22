@@ -2,17 +2,17 @@ import * as aml from './aml.js'
 import * as caen from './caen.js'
 import * as con from './daemon_connection.js'
 
-export {onContinueAml, onLoadAml, onSubmitAml};
-export {onContinueAmlXY, onSubmitAmlXY, onLoadAmlXY};
-export {onContinueAmlDetTheta, onLoadAmlDetTheta, onSubmitAmlDetTheta};
-export {onContinueAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta};
+export {onContinueAml, onLoadAml, onShowAml, onHideAml, onSubmitAml};
+export {onContinueAmlXY, onShowAmlXY, onHideAmlXY, onSubmitAmlXY, onLoadAmlXY};
+export {onContinueAmlDetTheta, onShowAmlDetTheta, onHideAmlDetTheta, onLoadAmlDetTheta, onSubmitAmlDetTheta};
+export {onContinueAmlPhiZeta, onShowAmlPhiZeta, onHideAmlPhiZeta, onLoadAmlPhiZeta, onSubmitAmlPhiZeta};
 export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry};
 export {refreshData, updateAml};
 
 let caen1 = new caen.caen('http://169.254.13.109:22123');
-let amlXy = new aml.aml('http://localhost:22000');
-let amlDetTheta = new aml.aml('http://localhost:22001');
-let amlPhiZeta = new aml.aml('http://localhost:22002');
+let amlXy = new aml.aml('http://169.254.166.218:22000');
+let amlDetTheta = new aml.aml('http://169.254.166.218:22001');
+let amlPhiZeta = new aml.aml('http://169.254.166.218:22002');
 
 async function onMoveAml(prefix, activeAml) {
     let firstMotorRequest = con.getEl(prefix + '_first_request').value;
@@ -44,6 +44,18 @@ function updateAml(prefix, activeAml) {
     }
 }
 
+async function onHideAml(prefix, activeAml) {
+    con.show(prefix+ '_hide_spinner');
+    await activeAml.hide();
+    con.hide(prefix+ '_hide_spinner');
+}
+
+async function onShowAml(prefix, activeAml) {
+    con.show(prefix+ '_show_spinner');
+    await activeAml.show();
+    con.hide(prefix+ '_show_spinner');
+}
+
 async function onSubmitAml(prefix, activeAml) {
     con.show(prefix+'_submit_spinner');
     await onMoveAml(prefix, activeAml);
@@ -71,6 +83,14 @@ function onLoadAmlXY() {
     onLoadAml('aml_x_y', amlXy, 72.50, 61.7);
 }
 
+function onShowAmlXY() {
+    onShowAml('aml_x_y', amlXy);
+}
+
+function onHideAmlXY() {
+    onHideAml('aml_x_y', amlXy);
+}
+
 function onContinueAmlXY() {
     onContinueAml('aml_x_y', amlXy);
 }
@@ -83,6 +103,14 @@ function onLoadAmlDetTheta() {
     onLoadAml('aml_det_theta', amlDetTheta, 170.00, -180.50);
 }
 
+function onShowAmlDetTheta() {
+    onShowAml('aml_det_theta', amlDetTheta);
+}
+
+function onHideAmlDetTheta() {
+    onHideAml('aml_det_theta', amlDetTheta);
+}
+
 function onContinueAmlDetTheta() {
     onContinueAml('aml_det_theta', amlDetTheta);
 }
@@ -93,6 +121,14 @@ function onSubmitAmlPhiZeta() {
 
 function onLoadAmlPhiZeta() {
     onLoadAml('aml_phi_zeta', amlPhiZeta, 0.00, -1.00);
+}
+
+function onShowAmlPhiZeta() {
+    onShowAml('aml_phi_zeta', amlPhiZeta);
+}
+
+function onHideAmlPhiZeta() {
+    onHideAml('aml_phi_zeta', amlPhiZeta);
 }
 
 function onContinueAmlPhiZeta() {

@@ -28,11 +28,11 @@ function delay(ms) {
 
 function setConnected(id, connected) {
     if (connected) {
-        document.getElementById(id).innerText = 'Connected';
+        document.getElementById(id).innerText = 'Running';
         document.getElementById(id).setAttribute(
             'class', 'badge bg-success');
     } else {
-        document.getElementById(id).innerText = 'Disconnected';
+        document.getElementById(id).innerText = 'Not running';
         document.getElementById(id).setAttribute('class', 'badge bg-danger');
     }
 }
