@@ -1,5 +1,5 @@
-import * as caen from './caen.js'
-import * as con from './daemon_connection.js'
+import * as caen from './controllers/caen.js'
+import * as con from './controllers/daemon_connection.js'
 
 export {toggleAcquisition, toggleListData, caenClearData, caenSaveHistogram, caenContinueOnError, caenSaveRegistry, togglePlotHistogram};
 export {getActuals};
@@ -54,8 +54,22 @@ let lineChart = new Chart(ctx, {
   }
 });
 
+let index = 0;
+function randomStuff() {
+    let randomNumber = Math.random();
+
+    let element = {
+        x: index,
+        y: randomNumber
+    }
+
+    lineChart.data.datasets[0].data.push(element);
+    lineChart.update();
+    index++;
+}
 
 async function refreshData() {
+    randomStuff();
     getActuals();
     if (plotHistogram) {
         drawGraph();

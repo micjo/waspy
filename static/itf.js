@@ -1,6 +1,6 @@
-import * as aml from './aml.js'
-import * as caen from './caen.js'
-import * as con from './daemon_connection.js'
+import * as aml from './controllers/aml.js'
+import * as caen from './controllers/caen.js'
+import * as con from './controllers/daemon_connection.js'
 
 export {onContinueAml, onLoadAml, onShowAml, onHideAml, onSubmitAml};
 export {onContinueAmlXY, onShowAmlXY, onHideAmlXY, onSubmitAmlXY, onLoadAmlXY};
