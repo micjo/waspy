@@ -8,6 +8,7 @@ export {setButtonOn, setButtonOff};
 export {setConnected, setBadgeState};
 export {delay};
 export {postData};
+export {sendRequestAndSpin, getStatus, addBadge, sendRequest};
 
 export {hide, show};
 
@@ -21,6 +22,10 @@ async function postData(host, textBody) {
         body: textBody
     });
 }
+
+
+
+
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -92,24 +97,6 @@ function setButtonOff(id) {
     button.classList.add("btn-secondary");
 }
 
-function makeAlert(alertType, message) {
-    let alertDiv = document.createElement('div');
-    alertDiv.classList.add(
-        'alert', alertType, 'alert-dismissible', 'top-margin');
-    alertDiv.setAttribute('role', 'alert');
-    alertDiv.innerText = message;
-    let closeDiv = document.createElement('button');
-    closeDiv.classList.add('close');
-    closeDiv.setAttribute('data-dismiss', 'alert');
-    let spanDiv = document.createElement('span');
-    spanDiv.setAttribute('aria-hidden', 'true');
-    spanDiv.innerHTML = '&times';
-    closeDiv.append(spanDiv);
-    alertDiv.append(closeDiv);
-
-    return alertDiv;
-}
-
 function hide(element) {
     getEl(element).setAttribute("style", "display:none");
 }
@@ -121,3 +108,60 @@ function show(element) {
 function getEl(element) {
     return document.getElementById(element);
 }
+
+async function getStatus(url) {
+    let dataFromDm;
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => { dataFromDm = data; });
+    return dataFromDm;
+}
+
+async function waitForCompleted(url, requestId, retryLimit, retryCount) {
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data['request_id'] == requestId && data['request_finished'] == true) {
+                return data;
+            }
+            else {
+                if (retryCount < retryLimit) {
+                return delay(100)
+                .then( () => waitForCompleted(url, requestId, retryLimit, retryCount +1));
+                }
+            }
+        });
+}
+
+async function sendRequestAndSpin(url, request, spinnerId) {
+    show(spinnerId);
+    let data = await sendRequest(url, request);
+    hide(spinnerId);
+    return data
+}
+
+async function sendRequest(url, request) {
+    let requestId = { "request_id" : getUniqueIdentifier()}
+
+    let fullRequest = {
+        ...requestId,
+        ...request
+    };
+    await postData(url, JSON.stringify(fullRequest));
+    let data = await waitForCompleted(url, requestId["request_id"], 100, 0);
+    return data
+}
+
+
+async function addBadge(text, parentId) {
+
+    let rootDiv = document.createElement('h5');
+    let badgeDiv = document.createElement('span');
+    badgeDiv.classList.add('badge', 'bg-success');
+    badgeDiv.innerText = text;
+
+    rootDiv.appendChild(badgeDiv);
+
+    getEl(parentId).appendChild(rootDiv);
+}
+

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% import "ui_elements.html" as ui_elements %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+
+<script type="module">
+    import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
+    window.max_motrona = max_motrona;
+
+    window.setInterval(function() {
+        max_motrona.refreshAllData('{{url}}','{{prefix}}');
+    }, 2000);
+</script>
+
+
+
+<div class="left-to-right"><h5> {{ prefix }}  </h5>
+    <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>
+</div>
+<hr>
+<div class="full-width">
+    {{ ui_elements.dataLabelWithBadge('Request Id::', prefix+'_request_id') }}
+    {{ ui_elements.dataLabelWithBadge('Request Finish:', prefix+'_request_finished') }}
+    {{ ui_elements.dataLabelWithBadge('Counts:', prefix+'_expiry_date') }}
+    {{ ui_elements.dataLabelWithBadge('Status:', prefix+'_status') }}
+    {{ ui_elements.redefineButton('target_charge:', prefix+'_target_charge', prefix+'_target_charge_request', 'spin', "max_motrona.set_target_charge(url,prefix, .."))}}
+
+</div>
+<div class="push-right">
+    {{ ui_elements.buttonSpinner("pause counting", prefix+"_ps_spinner", 
+        ui_elements.func4( "max_motrona.sendRequest", url,prefix,prefix + "_ps_spinner", '{"pause_counting":true}'))}}
+    {{ ui_elements.buttonSpinner("clear start counting", prefix+"_cs_spinner", 
+        ui_elements.func4( "max_motrona.sendRequest", url,prefix,prefix + "_cs_spinner", '{"clear-start_counting":true}'))}}
+    {{ ui_elements.buttonSpinner('Hide', prefix+'_hide_spinner', 'aml_max.hide()') }}
+    {{ ui_elements.buttonSpinner('Hide', prefix+'_hide_spinner', 'aml_max.hide()') }}
+    {{ ui_elements.buttonSpinner('Show', prefix+'_show_spinner', 'aml_max.show()') }}
+</div>
+<div id="{{prefix}}_request_status"></div>
+<div id="{{prefix}}_error_status"></div>
+
+
+{% endblock %}

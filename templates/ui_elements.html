@@ -5,6 +5,12 @@
     </button>
 {% endmacro -%}
 
+{% macro buttonSpinnerWithDescription(text, spinnerId, description, onclick) -%}
+<button type="button" class="btn btn-outline-primary" onclick="{{ onclick }}"  data-bs-toggle="tooltip" title="{{description}}">
+        <span class="spinner-border spinner-border-sm" id="{{ spinnerId }}" role="status" style="display:none"></span>
+         {{ text }}
+    </button>
+{% endmacro -%}
 
 {% macro toggleButtonSpinner(text, textId, buttonId, spinnerId, onclick) -%}
 <button type="button" class="btn btn-secondary" onclick="{{ onclick }}" id="{{ buttonId }}">
@@ -44,11 +50,23 @@
             <input type="text" id="{{inputId}}"class="form-control" placeholder="New value" aria-label="Recipient's username" aria-describedby="basic-addon2">
                 <button class="btn btn-outline-primary" type="button" onClick="{{onclick}}">
                     <span class="spinner-border spinner-border-sm" id="{{ spinnerId }}" role="status" style="display:none"></span>
-                    <span >Redefine</span>
+                    <span >Set new Value</span>
                 </button>
         </div>
     </div>
 </div>
+{%endmacro -%}
+
+{% macro func3(funcName, arg1, arg2, arg3) -%}
+{{funcName}}('{{arg1}}','{{arg2}}','{{arg3}}')
+{%endmacro -%}
+
+{% macro func4(funcName, arg1, arg2, arg3, arg4) -%}
+{{funcName}}('{{arg1}}','{{arg2}}','{{arg3}}', '{{arg4}}')
+{%endmacro -%}
+
+{% macro func5(funcName, arg1, arg2, arg3, arg4, arg5) -%}
+{{funcName}}('{{arg1}}','{{arg2}}','{{arg3}}', '{{arg4}}', '{{arg5}}')
 {%endmacro -%}
 
 

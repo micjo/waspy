@@ -1,6 +1,6 @@
-import * as aml from './aml.js'
+import * as aml from './controllers/aml.js'
 import * as itf from './itf.js'
-import * as con from './daemon_connection.js'
+import * as con from './controllers/daemon_connection.js'
 
 // TODO: move itf functionality in here gradually:
 // add function : makeAml('prefix','url') and add this to a dictionary
@@ -226,6 +226,7 @@ async function redefineSecondPos() {
     con.hide(prefix + "_second_position_spinner");
     updateAmlExtended();
 }
+
 async function redefineSecondOffset() {
     let newValue = con.getEl(prefix+'_second_offset_request').value;
     if (!newValue) {
