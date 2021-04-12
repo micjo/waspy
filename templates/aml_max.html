@@ -23,8 +23,8 @@
     {{ ui_elements.dataLabelWithBadge('Request Acknowledge:', prefix+'_request_id') }}
     {{ ui_elements.dataLabelWithBadge('Expiry Date:', prefix+'_expiry_date') }}
     {{ ui_elements.dataLabelWithBadge('Status:', prefix+'_busy_status') }}
-    {{ ui_elements.dataLabelWithBadgeAndInput('X:', prefix+'_first', prefix+'_first_request', 'X') }}
-    {{ ui_elements.dataLabelWithBadgeAndInput('Y:', prefix+'_second', prefix+'_second_request', 'Y') }}
+    {{ ui_elements.dataLabelWithBadgeAndInput(first_name+':', prefix+'_first', prefix+'_first_request', first_name) }}
+    {{ ui_elements.dataLabelWithBadgeAndInput(second_name+':', prefix+'_second', prefix+'_second_request', second_name) }}
 </div>
 <div class="push-right">
     {{ ui_elements.buttonSpinner('Submit', prefix+'_submit_spinner', 'aml_max.submit()') }}
