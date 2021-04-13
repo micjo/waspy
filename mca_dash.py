@@ -23,7 +23,7 @@ def min_itf():
     return render_template("min_itf.html")
 
 @app.route("/motrona_rbs")
-def ui_motrona_rbs():
+def motrona_rbs():
     return render_template("max_motrona.html", prefix ="Motrona", url="/api/motrona_rbs")
 
 @app.route("/api/caps/<hw>")
@@ -51,7 +51,7 @@ def api_motrona_rbs(hw):
 
 @app.route("/aml_x_y")
 def aml_x_y():
-    return render_template("aml_max.html", prefix="aml_x_y", url='http://169.254.166.218:22000', 
+    return render_template("aml_max.html", prefix="aml_x_y", url='http://169.254.166.218:22000',
     	load_first='72.50', load_second='61.7', first_name='X', second_name='Y');
 
 @app.route('/caen_max')
@@ -60,7 +60,7 @@ def caen_max():
 
 @app.route("/aml_det_theta")
 def aml_det_theta():
-    return render_template("aml_max.html", prefix="aml_det_theta", url='http://169.254.166.218:22001', 
+    return render_template("aml_max.html", prefix="aml_det_theta", url='http://169.254.166.218:22001',
     	load_first='170.00', load_second='-180.50', first_name='Det', second_name='Theta');
 
 @app.route("/aml_phi_zeta")

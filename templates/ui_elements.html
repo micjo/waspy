@@ -83,7 +83,7 @@
 {% macro redefineDropDownCall(text, call, url, prefix, id, request, values) -%}
 <div class="row justify-content-between">
     <div class="col-2">{{text}} </div>
-    <div class="col-4"><h5><span class="badge bg-success" id="{{prefix}}_{{id}}">-</span></h5></div>
+<div class="col-4"><h5><span class="badge bg-success" id="{{prefix}}_{{id}}">-</span></h5></div>
     <div class="col-6">
         <div class="input-group mb-3">
             <select class="form-select" id="{{prefix}}_{{id}}_request">
@@ -102,12 +102,12 @@
 </div>
 {%endmacro -%}
 
+{% macro activeLink(url, title, icon) -%}
+<li class="nav-item">
+    <a href="{{url_for(url)}}" class="nav-link  {% if request.path == url_for(url)%} active {%endif%}">
+    <i class="feather-{{icon}} pe-2"></i>
 
-{% macro activeLink(url, title) -%}
-      <li class="nav-item  {% if request.path == url_for(url)%} active {%endif%}">
-        <a href="{{url_for(url)}}" class="nav-link text-dark">
-                  {% if request.path == url_for(url)%} > {%endif%} 
-                    {{ title }}
-              </a>
-      </li>
+       {{title}}
+   </a>
+</li>
 {%endmacro -%}
