@@ -1,8 +1,9 @@
 {% import "ui_elements.html" as ui_elements %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
     <title>{% block title %}{% endblock %}</title>
     <script src="{{url_for('static', filename='chart.min.js')}}"></script>
     <script src="{{url_for('static', filename='bootstrap.min.js')}}"></script>
@@ -13,36 +14,39 @@
     <script src="{{url_for('static', filename='chartjs-plugin-zoom.min.js')}}"></script>
 
     <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='sidebar.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
-</head>
-<body>
+    <link rel="stylesheet" href="{{url_for('static', filename='dashboard.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='feather.css')}}">
+  </head>
+  <body>
 
-<!-- Vertical navbar -->
-<div class="vertical-nav bg-white" id="sidebar">
-    <div class="py-4 px-3 mb-4 bg-light">
-        <div class="media-body">
-          <h4 class="m-0">RBS Control panel</h4>
-          <p class="font-weight-light text-muted mb-0">MCA-IBA</p>
-        </div>
-    </div>
-    <p class="text-gray font-weight-bold text-uppercase px-3 small pb-4 mb-0">Main</p>
-    <ul class="nav flex-column bg-white mb-0">
-      {{ ui_elements.activeLink('dashboard','Dashboard') }}
-      {{ ui_elements.activeLink('min_itf','RBS Minimal') }}
-      {{ ui_elements.activeLink('caen_max','CAEN') }}
-      {{ ui_elements.activeLink('aml_x_y','AML X Y') }}
-      {{ ui_elements.activeLink('aml_det_theta','AML Det Theta') }}
-      {{ ui_elements.activeLink('aml_phi_zeta','AML Phi Zeta') }}
-      {{ ui_elements.activeLink('ui_motrona_rbs','Motrona RBS') }}
-    </ul>
-  </div>
-  <!-- End vertical navbar -->
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+    <div class="navbar-brand col-md-3 col-lg-2 me-0 px-3">Wasp control panel</div>
+</header>
 
-<div class="page-content p-5" id="content" >
+
+<div class="container-fluid">
+  <div class="row">
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+      <div class="position-sticky pt-3">
+          <ul class="list-group">
+      {{ ui_elements.activeLink('dashboard','Dashboard','grid') }}
+      {{ ui_elements.activeLink('min_itf','RBS Minimal','play') }}
+      {{ ui_elements.activeLink('caen_max','CAEN','hard-drive') }}
+      {{ ui_elements.activeLink('aml_x_y','AML X Y','move') }}
+      {{ ui_elements.activeLink('aml_det_theta','AML Det Theta','move') }}
+      {{ ui_elements.activeLink('aml_phi_zeta','AML Phi Zeta','move') }}
+      {{ ui_elements.activeLink('motrona_rbs','Motrona RBS','activity') }}
+        </ul>
+
+      </div>
+    </nav>
+
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
 {% block content %}
 {% endblock %}
+    </main>
+  </div>
 </div>
-
 </body>
 </html>
