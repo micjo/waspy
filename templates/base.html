@@ -4,7 +4,9 @@
   <head>
     <meta charset="utf-8">
 
-    <title>{% block title %}{% endblock %}</title>
+{% set title %}{% block title %}{% endblock %}{% endset %}
+
+    <title>{{title}}</title>
     <script src="{{url_for('static', filename='chart.min.js')}}"></script>
     <script src="{{url_for('static', filename='bootstrap.min.js')}}"></script>
 
@@ -22,6 +24,7 @@
 
 <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
     <div class="navbar-brand col-md-3 col-lg-2 me-0 px-3">Wasp control panel</div>
+    <div class="navbar-brand">{{title}}</div>
 </header>
 
 
