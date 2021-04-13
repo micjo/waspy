@@ -8,7 +8,8 @@ CORS(app)
 
 
 config = {
-        "motrona_rbs": "http://localhost:22000/api/latest"
+        "motrona_rbs": "http://localhost:22000/api/latest",
+        "aml_x_y": "http://localhost:22001/api/latest"
 }
 
 
@@ -21,39 +22,41 @@ def dashboard():
 def min_itf():
     return render_template("min_itf.html")
 
-
 @app.route("/motrona_rbs")
 def ui_motrona_rbs():
-    resp = requests.get(config["motrona_rbs"] + "/caps")
-    return render_template("max_motrona.html", prefix ="motrona", url="/api/motrona_rbs")
+    return render_template("max_motrona.html", prefix ="Motrona", url="/api/motrona_rbs")
 
-@app.route("/api/motrona_rbs/caps")
-def api_motrona_rbs_caps():
-    resp = requests.get("http://localhost:22000/api/latest/caps")
-    resp = requests.get(config["motrona_rbs"] + "/caps")
+@app.route("/api/caps/<hw>")
+def api_motrona_rbs_caps(hw):
+    resp = requests.get(config[hw] + "/caps")
     return resp.json(), resp.status_code
 
-@app.route("/api/motrona_rbs", methods=["POST", "GET"])
-def api_motrona_rbs():
+@app.route("/api/<hw>", methods=["POST", "GET"])
+def api_motrona_rbs(hw):
     if request.method == "POST":
         data_string = request.data.decode('utf-8')
         json_request = json.loads(data_string)
-        resp = requests.post(config["motrona_rbs"], json=json_request)
-        return jsonify(resp.text), resp.status_code
+        try:
+            resp = requests.post(config[hw], json=json_request)
+            return jsonify(resp.text), resp.status_code
+        except:
+            return jsonify(""), 404
     else:
-        resp = requests.get(config["motrona_rbs"])
-        return resp.json(), resp.status_code
-
-
-@app.route('/caen_max')
-def caen_max():
-    return render_template("caen_max.html")
+        try:
+            resp = requests.get(config[hw])
+            return resp.json(), resp.status_code
+        except:
+            return jsonify(""), 404
 
 
 @app.route("/aml_x_y")
 def aml_x_y():
     return render_template("aml_max.html", prefix="aml_x_y", url='http://169.254.166.218:22000', 
     	load_first='72.50', load_second='61.7', first_name='X', second_name='Y');
+
+@app.route('/caen_max')
+def caen_max():
+    return render_template("caen_max.html")
 
 @app.route("/aml_det_theta")
 def aml_det_theta():

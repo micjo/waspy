@@ -13,27 +13,60 @@
 </script>
 
 
+{% macro urlprefix() -%}
+('{{url}}','{{prefix}}')
+{%endmacro -%}
+
 
 <div class="left-to-right"><h5> {{ prefix }}  </h5>
     <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>
+    <h5><span class="badge badge-danger" id="{{prefix}}_error_status">Error?</span></h5>
 </div>
 <hr>
 <div class="full-width">
-    {{ ui_elements.dataLabelWithBadge('Request Id::', prefix+'_request_id') }}
-    {{ ui_elements.dataLabelWithBadge('Request Finish:', prefix+'_request_finished') }}
-    {{ ui_elements.dataLabelWithBadge('Counts:', prefix+'_expiry_date') }}
-    {{ ui_elements.dataLabelWithBadge('Status:', prefix+'_status') }}
-    {{ ui_elements.redefineButton('target_charge:', prefix+'_target_charge', prefix+'_target_charge_request', 'spin', "max_motrona.set_target_charge(url,prefix, .."))}}
-
+{{ ui_elements.dataLabelWithBadge('Request Id:', prefix+'_request_id') }}
+{{ ui_elements.dataLabelWithBadge('Request Finish:', prefix+'_request_finished') }}
+{{ ui_elements.dataLabelWithBadge('Counts:', prefix+'_counts') }}
+{{ ui_elements.dataLabelWithBadge('Counting Status:', prefix+'_status') }}
+{{ ui_elements.dataLabelWithBadge('charge(nC):', prefix+'_charge') }}
+{{ ui_elements.dataLabelWithBadge('Counting time(msec):', prefix+'_counting_time') }}
+{{ ui_elements.dataLabelWithBadge('Current(nA):', prefix+'_current') }}
+{{ ui_elements.dataLabelWithBadge('Error Status:', prefix+'_error') }}
+{{ ui_elements.dataLabelWithBadge('Target Counts:', prefix+'_target_counts') }}
+{{ ui_elements.dataLabelWithBadge('Firmware Version:', prefix+'_firmware_version') }}
+<hr>
+Counting Settings
+<hr>
+{{ ui_elements.redefineButtonCall('Target Charge:', 'max_motrona.setFloat', url, prefix, 'target_charge', 'target_charge')}}
+{{ ui_elements.redefineButtonCall('Pulses to Counts Factor:', 'max_motrona.setFloat', url, prefix, 'pulse_to_counts', 'pulse_count_factor')}}
+{{ ui_elements.redefineButtonCall('Counts to Charge Factor:', 'max_motrona.setFloat', url, prefix, 'counts_to_charge', 'count_charge_factor')}}
+{{ ui_elements.redefineDropDownCall('Counting Mode:', 'max_motrona.setString', url, prefix, 'count_mode', 'set_count_mode', ["a_single","a+b","a-b","a/b_90_x1","a/b_90_x2","a/b_90_x4"])}}
+{{ ui_elements.redefineDropDownCall('Input type:', 'max_motrona.setString', url, prefix, 'input_pulse_type', 'set_type_of_input_pulse', ["npn","pnp","namur","tri-state"])}}
 </div>
+
+<hr>
+Analog Settings
+<hr>
+{{ ui_elements.redefineButtonCall('Analog Start:','max_motrona.setInt', url, prefix, 'analog_start', 'set_analog_start')}}
+{{ ui_elements.redefineButtonCall('Analog End:'  ,'max_motrona.setInt', url, prefix, 'analog_end'  , 'set_analog_end')}}
+{{ ui_elements.redefineButtonCall('Analog Offset:','max_motrona.setFloat',  url, prefix, 'analog_offset', 'set_analog_offset')}}
+{{ ui_elements.redefineButtonCall('Analog Gain:','max_motrona.setFloat',  url, prefix, 'analog_gain', 'set_analog_gain')}}
+<hr>
+
+<hr>
+Preselection Settings
+<hr>
+{{ ui_elements.redefineButtonCall('Preselection 1:', 'max_motrona.setInt', url, prefix, 'preselection_1', 'preselection_1')}}
+{{ ui_elements.redefineButtonCall('Preselection 2:', 'max_motrona.setInt', url, prefix, 'preselection_2', 'preselection_2')}}
+{{ ui_elements.redefineButtonCall('Preselection 3:', 'max_motrona.setInt', url, prefix, 'preselection_3', 'preselection_3')}}
+{{ ui_elements.redefineButtonCall('Preselection 4:', 'max_motrona.setInt', url, prefix, 'preselection_4', 'preselection_4')}}
+
 <div class="push-right">
-    {{ ui_elements.buttonSpinner("pause counting", prefix+"_ps_spinner", 
-        ui_elements.func4( "max_motrona.sendRequest", url,prefix,prefix + "_ps_spinner", '{"pause_counting":true}'))}}
-    {{ ui_elements.buttonSpinner("clear start counting", prefix+"_cs_spinner", 
-        ui_elements.func4( "max_motrona.sendRequest", url,prefix,prefix + "_cs_spinner", '{"clear-start_counting":true}'))}}
-    {{ ui_elements.buttonSpinner('Hide', prefix+'_hide_spinner', 'aml_max.hide()') }}
-    {{ ui_elements.buttonSpinner('Hide', prefix+'_hide_spinner', 'aml_max.hide()') }}
-    {{ ui_elements.buttonSpinner('Show', prefix+'_show_spinner', 'aml_max.show()') }}
+{{ ui_elements.buttonSpinnerWithRequest("pause counting", "max_motrona.setRequest", url, prefix, 'pause', '{"pause_counting":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("clear start counting", "max_motrona.setRequest", url, prefix, 'clearstart', '{"clear-start_counting":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("hide", "max_motrona.setRequest", url, prefix, 'hide', '{"hide":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("show", "max_motrona.setRequest", url, prefix, 'show', '{"hide":false}') }}
+{{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.setRequest", url, prefix, 'continue', '{"continue":true}') }}
 </div>
 <div id="{{prefix}}_request_status"></div>
 <div id="{{prefix}}_error_status"></div>

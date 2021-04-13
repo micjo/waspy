@@ -57,16 +57,49 @@
 </div>
 {%endmacro -%}
 
-{% macro func3(funcName, arg1, arg2, arg3) -%}
-{{funcName}}('{{arg1}}','{{arg2}}','{{arg3}}')
+{% macro redefineButtonCall(text, call, url, prefix, id, request) -%}
+<div class="row justify-content-between">
+    <div class="col-2">{{text}} </div>
+    <div class="col-4"><h5><span class="badge bg-success" id="{{prefix}}_{{id}}">-</span></h5></div>
+    <div class="col-6">
+        <div class="input-group mb-3">
+            <input type="text" id="{{prefix}}_{{id}}_request"class="form-control" placeholder="New value" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <button class="btn btn-outline-primary" type="button" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+                    <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
+                    <span >Set new Value</span>
+                </button>
+        </div>
+    </div>
+</div>
 {%endmacro -%}
 
-{% macro func4(funcName, arg1, arg2, arg3, arg4) -%}
-{{funcName}}('{{arg1}}','{{arg2}}','{{arg3}}', '{{arg4}}')
-{%endmacro -%}
+{% macro buttonSpinnerWithRequest(text, call, url, prefix, id, request) -%}
+<button type="button" class="btn btn-outline-primary" onclick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+    <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
+         {{ text }}
+    </button>
+{% endmacro -%}
 
-{% macro func5(funcName, arg1, arg2, arg3, arg4, arg5) -%}
-{{funcName}}('{{arg1}}','{{arg2}}','{{arg3}}', '{{arg4}}', '{{arg5}}')
+{% macro redefineDropDownCall(text, call, url, prefix, id, request, values) -%}
+<div class="row justify-content-between">
+    <div class="col-2">{{text}} </div>
+    <div class="col-4"><h5><span class="badge bg-success" id="{{prefix}}_{{id}}">-</span></h5></div>
+    <div class="col-6">
+        <div class="input-group mb-3">
+            <select class="form-select" id="{{prefix}}_{{id}}_request">
+            <option selected>Choose...</option>
+            {% for value in values %}
+            <option value="{{value}}">{{value}}</option>
+            {% endfor %}
+          </select>
+            <button class="btn btn-outline-primary" type="button" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+                    <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
+                    <span >Set new Value</span>
+                </button>
+                
+        </div>
+    </div>
+</div>
 {%endmacro -%}
 
 
