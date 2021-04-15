@@ -7,32 +7,43 @@ app = Flask(__name__)
 CORS(app)
 
 
+# contains all daemons
 config = {
         "motrona_rbs": "http://localhost:22000/api/latest",
-        "aml_x_y": "http://localhost:22001/api/latest"
+        "aml_x_y": "http://localhost:22001/api/latest",
+        "aml_phi_zeta": "http://localhost:22002/api/latest",
+        "aml_det_theta": "http://localhost:22003/api/latest",
 }
 
+aml_config = [
+    {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",
+        "first_load":"72.50", "second_load":"61.7"},
+    {"id":"aml_phi_zeta", "title": "AML Phi Zeta", "first_name":"Phi", "second_name":"Zeta",
+        "first_load":"0.00", "second_load":"-1.00"},
+    {"id":"aml_det_theta", "title": "AML Detector Theta", "first_name":"Detector", "second_name":"Theta",
+        "first_load":"170.00", "second_load":"-180.50"}
+]
 
-@app.route("/")
-def dashboard():
-    print("hello world")
-    return render_template("dashboard.html")
+rbs_aml_config = [
+    {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",
+        "first_load":"72.50", "second_load":"61.7"},
+    {"id":"aml_phi_zeta", "title": "AML Phi Zeta", "first_name":"Phi", "second_name":"Zeta",
+        "first_load":"0.00", "second_load":"-1.00"},
+    {"id":"aml_det_theta", "title": "AML Detector Theta", "first_name":"Detector", "second_name":"Theta",
+        "first_load":"170.00", "second_load":"-180.50"}
+]
 
-@app.route("/min_itf")
-def min_itf():
-    return render_template("min_itf.html")
-
-@app.route("/motrona_rbs")
-def motrona_rbs():
-    return render_template("max_motrona.html", prefix ="Motrona", url="/api/motrona_rbs")
+rbs_motrona_config = [
+        {"id":"motrona_rbs", "title" : "Motrona RBS"}
+]
 
 @app.route("/api/caps/<hw>")
-def api_motrona_rbs_caps(hw):
+def api_caps(hw):
     resp = requests.get(config[hw] + "/caps")
     return resp.json(), resp.status_code
 
 @app.route("/api/<hw>", methods=["POST", "GET"])
-def api_motrona_rbs(hw):
+def api_hw(hw):
     if request.method == "POST":
         data_string = request.data.decode('utf-8')
         json_request = json.loads(data_string)
@@ -48,25 +59,34 @@ def api_motrona_rbs(hw):
         except:
             return jsonify(""), 404
 
+@app.route("/")
+def dashboard():
+    print("hello world")
+    return render_template("dashboard.html")
 
-@app.route("/aml_x_y")
-def aml_x_y():
-    return render_template("aml_max.html", prefix="aml_x_y", url='http://169.254.166.218:22000',
-    	load_first='72.50', load_second='61.7', first_name='X', second_name='Y');
+@app.route("/rbs")
+def rbs():
+    return render_template("rbs.html")
+
+@app.route("/rbs_hw")
+def rbs_hw():
+    return render_template("rbs_hw.html", aml_config = rbs_aml_config, motrona_config = rbs_motrona_config )
+
+@app.route("/motrona_rbs")
+def motrona_rbs():
+    return render_template("max_motrona.html", prefix="motrona", title="Motrona", url="/api/motrona_rbs")
+
+@app.route("/aml/<hwType>")
+def aml(hwType):
+    for element in aml_config:
+        if element["id"] == hwType:
+            return render_template("max_aml.html", config = element)
+
+    abort(404)
 
 @app.route('/caen_max')
 def caen_max():
     return render_template("caen_max.html")
-
-@app.route("/aml_det_theta")
-def aml_det_theta():
-    return render_template("aml_max.html", prefix="aml_det_theta", url='http://169.254.166.218:22001',
-    	load_first='170.00', load_second='-180.50', first_name='Det', second_name='Theta');
-
-@app.route("/aml_phi_zeta")
-def aml_phi_zeta():
-    return render_template("aml_max.html", prefix="aml_phi_zeta", url='http://169.254.166.218:22002',
-    	load_first='0.00', load_second='-1.00', first_name='Phi', second_name='Zeta');
 
 @app.route("/favicon.ico")
 def favicon():

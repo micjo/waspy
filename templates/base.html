@@ -3,10 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-
-{% set title %}{% block title %}{% endblock %}{% endset %}
-
-    <title>{{title}}</title>
+    <title>Wasp Control panel</title>
     <script src="{{url_for('static', filename='chart.min.js')}}"></script>
     <script src="{{url_for('static', filename='bootstrap.min.js')}}"></script>
 
@@ -24,21 +21,22 @@
 
 <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
     <div class="navbar-brand col-md-3 col-lg-2 me-0 px-3">Wasp control panel</div>
-    <div class="navbar-brand">{{title}}</div>
+    <div class="navbar-brand">{% block title %}{% endblock %}</div>
 </header>
 
 
 <div class="container-fluid">
   <div class="row">
-    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <nav id="sidebarMenu" class="col-md-2 col-lg-2 d-md-block bg-light sidebar collapse">
       <div class="position-sticky pt-3">
           <ul class="list-group">
       {{ ui_elements.activeLink('dashboard','Dashboard','grid') }}
-      {{ ui_elements.activeLink('min_itf','RBS Minimal','play') }}
+      {{ ui_elements.activeLink('rbs','RBS','play') }}
+      {{ ui_elements.activeLink('rbs_hw','RBS Hardware','play') }}
       {{ ui_elements.activeLink('caen_max','CAEN','hard-drive') }}
-      {{ ui_elements.activeLink('aml_x_y','AML X Y','move') }}
-      {{ ui_elements.activeLink('aml_det_theta','AML Det Theta','move') }}
-      {{ ui_elements.activeLink('aml_phi_zeta','AML Phi Zeta','move') }}
+      {{ ui_elements.activeLinkWithOneArg('aml','aml_x_y', 'AML X Y','move') }}
+      {{ ui_elements.activeLinkWithOneArg('aml','aml_det_theta', 'AML Det Theta','move') }}
+      {{ ui_elements.activeLinkWithOneArg('aml','aml_phi_zeta', 'AML Phi Zeta','move') }}
       {{ ui_elements.activeLink('motrona_rbs','Motrona RBS','activity') }}
         </ul>
 

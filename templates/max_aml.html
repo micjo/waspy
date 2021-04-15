@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% import "ui_elements.html" as ui_elements %}
+
+
+{%set prefix = config["id"] %}
+{%set url = '/api/' + config["id"] %}
+{%set winTitle =  config["title"] %}
+{%set first_name = config["first_name"] %}
+{%set second_name = config["second_name"] %}
+{%set first_load = config["first_load"] %}
+{%set second_load = config["second_load"] %}
+
+{% block title %}{{winTitle}}{% endblock %}
+{% block content %}
+
+<script type="module">
+    import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
+    window.max_aml = max_aml;
+
+    window.setInterval(function() {
+        max_aml.refreshAllData('{{url}}', '{{prefix}}');
+    }, 2000);
+
+</script>
+
+<hr>
+<div class="left-to-right"><h5> {{winTitle}}  </h5>
+    <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>
+</div>
+<hr>
+<div class="full-width">
+{{ ui_elements.dataLabelWithBadge('Request Acknowledge:', prefix+'_request_id') }}
+{{ ui_elements.dataLabelWithBadge('Request Finished:', prefix+'_request_finished') }}
+{{ ui_elements.dataLabelWithBadge('Error:', prefix+'_error') }}
+{{ ui_elements.redefineButtonCall(first_name+':', 'max_aml.sendFloat', url, prefix, 'first', 'set_m1_target_position', 'move')}}
+{{ ui_elements.redefineButtonCall(second_name+':', 'max_aml.sendFloat', url, prefix, 'second', 'set_m2_target_position', 'move')}}
+</div>
+<div class="push-right">
+{{ ui_elements.buttonSpinnerWithCall("Move Both", "max_aml.submit", url, prefix, 'submit') }}
+{{ ui_elements.buttonWithCall("Load", ui_elements.func3("max_aml.load", prefix, first_load, second_load ))}}
+{{ ui_elements.buttonSpinnerWithRequest("hide", "max_aml.sendARequest", url, prefix, 'hide', '{"hide":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("show", "max_aml.sendARequest", url, prefix, 'show', '{"hide":false}') }}
+{{ ui_elements.buttonSpinnerWithRequest("continue", "max_aml.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
+</div>
+<div id="{{prefix}}_request_status"></div>
+<div id="{{prefix}}_error_status"></div>
+<hr>
+Motor 1
+<hr>
+<div class="full-width">
+{{ ui_elements.dataLabelWithBadge('Temperature:', prefix+'_first_temperature') }}
+{{ ui_elements.redefineButtonCall('Redefine step counter:','max_aml.sendFloat',  url, prefix, 'first_step', 'set_m1_step_counter','redefine')}}
+{{ ui_elements.redefineButtonCall('Redefine motor position:','max_aml.sendFloat',  url, prefix, 'first_position', 'set_m1_position','redefine')}}
+{{ ui_elements.redefineButtonCall('Redefine offset:','max_aml.sendFloat',  url, prefix, 'first_offset', 'set_m1_offset','redefine')}}
+{{ ui_elements.toggleCall('Updating Position:','max_aml.toggle',  url, prefix, 'update_m1_position', 'toggle_get_m1_position')}}
+{{ ui_elements.toggleCall('Updating Temperature:','max_aml.toggle',  url, prefix, 'update_m1_temperature', 'toggle_get_m1_temperature')}}
+</div>
+
+<div class="push-right">
+    {{ ui_elements.buttonSpinnerWithRequest("get position", "max_aml.sendARequest", url, prefix, 'get_first_pos','{"get_m1_position":true}') }}
+    {{ ui_elements.buttonSpinnerWithRequest("get temperature", "max_aml.sendARequest", url, prefix, 'get_first_temp','{"get_m1_temperature":true}') }}
+</div>
+
+<hr>
+Motor 2
+<hr>
+<div class="full-width">
+{{ ui_elements.dataLabelWithBadge('Temperature:', prefix+'_second_temperature') }}
+{{ ui_elements.redefineButtonCall('Redefine step counter:','max_aml.sendFloat',  url, prefix, 'second_step', 'set_m2_step_counter','redefine')}}
+{{ ui_elements.redefineButtonCall('Redefine motor position:','max_aml.sendFloat',  url, prefix, 'second_position', 'set_m2_position','redefine')}}
+{{ ui_elements.redefineButtonCall('Redefine offset:','max_aml.sendFloat',  url, prefix, 'second_offset', 'set_m2_offset', 'redefine')}}
+{{ ui_elements.toggleCall('Updating Position:','max_aml.toggle',  url, prefix, 'update_m2_position', 'toggle_get_m2_position')}}
+{{ ui_elements.toggleCall('Updating Temperature:','max_aml.toggle',  url, prefix, 'update_m2_temperature', 'toggle_get_m2_temperature')}}
+</div>
+
+<div class="push-right">
+    {{ ui_elements.buttonSpinnerWithRequest("get position", "max_aml.sendARequest", url, prefix, 'get_second_pos','{"get_m2_position":true}') }}
+    {{ ui_elements.buttonSpinnerWithRequest("get temperature", "max_aml.sendARequest", url, prefix, 'get_second_temp','{"get_m2_temperature":true}') }}
+</div>
+
+<hr>
+Debugging
+<hr>
+<div class="full-width">
+{{ ui_elements.toggleCall('Debugging rs232:','max_aml.toggle',  url, prefix, 'debug_rs232', 'debug_rs232')}}
+{{ ui_elements.toggleCall('Debug broker:','max_aml.toggle',  url, prefix, 'debug_broker', 'debug_broker')}}
+{{ ui_elements.toggleCall('Debug aml:','max_aml.toggle',  url, prefix, 'debug_aml', 'debug_aml')}}
+</div>
+<script type="module">
+    max_aml.refreshAllData('{{url}}','{{prefix}}');
+
+    window.setInterval(function() {
+        max_aml.refreshAllData('{{url}}','{{prefix}}');
+    }, 2000);
+</script>
+
+{% endblock %}
