@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% import "ui_elements.html" as ui_elements %}
+{% block title %}RBS{% endblock %}
+
+{% block content %}
+<script type="module">
+    import * as rbs from '{{url_for('static', filename='rbs.js')}}'
+    window.rbs = rbs;
+</script>
+
+<h1>PLACEHOLDER</h1>
+
+{% endblock %}

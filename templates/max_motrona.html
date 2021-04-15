@@ -1,21 +1,12 @@
 {% extends "base.html" %}
 {% import "ui_elements.html" as ui_elements %}
-{% block title %}{{prefix}}{% endblock %}
+{% block title %}{{title}}{% endblock %}
 {% block content %}
 
 <script type="module">
     import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
     window.max_motrona = max_motrona;
-
-    window.setInterval(function() {
-        max_motrona.refreshAllData('{{url}}','{{prefix}}');
-    }, 2000);
 </script>
-
-
-{% macro urlprefix() -%}
-('{{url}}','{{prefix}}')
-{%endmacro -%}
 
 
 <hr>
@@ -35,42 +26,58 @@
 {{ ui_elements.dataLabelWithBadge('Error Status:', prefix+'_error') }}
 {{ ui_elements.dataLabelWithBadge('Target Counts:', prefix+'_target_counts') }}
 {{ ui_elements.dataLabelWithBadge('Firmware Version:', prefix+'_firmware_version') }}
+<div class="push-right">
+{{ ui_elements.buttonSpinnerWithRequest("pause counting", "max_motrona.sendARequest", url, prefix, 'pause', '{"pause_counting":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("clear start counting", "max_motrona.sendARequest", url, prefix, 'clearstart', '{"clear-start_counting":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("hide", "max_motrona.sendARequest", url, prefix, 'hide', '{"hide":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("show", "max_motrona.sendARequest", url, prefix, 'show', '{"hide":false}') }}
+{{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
+</div>
+<div id="{{prefix}}_request_status"></div>
+<div id="{{prefix}}_error_status"></div>
 <hr>
 Counting Settings
 <hr>
-{{ ui_elements.redefineButtonCall('Target Charge:', 'max_motrona.setFloat', url, prefix, 'target_charge', 'target_charge')}}
-{{ ui_elements.redefineButtonCall('Pulses to Counts Factor:', 'max_motrona.setFloat', url, prefix, 'pulse_to_counts', 'pulse_count_factor')}}
-{{ ui_elements.redefineButtonCall('Counts to Charge Factor:', 'max_motrona.setFloat', url, prefix, 'counts_to_charge', 'count_charge_factor')}}
-{{ ui_elements.redefineDropDownCall('Counting Mode:', 'max_motrona.setString', url, prefix, 'count_mode', 'set_count_mode', ["a_single","a+b","a-b","a/b_90_x1","a/b_90_x2","a/b_90_x4"])}}
-{{ ui_elements.redefineDropDownCall('Input type:', 'max_motrona.setString', url, prefix, 'input_pulse_type', 'set_type_of_input_pulse', ["npn","pnp","namur","tri-state"])}}
+{{ ui_elements.redefineButtonCall('Target Charge:', 'max_motrona.sendFloat', url, prefix, 'target_charge', 'target_charge','Set')}}
+{{ ui_elements.redefineButtonCall('Pulses to Counts Factor:', 'max_motrona.sendFloat', url, prefix, 'pulse_to_counts', 'pulse_count_factor','Set')}}
+{{ ui_elements.redefineButtonCall('Counts to Charge Factor:', 'max_motrona.sendFloat', url, prefix, 'counts_to_charge', 'count_charge_factor','Set')}}
+{{ ui_elements.redefineDropDownCall('Counting Mode:', 'max_motrona.sendString', url, prefix, 'count_mode', 'set_count_mode', ["a_single","a+b","a-b","a/b_90_x1","a/b_90_x2","a/b_90_x4"],'Set')}}
+{{ ui_elements.redefineDropDownCall('Input type:', 'max_motrona.sendString', url, prefix, 'input_pulse_type', 'set_type_of_input_pulse', ["npn","pnp","namur","tri-state"],'Set')}}
 </div>
 
 <hr>
 Analog Settings
 <hr>
-{{ ui_elements.redefineButtonCall('Analog Start:','max_motrona.setInt', url, prefix, 'analog_start', 'set_analog_start')}}
-{{ ui_elements.redefineButtonCall('Analog End:'  ,'max_motrona.setInt', url, prefix, 'analog_end'  , 'set_analog_end')}}
-{{ ui_elements.redefineButtonCall('Analog Offset:','max_motrona.setFloat',  url, prefix, 'analog_offset', 'set_analog_offset')}}
-{{ ui_elements.redefineButtonCall('Analog Gain:','max_motrona.setFloat',  url, prefix, 'analog_gain', 'set_analog_gain')}}
+{{ ui_elements.redefineButtonCall('Analog Start:','max_motrona.sendInt', url, prefix, 'analog_start', 'set_analog_start','Set')}}
+{{ ui_elements.redefineButtonCall('Analog End:'  ,'max_motrona.sendInt', url, prefix, 'analog_end'  , 'set_analog_end','Set')}}
+{{ ui_elements.redefineButtonCall('Analog Offset:','max_motrona.sendFloat',  url, prefix, 'analog_offset', 'set_analog_offset','Set')}}
+{{ ui_elements.redefineButtonCall('Analog Gain:','max_motrona.sendFloat',  url, prefix, 'analog_gain', 'set_analog_gain','Set')}}
 <hr>
 
 <hr>
 Preselection Settings
 <hr>
-{{ ui_elements.redefineButtonCall('Preselection 1:', 'max_motrona.setInt', url, prefix, 'preselection_1', 'preselection_1')}}
-{{ ui_elements.redefineButtonCall('Preselection 2:', 'max_motrona.setInt', url, prefix, 'preselection_2', 'preselection_2')}}
-{{ ui_elements.redefineButtonCall('Preselection 3:', 'max_motrona.setInt', url, prefix, 'preselection_3', 'preselection_3')}}
-{{ ui_elements.redefineButtonCall('Preselection 4:', 'max_motrona.setInt', url, prefix, 'preselection_4', 'preselection_4')}}
+{{ ui_elements.redefineButtonCall('Preselection 1:', 'max_motrona.sendInt', url, prefix, 'preselection_1', 'preselection_1','Set')}}
+{{ ui_elements.redefineButtonCall('Preselection 2:', 'max_motrona.sendInt', url, prefix, 'preselection_2', 'preselection_2','Set')}}
+{{ ui_elements.redefineButtonCall('Preselection 3:', 'max_motrona.sendInt', url, prefix, 'preselection_3', 'preselection_3','Set')}}
+{{ ui_elements.redefineButtonCall('Preselection 4:', 'max_motrona.sendInt', url, prefix, 'preselection_4', 'preselection_4','Set')}}
 
-<div class="push-right">
-{{ ui_elements.buttonSpinnerWithRequest("pause counting", "max_motrona.setRequest", url, prefix, 'pause', '{"pause_counting":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("clear start counting", "max_motrona.setRequest", url, prefix, 'clearstart', '{"clear-start_counting":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("hide", "max_motrona.setRequest", url, prefix, 'hide', '{"hide":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("show", "max_motrona.setRequest", url, prefix, 'show', '{"hide":false}') }}
-{{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.setRequest", url, prefix, 'continue', '{"continue":true}') }}
+
+<hr>
+Debugging
+<hr>
+<div class="full-width">
+{{ ui_elements.toggleCall('Debugging rs232:','max_motrona.toggle',  url, prefix, 'debug_rs232', 'debug_rs232')}}
+{{ ui_elements.toggleCall('Debug broker:','max_motrona.toggle',  url, prefix, 'debug_broker', 'debug_broker')}}
+{{ ui_elements.toggleCall('Debug motrona:','max_motrona.toggle',  url, prefix, 'debug_motrona', 'debug_motrona')}}
 </div>
-<div id="{{prefix}}_request_status"></div>
-<div id="{{prefix}}_error_status"></div>
 
 
+<script type="module">
+    max_motrona.refreshAllData('{{url}}','{{prefix}}');
+
+    window.setInterval(function() {
+        max_motrona.refreshAllData('{{url}}','{{prefix}}');
+    }, 2000);
+</script>
 {% endblock %}

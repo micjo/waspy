@@ -12,7 +12,6 @@ export {sendRequestAndSpin, getStatus, addBadge, sendRequest};
 
 export {hide, show};
 
-
 async function postData(host, textBody) {
     fetch(host, {
         method: 'POST',
@@ -126,7 +125,7 @@ async function waitForCompleted(url, requestId, retryLimit, retryCount) {
             }
             else {
                 if (retryCount < retryLimit) {
-                return delay(100)
+                return delay(250)
                 .then( () => waitForCompleted(url, requestId, retryLimit, retryCount +1));
                 }
             }
@@ -148,7 +147,7 @@ async function sendRequest(url, request) {
         ...request
     };
     await postData(url, JSON.stringify(fullRequest));
-    let data = await waitForCompleted(url, requestId["request_id"], 100, 0);
+    let data = await waitForCompleted(url, requestId["request_id"], 50, 0);
     return data
 }
 

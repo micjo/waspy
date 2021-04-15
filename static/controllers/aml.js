@@ -50,7 +50,7 @@ class aml {
     }
 
     async updateActuals() {
-        return fetch(this.url + '/actuals')
+        return fetch(this.url)
             .then(response => {
                 this.connected = true;
                 return response.json();
@@ -111,7 +111,7 @@ class aml {
         let fullRequest = 'request_id=' + requestId + '\n';
         fullRequest += request;
 
-        await con.postData(this.url + '/engine', fullRequest);
+        await con.postData(this.url, fullRequest);
         await this.waitForCompleted(requestId, 30, 0);
     }
 
