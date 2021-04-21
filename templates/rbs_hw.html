@@ -19,7 +19,6 @@
 {% set first_name = aml["first_name"] %}
 {% set second_name = aml["second_name"] %}
 {% set url = '/api/' + aml["id"] %}
-    <div class="col-lg-4">
 <hr>
 <div class="left-to-right"><h5> {{dTitle}}  </h5>
     <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>
@@ -39,7 +38,6 @@
 {{ ui_elements.buttonSpinnerWithRequest("show", "max_aml.sendARequest", url, prefix, 'show', '{"hide":false}') }}
 {{ ui_elements.buttonSpinnerWithRequest("continue", "max_aml.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
 </div>
-    </div>
 
 {% endfor %}
 
