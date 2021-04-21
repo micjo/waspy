@@ -44,6 +44,7 @@
 {% for motrona in motrona_config %}
 {% set prefix = motrona["id"] %}
 {% set dTitle = motrona["title"] %}
+{% set url = '/api/' + motrona["id"] %}
 <hr>
 <div class="left-to-right"><h5> {{dTitle}}  </h5>
     <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>

@@ -33,7 +33,6 @@ function setMinMode() {
 }
 
 function updateElement(id, value) {
-    console.log(id);
     if (value === undefined) {
         con.getEl(id).innerText = "-";
     }
