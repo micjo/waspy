@@ -10,15 +10,6 @@
     window.max_motrona = max_motrona;
     max_aml.setMinMode();
     max_motrona.setMinMode();
-    window.setInterval(function() {
-        {% for aml in aml_config %}
-            max_aml.refreshAllData('/api/{{aml["id"]}}', '{{aml["id"]}}');
-        {% endfor %}
-        {% for motrona in motrona_config %}
-            max_motrona.refreshAllData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
-        {% endfor %}
-
-    }, 2000);
 </script>
 
 
@@ -81,5 +72,25 @@
 </div>
 {% endfor %}
 </div>
+
+<script type="module">
+    max_aml.setMinMode();
+    max_motrona.setMinMode();
+{% for aml in aml_config %}
+    max_aml.refreshAllData('/api/{{aml["id"]}}', '{{aml["id"]}}');
+{% endfor %}
+{% for motrona in motrona_config %}
+    max_motrona.refreshAllData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
+{% endfor %}
+    window.setInterval(function() {
+        {% for aml in aml_config %}
+            max_aml.refreshAllData('/api/{{aml["id"]}}', '{{aml["id"]}}');
+        {% endfor %}
+        {% for motrona in motrona_config %}
+            max_motrona.refreshAllData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
+        {% endfor %}
+
+    }, 2000);
+</script>
 
 {% endblock %}
