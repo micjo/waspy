@@ -9,10 +9,10 @@ CORS(app)
 
 # contains all daemons
 config = {
-        "motrona_rbs": "http://localhost:22000/api/latest",
-        "aml_x_y": "http://localhost:22001/api/latest",
+        "motrona_rbs": "http://localhost:23000/api/latest",
+        "aml_x_y": "http://localhost:22000/api/latest",
+        "aml_det_theta": "http://localhost:22001/api/latest",
         "aml_phi_zeta": "http://localhost:22002/api/latest",
-        "aml_det_theta": "http://localhost:22003/api/latest",
 }
 
 aml_config = [
