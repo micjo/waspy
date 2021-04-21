@@ -13,7 +13,6 @@
 </script>
 
 
-<div class="row px-md-5 nopadding">
 {% for aml in aml_config %}
 {% set prefix = aml["id"] %}
 {% set dTitle = aml["title"] %}
@@ -43,9 +42,7 @@
     </div>
 
 {% endfor %}
-</div>
 
-<div class="row px-md-5">
 {% for motrona in motrona_config %}
 {% set prefix = motrona["id"] %}
 {% set dTitle = motrona["title"] %}
@@ -71,7 +68,6 @@
 {{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
 </div>
 {% endfor %}
-</div>
 
 <script type="module">
     max_aml.setMinMode();
