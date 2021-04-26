@@ -16,24 +16,33 @@
 <script type="module">
     import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
     window.max_aml = max_aml;
-
-    window.setInterval(function() {
-        max_aml.refreshAllData('{{url}}', '{{prefix}}');
-    }, 2000);
-
 </script>
 
 <hr>
-<div class="left-to-right"><h5> {{winTitle}}  </h5>
+<div class="left-to-right"><h3> {{winTitle}}  </h3>
     <h5><span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span></h5>
 </div>
 <hr>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Identifier</th>
+            <th scope="col">Value</th>
+            <th scope="col">Control</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ ui_elements.value_row('Request Acknowledge:', prefix+'_request_id') }}
+        {{ ui_elements.value_row('Request Finished:', prefix+'_request_finished') }}
+        {{ ui_elements.value_row('Error:', prefix+'_error') }}
+        {{ ui_elements.value_row_input(first_name+':', 'max_aml.sendFloat', url, prefix, 'first', 'set_m1_target_position', 'move')}}
+        {{ ui_elements.value_row_input(second_name+':', 'max_aml.sendFloat', url, prefix, 'second', 'set_m2_target_position', 'move')}}
+    </tbody>
+</table>
+
+
 <div class="full-width">
-{{ ui_elements.dataLabelWithBadge('Request Acknowledge:', prefix+'_request_id') }}
-{{ ui_elements.dataLabelWithBadge('Request Finished:', prefix+'_request_finished') }}
-{{ ui_elements.dataLabelWithBadge('Error:', prefix+'_error') }}
-{{ ui_elements.redefineButtonCall(first_name+':', 'max_aml.sendFloat', url, prefix, 'first', 'set_m1_target_position', 'move')}}
-{{ ui_elements.redefineButtonCall(second_name+':', 'max_aml.sendFloat', url, prefix, 'second', 'set_m2_target_position', 'move')}}
 </div>
 <div class="push-right">
 {{ ui_elements.buttonSpinnerWithCall("Move Both", "max_aml.submit", url, prefix, 'submit') }}
@@ -45,15 +54,26 @@
 <div id="{{prefix}}_request_status"></div>
 <div id="{{prefix}}_error_status"></div>
 <hr>
-Motor 1
+<h5>{{first_name}}</h5>
 <hr>
 <div class="full-width">
-{{ ui_elements.dataLabelWithBadge('Temperature:', prefix+'_first_temperature') }}
-{{ ui_elements.redefineButtonCall('Redefine step counter:','max_aml.sendFloat',  url, prefix, 'first_step', 'set_m1_step_counter','redefine')}}
-{{ ui_elements.redefineButtonCall('Redefine motor position:','max_aml.sendFloat',  url, prefix, 'first_position', 'set_m1_position','redefine')}}
-{{ ui_elements.redefineButtonCall('Redefine offset:','max_aml.sendFloat',  url, prefix, 'first_offset', 'set_m1_offset','redefine')}}
-{{ ui_elements.toggleCall('Updating Position:','max_aml.toggle',  url, prefix, 'update_m1_position', 'toggle_get_m1_position')}}
-{{ ui_elements.toggleCall('Updating Temperature:','max_aml.toggle',  url, prefix, 'update_m1_temperature', 'toggle_get_m1_temperature')}}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Identifier</th>
+            <th scope="col">Value</th>
+            <th scope="col">Control</th>
+        </tr>
+    </thead>
+    <tbody>
+{{ ui_elements.value_row('Temperature:', prefix+'_first_temperature') }}
+{{ ui_elements.value_row_input('Redefine step counter:','max_aml.sendFloat',  url, prefix, 'first_step', 'set_m1_step_counter','redefine')}}
+{{ ui_elements.value_row_input('Redefine motor position:','max_aml.sendFloat',  url, prefix, 'first_position', 'set_m1_position','redefine')}}
+{{ ui_elements.value_row_input('Redefine offset:','max_aml.sendFloat',  url, prefix, 'first_offset', 'set_m1_offset','redefine')}}
+{{ ui_elements.value_row_toggle('Updating Position:','max_aml.toggle',  url, prefix, 'update_m1_position', 'toggle_get_m1_position')}}
+{{ ui_elements.value_row_toggle('Updating Temperature:','max_aml.toggle',  url, prefix, 'update_m1_temperature', 'toggle_get_m1_temperature')}}
+    </tbody>
+</table>
 </div>
 
 <div class="push-right">
@@ -62,7 +82,7 @@ Motor 1
 </div>
 
 <hr>
-Motor 2
+<h5>{{second_name}}</h5>
 <hr>
 <div class="full-width">
 {{ ui_elements.dataLabelWithBadge('Temperature:', prefix+'_second_temperature') }}
