@@ -4,8 +4,6 @@ import requests
 import json
 
 app = Flask(__name__)
-CORS(app)
-
 
 # contains all daemons
 config = {
@@ -13,6 +11,7 @@ config = {
         "aml_x_y": "http://127.0.0.1:22000/api/latest",
         "aml_det_theta": "http://127.0.0.1:22001/api/latest",
         "aml_phi_zeta": "http://127.0.0.1:22002/api/latest",
+        "caen_charles_evans": "http://olympus:22000/api/latest",
 }
 
 aml_config = [
@@ -23,6 +22,12 @@ aml_config = [
     {"id":"aml_det_theta", "title": "AML Detector Theta", "first_name":"Detector", "second_name":"Theta",
         "first_load":"170.00", "second_load":"-180.50"}
 ]
+
+caen_config = [
+        {"id":"caen_charles_evans", "title":"CAEN Charles Evans" }
+]
+
+#motrona's should be seperate dictionary and rbs should only be 1 dictionary
 
 rbs_aml_config = [
     {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",
@@ -36,6 +41,7 @@ rbs_aml_config = [
 rbs_motrona_config = [
         {"id":"motrona_rbs", "title" : "Motrona RBS"}
 ]
+
 
 @app.route("/api/caps/<hw>")
 def api_caps(hw):
@@ -81,14 +87,12 @@ def aml(hwType):
     for element in aml_config:
         if element["id"] == hwType:
             return render_template("max_aml.html", config = element)
-
     abort(404)
 
-@app.route('/caen_max')
-def caen_max():
-    return render_template("caen_max.html")
+@app.route('/caen')
+def caen():
+    return render_template("max_caen.html", config = caen_config[0])
 
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory('static','favicon.png')
-

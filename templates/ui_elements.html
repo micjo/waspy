@@ -48,6 +48,10 @@
 {%endmacro -%}
 
 
+
+
+
+
 {% macro redefineButton(text, badgeId, inputId, spinnerId, onclick) -%}
 <div class="row justify-content-between">
     <div class="col-5">{{text}} </div>
@@ -139,20 +143,65 @@
 {{funcName}}('{{arg1}}','{{arg2}}')
 {%endmacro -%}
 
-{% macro activeLink(url, title, icon) -%}
-<li class="nav-item">
+{% macro activeLink(url, title) -%}
+<li class="nav-item me-5 ">
     <a href="{{url_for(url)}}" class="nav-link  {% if request.path == url_for(url )%} active {%endif%}">
-    <i class="feather-{{icon}} pe-2"></i>
        {{title}}
    </a>
 </li>
 {%endmacro -%}
 
-{% macro activeLinkWithOneArg(url, arg, title, icon) -%}
-<li class="nav-item">
+{% macro activeLinkWithOneArg(url, arg, title) -%}
+<li class="nav-item me-5">
     <a href="{{url_for(url, hwType=arg)}}" class="nav-link  {% if request.path == url_for(url, hwType=arg)%} active {%endif%}">
-    <i class="feather-{{icon}} pe-2"></i>
        {{title}}
    </a>
 </li>
 {%endmacro -%}
+
+
+
+
+
+
+
+{% macro value_row(text,id) -%}
+<tr>
+    <td>{{ text }}</td>
+    <td><p id={{ id }} >-</p></td>
+    <td></td>
+</tr>
+{%endmacro -%}
+
+{% macro value_row_input(text, call, url, prefix, id, request, buttonText) -%}
+<tr>
+    <td>{{ text }}</td>
+    <td><p id={{prefix}}_{{id}} >-</p></td>
+    <td> 
+        <div class="input-group">
+            <input type="text" id="{{prefix}}_{{id}}_request"class="form-control" placeholder="New value" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <button class="btn btn-outline-primary" type="button" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+                    <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
+                    <span >{{buttonText}}</span>
+                </button>
+        </div>
+    </td>
+</tr>
+{%endmacro -%}
+
+{% macro value_row_toggle(text, call, url, prefix, id, request) -%}
+<tr>
+    <td>{{text}}</td>
+    <td><p id={{prefix}}_{{id}} >-</p></td>
+    <td>
+    <div class="push-right">
+        <div class="form-check form-switch">
+            <h3>  <input class="form-check-input" type="checkbox" id="{{prefix}}_{{id}}_request" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')"></h3>
+            <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
+        </div>
+    </div>
+    </td>
+</tr>
+{%endmacro -%}
+
+
