@@ -1,26 +1,31 @@
-import * as aml from './controllers/aml.js'
-import * as con from './controllers/daemon_connection.js'
+import * as con from './daemon_connection.js'
 
-let amlXy = new aml.aml('http://169.254.166.218:22000');
-let amlDetTheta = new aml.aml('http://169.254.166.218:22001');
-let amlPhiZeta = new aml.aml('http://169.254.166.218:22002');
+export {
+    refreshAllData
+};
 
-function updateDaemon(prefix, activeDaemon) {
-    con.setConnected(prefix + "_connect_status", activeDaemon.connected);
-    con.setBadgeState(prefix + "_error_status", activeDaemon.error !== "Success");
-    con.getEl(prefix + "_error_status").innerText = activeDaemon.error;
-    con.getEl(prefix + "_request_id").innerText = activeDaemon.requestId;
+
+async function refreshAllData(rbs_config) {
+
+    for (const aml of rbs_config["aml"]) {
+        let hwData = await con.getStatus("/api/" + aml["id"]);
+
+        if (hwData === "") {
+            con.getEl(aml["id"] + "_connect_state").innerText = "Disconnected";
+            con.setBadgeDanger(aml["id"] + "_connect_state");
+            con.getEl(aml["id"] + "_error_state").innerText = "-";
+            con.getEl(aml["id"] + "_request_id").innerText = "-";
+            con.getEl(aml["id"] + "_busy").innerText = "-";
+        }
+        else {
+            con.setText(aml["id"] + "_connect_state", "Connected");
+            con.setBadgeSuccess(aml["id"] + "_connect_state");
+            con.setText(aml["id"] + "_error_state", hwData["error"]);
+            con.setBadgeState(aml["id"] + "_error_state", hwData["error"] !== "Success");
+            con.setText(aml["id"] + "_request_id", hwData["request_id"]);
+            con.setText(aml["id"] + "_busy", "busy: " + hwData["busy"]);
+        }
+    }
+
 }
 
-async function refreshData() {
-    await amlXy.updateActuals();
-    updateDaemon('aml_x_y', amlXy);
-    await amlDetTheta.updateActuals();
-    updateDaemon('aml_det_theta', amlDetTheta);
-    await amlPhiZeta.updateActuals();
-    updateDaemon('aml_phi_zeta', amlPhiZeta);
-}
-
-window.setInterval(function() {
-    refreshData();
-}, 2000);

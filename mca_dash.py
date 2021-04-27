@@ -7,11 +7,11 @@ app = Flask(__name__)
 
 # contains all daemons
 config = {
-        "motrona_rbs": "http://127.0.0.1:23000/api/latest",
-        "aml_x_y": "http://127.0.0.1:22000/api/latest",
-        "aml_det_theta": "http://127.0.0.1:22001/api/latest",
-        "aml_phi_zeta": "http://127.0.0.1:22002/api/latest",
-        "caen_charles_evans": "http://olympus:22000/api/latest",
+    "motrona_rbs": "http://127.0.0.1:23000/api/latest",
+    "aml_x_y": "http://127.0.0.1:22000/api/latest",
+    "aml_det_theta": "http://127.0.0.1:22001/api/latest",
+    "aml_phi_zeta": "http://127.0.0.1:22002/api/latest",
+    "caen_charles_evans": "http://olympus:22000/api/latest",
 }
 
 aml_config = [
@@ -24,23 +24,20 @@ aml_config = [
 ]
 
 caen_config = [
-        {"id":"caen_charles_evans", "title":"CAEN Charles Evans" }
+    {"id":"caen_charles_evans", "title":"CAEN Charles Evans" }
 ]
 
-#motrona's should be seperate dictionary and rbs should only be 1 dictionary
+motrona_config = [
+    {"id":"motrona_rbs", "title" : "Motrona RBS"}
 
-rbs_aml_config = [
-    {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",
-        "first_load":"72.50", "second_load":"61.7"},
-    {"id":"aml_phi_zeta", "title": "AML Phi Zeta", "first_name":"Phi", "second_name":"Zeta",
-        "first_load":"0.00", "second_load":"-1.00"},
-    {"id":"aml_det_theta", "title": "AML Detector Theta", "first_name":"Detector", "second_name":"Theta",
-        "first_load":"170.00", "second_load":"-180.50"}
 ]
 
-rbs_motrona_config = [
-        {"id":"motrona_rbs", "title" : "Motrona RBS"}
-]
+rbs_config = {
+   "aml" : aml_config,
+   "caen" : caen_config,
+   "motrona" : motrona_config}
+
+
 
 
 @app.route("/api/caps/<hw>")
@@ -67,8 +64,7 @@ def api_hw(hw):
 
 @app.route("/")
 def dashboard():
-    print("hello world")
-    return render_template("dashboard.html")
+    return render_template("dashboard.html", rbs_config = rbs_config)
 
 @app.route("/rbs")
 def rbs():
@@ -76,11 +72,11 @@ def rbs():
 
 @app.route("/rbs_hw")
 def rbs_hw():
-    return render_template("rbs_hw.html", aml_config = rbs_aml_config, motrona_config = rbs_motrona_config )
+    return render_template("rbs_hw.html", rbs_config = rbs_config)
 
 @app.route("/motrona_rbs")
 def motrona_rbs():
-    return render_template("max_motrona.html", prefix="motrona", title="Motrona", url="/api/motrona_rbs")
+    return render_template("max_motrona.html", prefix="motrona", title="Motrona RBS", url="/api/motrona_rbs")
 
 @app.route("/aml/<hwType>")
 def aml(hwType):
