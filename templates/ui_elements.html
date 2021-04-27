@@ -6,13 +6,13 @@
 {% endmacro -%}
 
 {% macro buttonWithCall(text, onclick) -%}
-    <button type="button" class="btn btn-outline-primary" onclick="{{ onclick }}">
+    <button type="button" class="btn btn-outline-primary btn-sm" onclick="{{ onclick }}">
          {{ text }}
     </button>
 {% endmacro -%}
 
 {% macro buttonSpinnerWithDescription(text, spinnerId, description, onclick) -%}
-<button type="button" class="btn btn-outline-primary" onclick="{{ onclick }}"  data-bs-toggle="tooltip" title="{{description}}">
+<button type="button" class="btn btn-outline-primary text-nowrap" onclick="{{ onclick }}"  data-bs-toggle="tooltip" title="{{description}}">
         <span class="spinner-border spinner-border-sm" id="{{ spinnerId }}" role="status" style="display:none"></span>
          {{ text }}
     </button>
@@ -49,6 +49,9 @@
 
 
 
+{% macro tableHeader() -%}
+        <tr> <th scope="col">Identifier</th> <th scope="col">Value</th> <th scope="col">Control</th> </tr>
+{%endmacro -%}
 
 
 
@@ -75,7 +78,7 @@
     <div class="col-5">
         <div class="input-group mb-3">
             <input type="text" id="{{prefix}}_{{id}}_request"class="form-control" placeholder="New value" aria-label="Recipient's username" aria-describedby="basic-addon2">
-            <button class="btn btn-outline-primary" type="button" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+            <button class="btn btn-outline-primary" type="button" id+"{{prefix}}_{{id}}_click"  onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
                     <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
                     <span >{{buttonText}}</span>
                 </button>
@@ -91,7 +94,7 @@
     <div class="col-5">
     <div class="push-right">
         <div class="form-check form-switch">
-            <h3>  <input class="form-check-input" type="checkbox" id="{{prefix}}_{{id}}_request" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')"></h3>
+            <h3>  <input class="form-check-input" type="checkbox" id="{{prefix}}_{{id}}_click" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')"></h3>
             <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
         </div>
     </div>
@@ -100,14 +103,14 @@
 {%endmacro -%}
 
 {% macro buttonSpinnerWithCall(text, call, url, prefix, id) -%}
-<button type="button" class="btn btn-outline-primary" onclick="{{call}}('{{url}}','{{prefix}}','{{id}}')">
+<button type="button" id="{{prefix}}_{{id}}_click" class="btn btn-outline-primary btn-sm text-nowrap" onclick="{{call}}('{{url}}','{{prefix}}','{{id}}')">
     <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
          {{ text }}
     </button>
 {% endmacro -%}
 
 {% macro buttonSpinnerWithRequest(text, call, url, prefix, id, request) -%}
-<button type="button" class="btn btn-outline-primary" onclick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+<button type="button" id="{{prefix}}_{{id}}_click" class="btn btn-outline-primary btn-sm text-nowrap" onclick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
     <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
          {{ text }}
     </button>
@@ -144,7 +147,7 @@
 {%endmacro -%}
 
 {% macro activeLink(url, title) -%}
-<li class="nav-item me-5 ">
+<li class="nav-item ms-2 me-2 flex-nowrap ">
     <a href="{{url_for(url)}}" class="nav-link  {% if request.path == url_for(url )%} active {%endif%}">
        {{title}}
    </a>
@@ -152,7 +155,7 @@
 {%endmacro -%}
 
 {% macro activeLinkWithOneArg(url, arg, title) -%}
-<li class="nav-item me-5">
+<li class="nav-item ms-2 me-2 flex-nowrap">
     <a href="{{url_for(url, hwType=arg)}}" class="nav-link  {% if request.path == url_for(url, hwType=arg)%} active {%endif%}">
        {{title}}
    </a>
@@ -160,14 +163,9 @@
 {%endmacro -%}
 
 
-
-
-
-
-
 {% macro value_row(text,id) -%}
 <tr>
-    <td>{{ text }}</td>
+    <td class="text-nowrap">{{ text }}</td>
     <td><p id={{ id }} >-</p></td>
     <td></td>
 </tr>
@@ -175,15 +173,14 @@
 
 {% macro value_row_input(text, call, url, prefix, id, request, buttonText) -%}
 <tr>
-    <td>{{ text }}</td>
+    <td class="text-nowrap">{{ text }}</td>
     <td><p id={{prefix}}_{{id}} >-</p></td>
     <td> 
-        <div class="input-group">
-            <input type="text" id="{{prefix}}_{{id}}_request"class="form-control" placeholder="New value" aria-label="Recipient's username" aria-describedby="basic-addon2">
-            <button class="btn btn-outline-primary" type="button" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
-                    <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
-                    <span >{{buttonText}}</span>
-                </button>
+        <div class="clearfix">
+        <div class="input-group float-end flex-nowrap">
+            <input type="text" id="{{prefix}}_{{id}}_request" class="form-control form-control-sm" placeholder="New value" aria-label="Recipient's username" aria-describedby="basic-addon2">
+        {{buttonSpinnerWithRequest(buttonText, call, url, prefix, id, request)}}
+        </div>
         </div>
     </td>
 </tr>
@@ -194,14 +191,42 @@
     <td>{{text}}</td>
     <td><p id={{prefix}}_{{id}} >-</p></td>
     <td>
-    <div class="push-right">
         <div class="form-check form-switch">
-            <h3>  <input class="form-check-input" type="checkbox" id="{{prefix}}_{{id}}_request" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')"></h3>
-            <span class="spinner-border spinner-border-sm" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
+            <input class="form-check-input" type="checkbox" id="{{prefix}}_{{id}}_click" onClick="{{call}}('{{url}}','{{prefix}}','{{id}}','{{request}}')">
+            <span class="spinner-border spinner-border-sm align-middle" id="{{prefix}}_{{id}}_spinner" role="status" style="display:none"></span>
         </div>
-    </div>
     </td>
 </tr>
 {%endmacro -%}
 
+{% macro value_row_button(labelText, buttonText, call,url,prefix, id, request) -%}
+<tr>
+    <td class="text-nowrap">{{labelText}}</td>
+    <td><p id={{prefix}}_{{ id }} >-</p></td>
+    <td>
+        <div class="float-end">
+        {{buttonSpinnerWithRequest(buttonText, call, url, prefix, id, request)}}
+        </div>
+    </td>
+</tr>
+{%endmacro -%}
+
+{% macro value_row_drop(text, call, url, prefix, id, request, values, buttonText) -%}
+<tr>
+    <td class="text-nowrap">{{text}}</td>
+    <td><p id={{prefix}}_{{id}}>-</p></td>
+    <td>
+        <div class="input-group input-sm">
+            <select class="form-select form-select-sm" id="{{prefix}}_{{id}}_request">
+            <option selected>Choose...</option>
+            {% for value in values %}
+            <option value="{{value}}">{{value}}</option>
+            {% endfor %}
+          </select>
+          {{buttonSpinnerWithRequest(buttonText, call, url, prefix, id, request)}}
+                
+        </div>
+    </td>
+</tr>
+{%endmacro -%}
 

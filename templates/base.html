@@ -4,37 +4,55 @@
   <head>
     <meta charset="utf-8">
     <title>Wasp Control panel</title>
-    <script src="{{url_for('static', filename='chart.min.js')}}"></script>
-    <script src="{{url_for('static', filename='bootstrap.min.js')}}"></script>
-
-    <!-- used for panning on chart.js -->
-    <script src="{{url_for('static', filename='hammer.min.js')}}"></script>
-    <!-- used for panning and zooming on chart js. zooming depends on hammer.js -->
-    <script src="{{url_for('static', filename='chartjs-plugin-zoom.min.js')}}"></script>
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{url_for('static', filename='ext/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='ext/plotly-latest.min.js')}}"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='ext/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='ext/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='dashboard.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='feather.css')}}">
+
   </head>
   <body>
 
-<nav class="navbar navbar-expand-lg navbar-justify navbar-light bg-light">
-    <div class="container-fluid ms-5">
-      <ul class="navbar-nav">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-sm">
+  <div class="container-fluid">
+    <button class="navbar-toggler float-end" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          {{ ui_elements.activeLink('dashboard','Dashboard') }}
           {{ ui_elements.activeLink('rbs_hw','RBS Hardware') }}
           {{ ui_elements.activeLinkWithOneArg('aml','aml_x_y', 'AML X Y') }}
-          {{ ui_elements.activeLinkWithOneArg('aml','aml_det_theta', 'AML Det Theta') }}
           {{ ui_elements.activeLinkWithOneArg('aml','aml_phi_zeta', 'AML Phi Zeta') }}
-          {{ ui_elements.activeLink('motrona_rbs','Motrona RBS') }}
+          {{ ui_elements.activeLinkWithOneArg('aml','aml_det_theta', 'AML Det Theta') }}
           {{ ui_elements.activeLink('caen','Caen') }}
+          {{ ui_elements.activeLink('motrona_rbs','Motrona RBS') }}
       </ul>
+    </div>
   </div>
 </nav>
 
-    <div class="fluid-container ms-5 me-5">
+
+<div class="modal fade" id="modalFail" >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header alert alert-danger">
+        <h5 class="modal-title">Failure
+      </div>
+      <div class="modal-body" id="modalFailBody">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="fluid-container ms-3 me-3 mb-3">
 {% block content %}
 {% endblock %}
-    </div>
+</div>
 </body>
 </html>
