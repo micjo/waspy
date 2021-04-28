@@ -1,24 +1,23 @@
-import * as con from './controllers/daemon_connection.js'
-
-export {refreshAllData, setMinMode};
+import * as con from './daemon_connection.js'
 export {
-    sendInt,
-    sendFloat,
-    sendString,
+    updateUi,
+    setMaxMode,
     sendARequest,
+    sendInt,
+    sendString,
+    sendFloat,
     toggle,
+    refreshData,
     drawGraph
-};
+}
 
+let maxMode = false;
 
+function setMaxMode() {
+    maxMode = true;
+}
 
 async function drawGraph() {
-    if (!con.getEl("graph_update").checked) {
-        console.log("update not requested, exit");
-        return;
-    }
-
-
     fetch("http://olympus:22000/api/histogram/1/0")
         .then(response => response.text())
         .then(data => {
@@ -45,93 +44,50 @@ async function drawGraph() {
         });
 }
 
-
-async function refreshAllData(url, prefix) {
+async function refreshData(url,prefix) {
     drawGraph();
     let hwData = await con.getStatus(url)
-    if (hwData) {
-        con.setConnected(prefix + "_connect_status", true);
-        updateUi(prefix, hwData);
-    }
-    else {
-        con.setConnected(prefix + "_connect_status", false);
-    }
-}
-
-let minMode = false;
-
-
-function setMinMode() {
-    minMode = true;
-}
-
-function updateElement(id, value) {
-    if (value === undefined) {
-        con.getEl(id).innerText = "-";
-    }
-    else if (value === "") {
-        con.getEl(id).innerText = "-";
-    }
-    else {
-        con.getEl(id).innerText = value;
-    }
-}
-
-function updateUi(prefix, hwData) {
-
-    updateElement(prefix + '_request_id', hwData["request_id"]);
-    updateElement(prefix + '_request_finished', hwData["request_finished"]);
-    updateElement(prefix + '_acquiring', hwData["acquisition_active"]);
-
-    if (!minMode) {
-    }
-
-}
-
-
-async function toggle(url, prefix, id, requestKey) {
-    let value = con.getEl(prefix + "_" +id + "_request").checked;
-    let request = {};
-    request[requestKey] = value;
-    await sendRequest(url,prefix, prefix +"_" +id + "_spinner", request);
-}
-
-async function sendRequest(url, prefix, spinner, request ) {
-    let hwData = await con.sendRequestAndSpin(url, request, spinner);
     updateUi(prefix, hwData);
 }
 
-function sendARequest(url, prefix, id ,request) {
-    let jsonRequest =  JSON.parse(request);
-    sendRequest(url,prefix, prefix +"_" +id + "_spinner", jsonRequest);
-}
-
-function sendInt(url,prefix, id, requestKey) {
-    let value = parseInt(con.getEl(prefix + "_" +id + "_request").value);
-    if (!Number.isInteger(value)) {
-        alert("This is not a valid integer number");
+function updateUi(prefix, hwData) {
+    if (!hwData) {
+        con.setBadgeStateWithText(prefix + "_connect_status" , false, "Not Active");
         return;
     }
-    let request = {};
-    request[requestKey] = value;
-    sendRequest(url,prefix, prefix +"_" +id + "_spinner", request);
-}
 
-function sendString(url,prefix, id, requestKey) {
-    let value = con.getEl(prefix + "_" +id + "_request").value;
-    if (value === "Choose...") { return; }
-    let request = {};
-    request[requestKey] = value;
-    sendRequest(url,prefix, prefix +"_" +id + "_spinner", request);
-}
+    con.setBadgeStateWithText(prefix + "_connect_status" , true, "Active");
 
-function sendFloat(url,prefix, id, requestKey) {
-    let value = parseFloat(con.getEl(prefix + "_" +id + "_request").value);
-    if (isNaN(value)) {
-        alert("This is not a valid floating point number");
-        return;
+    con.updateElement(prefix + '_request_id', hwData["request_id"]);
+    con.updateElement(prefix + '_request_finished', hwData["request_finished"]);
+    con.updateElement(prefix + '_acquiring', hwData["acquisition_active"]);
+
+    if (maxMode) {
     }
-    let request = {};
-    request[requestKey] = value;
-    sendRequest(url,prefix, prefix +"_" +id + "_spinner", request);
+
+}
+
+async function sendARequest(url, prefix, id ,request) {
+    let data = await con.sendARequest(url, prefix, id, request);
+    updateUi(prefix, data);
+}
+
+async function sendInt(url,prefix, id, requestKey) {
+    let data = await con.sendInt(url,prefix, id, requestKey);
+    updateUi(prefix, data);
+}
+
+async function sendString(url,prefix, id, requestKey) {
+    let data = await con.sendString(url,prefix, id, requestKey);
+    updateUi(prefix, data);
+}
+
+async function sendFloat(url,prefix, id, requestKey) {
+    let data = await con.sendFloat(url,prefix, id, requestKey);
+    updateUi(prefix, data);
+}
+
+async function toggle(url, prefix, id, requestKey) {
+    let data = await con.toggle(url, prefix, id, requestKey);
+    updateUi(prefix, data);
 }

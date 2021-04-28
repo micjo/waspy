@@ -1,15 +1,35 @@
 import * as con from './daemon_connection.js'
 
-export {setMinMode};
-export {submit, load}
-
-
-let minMode = false;
-function setMinMode() {
-    minMode = true;
+export {
+    load,
+    submit,
+    updateUi,
+    setMaxMode,
+    sendARequest,
+    sendInt,
+    sendString,
+    sendFloat,
+    toggle,
+    refreshData
 }
 
+let maxMode = false;
+function setMaxMode() {
+    maxMode = true;
+}
+
+async function refreshData(url,prefix) {
+    let hwData = await con.getStatus(url)
+    updateUi(prefix, hwData);
+}
+
+
 function updateUi(prefix, hwData) {
+    if (!hwData) {
+        con.setBadgeStateWithText(prefix + "_connect_status" , false, "Not Active");
+        return;
+    }
+    con.setBadgeStateWithText(prefix + "_connect_status" , true, "Active");
 
     con.updateElement(prefix + '_request_id', hwData["request_id"]);
     con.updateElement(prefix + '_request_finished', hwData["request_finished"]);
@@ -17,7 +37,7 @@ function updateUi(prefix, hwData) {
     con.updateElement(prefix + '_first', hwData["motor_1_position"]);
     con.updateElement(prefix + '_second', hwData["motor_2_position"]);
 
-    if (!minMode) {
+    if (maxMode) {
         con.updateElement(prefix + '_first_position', hwData["motor_1_position"]);
         con.updateElement(prefix + '_adv_first_position', hwData["motor_1_position"]);
         con.updateElement(prefix + '_first_temperature', hwData["motor_1_temperature"]);
@@ -46,8 +66,6 @@ function updateUi(prefix, hwData) {
 
 }
 
-con.configureUiCallBack(updateUi);
-
 function submit(url, prefix, id) {
     let pos1 = parseFloat(con.getEl(prefix + "_first_request").value);
     let pos2 = parseFloat(con.getEl(prefix + "_second_request").value);
@@ -60,7 +78,7 @@ function submit(url, prefix, id) {
     let request = {};
     request["set_m1_target_position"] = pos1;
     request["set_m2_target_position"] = pos2;
-    con.sendRequestAndSpin(url, prefix, id, request);
+    sendARequest(url, prefix, id, request);
 }
 
 function load(prefix, firstPos, secondPos){
@@ -68,5 +86,28 @@ function load(prefix, firstPos, secondPos){
     con.getEl(prefix + "_second_request").value = secondPos;
 }
 
+async function sendARequest(url, prefix, id ,request) {
+    let data = await con.sendARequest(url, prefix, id, request);
+    updateUi(prefix, data);
+}
 
+async function sendInt(url,prefix, id, requestKey) {
+    let data = await con.sendInt(url,prefix, id, requestKey);
+    updateUi(prefix, data);
+}
+
+async function sendString(url,prefix, id, requestKey) {
+    let data = await con.sendString(url,prefix, id, requestKey);
+    updateUi(prefix, data);
+}
+
+async function sendFloat(url,prefix, id, requestKey) {
+    let data = await con.sendFloat(url,prefix, id, requestKey);
+    updateUi(prefix, data);
+}
+
+async function toggle(url, prefix, id, requestKey) {
+    let data = await con.toggle(url, prefix, id, requestKey);
+    updateUi(prefix, data);
+}
 

@@ -1,15 +1,14 @@
 export {getEl,getStatus};
-export {setBadgeState, setBadgeSuccess, setBadgeDanger, setText};
+export {setBadgeState, setBadgeSuccess, setBadgeDanger, setText,setBadgeStateWithText};
 export {sendRequestAndSpin, sendRequest, showFailureModal};
-export {configureUiCallBack};
+
 export {
     sendInt,
     sendFloat,
     sendString,
     sendARequest,
     updateElement,
-    toggle,
-    refreshData
+    toggle
 };
 
 async function postData(host, textBody) {
@@ -26,13 +25,13 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function setConnected(id, connected) {
-    if (connected) {
-        document.getElementById(id).innerText = 'Running';
+function setBadgeStateWithText(id, success, text) {
+    if (success) {
+        document.getElementById(id).innerText = text;
         document.getElementById(id).setAttribute(
             'class', 'badge bg-success');
     } else {
-        document.getElementById(id).innerText = 'Not running';
+        document.getElementById(id).innerText = text;
         document.getElementById(id).setAttribute('class', 'badge bg-danger');
     }
 }
@@ -124,11 +123,6 @@ async function waitForCompleted(url, requestId, retryLimit, retryCount) {
         });
 }
 
-var uiCallBack;
-function configureUiCallBack(func) {
-    uiCallBack = func;
-}
-
 async function sendRequestAndSpin(url, prefix, id, request) {
 
     let spinnerId = prefix + "_" + id + "_spinner";
@@ -137,23 +131,9 @@ async function sendRequestAndSpin(url, prefix, id, request) {
     disable(clickId);
 
     let data = await sendRequest(url, request);
-    uiCallBack(prefix, data);
     hide(spinnerId);
     enable(clickId);
     return data
-}
-
-async function refreshData(url,prefix) {
-    let hwData = await getStatus(url)
-
-    if (hwData) {
-        setConnected(prefix + "_connect_status", true);
-        uiCallBack(prefix, hwData);
-    }
-    else {
-        setConnected(prefix + "_connect_status", false);
-    }
-
 }
 
 async function sendRequest(url, request) {
@@ -181,7 +161,7 @@ function showFailureModal(text){
 
 function sendARequest(url, prefix, id ,request) {
     let jsonRequest =  JSON.parse(request);
-    sendRequestAndSpin(url,prefix, id, jsonRequest);
+    return sendRequestAndSpin(url,prefix, id, jsonRequest);
 }
 
 function sendInt(url,prefix, id, requestKey) {
@@ -192,7 +172,7 @@ function sendInt(url,prefix, id, requestKey) {
     }
     let request = {};
     request[requestKey] = value;
-    sendRequestAndSpin(url,prefix, id, request);
+    return sendRequestAndSpin(url,prefix, id, request);
 }
 
 function sendString(url,prefix, id, requestKey) {
@@ -200,7 +180,7 @@ function sendString(url,prefix, id, requestKey) {
     if (value === "Choose...") { return; }
     let request = {};
     request[requestKey] = value;
-    sendRequestAndSpin(url,prefix, id, request);
+    return sendRequestAndSpin(url,prefix, id, request);
 }
 
 function sendFloat(url,prefix, id, requestKey) {
@@ -211,14 +191,14 @@ function sendFloat(url,prefix, id, requestKey) {
     }
     let request = {};
     request[requestKey] = value;
-    sendRequestAndSpin(url,prefix, id, request);
+    return sendRequestAndSpin(url,prefix, id, request);
 }
 
 async function toggle(url, prefix, id, requestKey) {
     let value = getEl(prefix + "_" +id + "_click").checked;
     let request = {};
     request[requestKey] = value;
-    await sendRequestAndSpin(url,prefix, id, request);
+    return sendRequestAndSpin(url,prefix, id, request);
 }
 
 function updateElement(id, value) {

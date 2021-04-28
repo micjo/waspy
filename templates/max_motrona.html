@@ -3,13 +3,6 @@
 {% block title %}{{title}}{% endblock %}
 {% block content %}
 
-<script type="module">
-    import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
-    window.max_motrona = max_motrona;
-</script>
-
-
-
 <hr>
 <div class="clearfix">
     <h3 class="float-start">{{title}}</h3>
@@ -18,7 +11,6 @@
     </h5>
 </div>
 <hr>
-
 
 <table class="table table-striped table-hover table-sm">
     <thead>  {{ ui_elements.tableHeader() }} </thead>
@@ -88,10 +80,13 @@
 
 
 <script type="module">
-    max_motrona.refreshAllData('{{url}}','{{prefix}}');
-
+    import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
+    window.max_motrona = max_motrona;
+    max_motrona.setMaxMode();
+    max_motrona.refreshData('{{url}}','{{prefix}}');
     window.setInterval(function() {
-        max_motrona.refreshAllData('{{url}}','{{prefix}}');
+        max_motrona.refreshData('{{url}}','{{prefix}}');
     }, 2000);
 </script>
+
 {% endblock %}
