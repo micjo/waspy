@@ -2,6 +2,8 @@ from flask import Flask, render_template, abort, request, jsonify, app, redirect
 from flask_cors import CORS
 import requests
 import json
+import plotly.io as pio
+import plotly.express as px
 
 app = Flask(__name__)
 
@@ -9,8 +11,8 @@ app = Flask(__name__)
 config = {
     "motrona_rbs": "http://127.0.0.1:23000/api/latest",
     "aml_x_y": "http://127.0.0.1:22000/api/latest",
-    "aml_det_theta": "http://127.0.0.1:22001/api/latest",
-    "aml_phi_zeta": "http://127.0.0.1:22002/api/latest",
+    "aml_det_theta": "http://127.0.0.1:22000/api/latest",
+    "aml_phi_zeta": "http://127.0.0.1:22000/api/latest",
     "caen_charles_evans": "http://olympus:22000/api/latest",
 }
 
@@ -69,6 +71,15 @@ def dashboard():
 @app.route("/rbs")
 def rbs():
     return render_template("rbs.html")
+
+
+y_values=[0,1,2,3,4]
+@app.route("/graph")
+def graph():
+    global y_values
+    y_values = [x+1 for x in y_values]
+    fig = px.scatter(x=[0, 1, 2, 3, 4], y=y_values)
+    return fig.to_html(include_plotlyjs=False)
 
 @app.route("/rbs_hw")
 def rbs_hw():

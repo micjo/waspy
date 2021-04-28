@@ -26,20 +26,20 @@
       {% for caen in rbs_config["caen"] %}
       <tr>
           <td> {{caen["title"]}}</td>
-          <td> connect_state</td>
-          <td> error_state</td>
-          <td> request_id</td>
-          <td> acquiring</td>
+          <td> <div class="badge bg-secondary" id={{caen["id"]}}_connect_state> </div></td>
+          <td> <div id={{caen["id"]}}_error_state> </div></td>
+          <td> <div id={{caen["id"]}}_request_id></div></td>
+          <td> <div id={{caen["id"]}}_status></div></td>
       </tr>
       {% endfor %}
 
       {% for motrona in rbs_config["motrona"] %}
       <tr>
           <td> {{motrona["title"]}}</td>
-          <td> connect_state</td>
-          <td> error_state</td>
-          <td> request_id</td>
-          <td> counting</td>
+          <td> <div class="badge bg-secondary" id={{motrona["id"]}}_connect_state> </div></td>
+          <td> <div id={{motrona["id"]}}_error_state> </div></td>
+          <td> <div id={{motrona["id"]}}_request_id></div></td>
+          <td> <div id={{motrona["id"]}}_status></div></td>
       </tr>
       {% endfor %}
   </tbody>
