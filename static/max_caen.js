@@ -17,9 +17,24 @@ function setMaxMode() {
     maxMode = true;
 }
 
-async function drawGraph() {
-    fetch("http://olympus:22000/api/histogram/1/0")
-        .then(response => response.text())
+async function drawGraph(url) {
+    if (!con.getEl("update_graph_request").checked) {
+        return;
+    }
+
+    let board = con.getEl("board_select").value;
+    let channel = con.getEl("channel_select").value;
+    let fullPath = url + "/histogram/" + board + "-" + channel;
+    console.log(fullPath);
+
+    fetch(url + "/histogram/" + board + "-" + channel)
+        .then(response => {
+            if(response.status === 404) {
+                throw "Failed to retrieve data. Does this board + channel exist?";
+            }
+            return response.text()
+        }
+        )
         .then(data => {
             let x_values = [];
             let y_values = [];
@@ -30,7 +45,7 @@ async function drawGraph() {
                 i++;
             }
 
-            const plotData = [{
+            const plotdata = [{
                 x: x_values,
                 y: y_values,
                 type: 'scatter'
@@ -38,14 +53,20 @@ async function drawGraph() {
 
             const layout = {
               title: 'histogram',
+              uirevision: 'test',
+              autosize:'true',
+              height:300
             };
 
-            Plotly.newPlot('histo_chart', plotData, layout);
+            Plotly.newPlot('histo_chart', plotdata, layout);
+        })
+        .catch(error => {
+            con.showFailureModal(error);
+            con.getEl("update_graph_request").checked = false;
         });
 }
 
 async function refreshData(url,prefix) {
-    drawGraph();
     let hwData = await con.getStatus(url)
     updateUi(prefix, hwData);
 }

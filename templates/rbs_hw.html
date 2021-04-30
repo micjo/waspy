@@ -6,7 +6,7 @@
 
 
 <div class="row">
-    <div class="col-sm-4">
+    <div class="col-sm">
         {% for aml in rbs_config["aml"] %}
         {% set prefix = aml["id"] %}
         {% set dTitle = aml["title"] %}
@@ -34,6 +34,7 @@
                         {{ ui_elements.value_row('Request Acknowledge:', prefix +'_request_id') }}
                         {{ ui_elements.value_row('Request Finished:', prefix+'_request_finished') }}
                         {{ ui_elements.value_row('Error:', prefix+'_error') }}
+                        {{ ui_elements.value_row('Expiry Date:', prefix+'_expiry') }}
                         {{ ui_elements.value_row_input(first_name+':', 'max_aml.sendFloat', url, prefix, 'first', 'set_m1_target_position', 'move')}}
                         {{ ui_elements.value_row_input(second_name+':', 'max_aml.sendFloat', url, prefix, 'second', 'set_m2_target_position', 'move')}}
                     </tbody>
@@ -116,44 +117,107 @@
                         <tbody>
                             {{ ui_elements.value_row('Request Id:', prefix+'_request_id') }}
                             {{ ui_elements.value_row('Request Finish:', prefix+'_request_finished') }}
-                            {{ ui_elements.value_row('Acquiring data:', prefix+'_counts') }}
+                            {{ ui_elements.value_row('Acquiring data:', prefix+'_acquiring') }}
                         </tbody>
                     </table>
 
                     <div class="clearfix"><div class="btn-group float-end">
-                            {{ ui_elements.buttonSpinnerWithRequest("stop", "max_caen.sendARequest", url, prefix, 'pause', '{"pause_counting":true}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("start", "max_caen.sendARequest", url, prefix, 'clearstart', '{"clear-start_counting":true}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("hide", "max_caen.sendARequest", url, prefix, 'hide', '{"hide":true}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("show", "max_caen.sendARequest", url, prefix, 'show', '{"hide":false}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("continue", "max_caen.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("start acquisition", "max_caen.sendARequest", url, prefix, 'acquire_start', '{"start_acquisition":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("stop acquisition", "max_caen.sendARequest", url, prefix, 'acquire_stop', '{"stop_acquisition":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("reset", "max_caen.sendARequest", url, prefix, 'reset', '{"reset":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("clear", "max_caen.sendARequest", url, prefix, 'clear', '{"clear":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("continue", "max_caen.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
                         </div></div>
                 </div>
             </div>
 
             {% endfor %}
     </div>
-    <div class="col-sm-8">
-<div class="ratio" style="--bs-aspect-ratio:100%">
-        <iframe id="inlineFrameExample" 
-            title="Inline Frame Example"
-            allowfullscreen
-            src="http://127.0.0.1:8050">
-        </iframe>
+    <div class="col-sm">
+<div class="input-group input-sm mb-3 mt-2">
+  <label class="input-group-text" for="board_select">Board:</label>
+  <select class="form-select" id="board_select">
+    <option selected>Choose...</option>
+    <option value="1">Board-1</option>
+    <option value="2">Board-2</option>
+    <option value="3">Board-3</option>
+    <option value="4">Board-4</option>
+    <option value="5">Board-5</option>
+    <option value="6">Board-6</option>
+    <option value="7">Board-7</option>
+    <option value="8">Board-8</option>
+  </select>
+  <label class="input-group-text" for="channel_select">Channel:</label>
+  <select class="form-select" id="channel_select">
+    <option selected>Choose...</option>
+    <option value="0">Channel-0</option>
+    <option value="1">Channel-1</option>
+    <option value="2">Channel-2</option>
+    <option value="3">Channel-3</option>
+    <option value="4">Channel-4</option>
+    <option value="5">Channel-5</option>
+    <option value="6">Channel-6</option>
+    <option value="7">Channel-7</option>
+    <option value="8">Channel-8</option>
+    <option value="9">Channel-9</option>
+    <option value="10">Channel-10</option>
+    <option value="11">Channel-11</option>
+    <option value="12">Channel-12</option>
+    <option value="13">Channel-13</option>
+    <option value="14">Channel-14</option>
+    <option value="15">Channel-15</option>
+  </select>
+  <label class="input-group-text" for="channel_select">Update Caen data:</label>
+  <div class="input-group-text">
+      <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
+  </div>
 </div>
+      <div id="histo_chart">
+      </div>
+
+
+      <div class="clearfix">
+          <div class="float-end">
+              <div class="input-group input-sm mb-3 mt-2">
+                  <label class="input-group-text">Update RBS data:</label>
+                  <div class="input-group-text">
+                      <input class="form-check-input mt-0" id="update_rbs_request" type="checkbox" value="">
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div id="rbs_current">
+      </div>
+
+      <div class="clearfix">
+          <div class="float-end">
+              <div class="input-group input-sm mb-3 mt-2">
+                  <label class="input-group-text">Motor X position:</label>
+                  <div class="input-group-text">
+                      <input class="form-check-input mt-0" id="update_pos_request" type="checkbox" value="">
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div id="motor_pos_graph">
+      </div>
     </div>
 
 </div>
-
-
 
 <script type="module">
     import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
     import * as max_caen from '{{url_for('static', filename='max_caen.js')}}'
     import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
+    import * as rbs_hw from '{{url_for('static', filename='rbs_hw.js')}}'
     window.max_motrona=max_motrona;
     window.max_aml=max_aml;
     window.max_caen=max_caen;
 
+    rbs_hw.refreshGraph();
+    window.setInterval(function() {
+        rbs_hw.refreshGraph();
+    }, 2000);
 
 {% for motrona in rbs_config["motrona"]%}   
     max_motrona.refreshData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
@@ -169,6 +233,13 @@
     }, 2000);
 {% endfor %}
 
+{% for caen in rbs_config["caen"]%}   
+    max_caen.refreshData('/api/{{caen["id"]}}', '{{caen["id"]}}');
+    window.setInterval(function() {
+        max_caen.refreshData('/api/{{caen["id"]}}', '{{caen["id"]}}');
+        max_caen.drawGraph('/api/{{caen["id"]}}');
+    }, 2000);
+{% endfor %}
 
     </script>
 <!--

@@ -33,6 +33,7 @@ function updateUi(prefix, hwData) {
 
     con.updateElement(prefix + '_request_id', hwData["request_id"]);
     con.updateElement(prefix + '_request_finished', hwData["request_finished"]);
+    con.updateElement(prefix + '_expiry', hwData["expiry_date"]);
     con.updateElement(prefix + '_error', hwData["error"]);
     con.updateElement(prefix + '_first', hwData["motor_1_position"]);
     con.updateElement(prefix + '_second', hwData["motor_2_position"]);
@@ -47,6 +48,7 @@ function updateUi(prefix, hwData) {
         con.updateElement(prefix + '_update_m1_temperature', hwData["motor_1_updating_temperature"]);
 
         con.updateElement(prefix + '_second_position', hwData["motor_2_position"]);
+        con.updateElement(prefix + '_adv_second_position', hwData["motor_2_position"]);
         con.updateElement(prefix + '_second_temperature', hwData["motor_2_temperature"]);
         con.updateElement(prefix + '_second_step', hwData["motor_2_steps"]);
         con.updateElement(prefix + '_second_offset', hwData["motor_2_offset"]);
@@ -78,7 +80,7 @@ function submit(url, prefix, id) {
     let request = {};
     request["set_m1_target_position"] = pos1;
     request["set_m2_target_position"] = pos2;
-    sendARequest(url, prefix, id, request);
+    con.sendRequestAndSpin(url, prefix, id, request);
 }
 
 function load(prefix, firstPos, secondPos){

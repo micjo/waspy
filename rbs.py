@@ -4,8 +4,9 @@ import requests
 import time
 import sys
 
-aml_url = 'http://localhost:5000/api/aml_x_y'
-motrona_url = 'http://localhost:5000/api/motrona_rbs'
+aml_url = 'http://127.0.0.1:5000/api/aml_x_y'
+motrona_url = 'http://127.0.0.1:5000/api/motrona_rbs'
+caen_url = 'http://127.0.0.1:5000/api/caen_charles_evans'
 
 
 def wait_for_request_complete(id, currentUrl):
@@ -39,21 +40,35 @@ def clear_start_counting_and_wait_for_motrona_done(id):
         if (response["status"] == "Done"):
             print("motrona counting done")
             break
-    
 
+
+def start_caen_acquisition(id):
+    print('start acq')
+    response = requests.post(caen_url, json={
+        "request_id" : "start_" + id,
+        "start_acquisition":True
+        })
+    print(response)
+
+def finish_caen_acquisition(id):
+    resp = requests.get(caen_url + "/histogram/1-0")
+    with open('data_' +id+ '.txt', 'w') as file:
+        file.write(resp.text)
+    requests.post(caen_url, json={
+        "request_id" : "finish_" + id,
+        "stop_acquisition":True,
+        "clear":True
+        })
 
 def run_rbs_experiment(start,end,step):
     for i in range (start,end,step):
         print(i)
         request_id = "step_" + str(i)
         move_aml_and_wait(i, request_id)
+        start_caen_acquisition(request_id)
         clear_start_counting_and_wait_for_motrona_done(request_id)
-
+        finish_caen_acquisition(request_id)
     print("all done")
-
-if __name__ == "__main__":
-    run_rbs_experiment(int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))
-
 
 
 
