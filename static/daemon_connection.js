@@ -58,20 +58,14 @@ function setBadgeDanger(id) {
 }
 
 function getUniqueIdentifier() {
-    let date = new Date();
+    // format: YYYY.MM.DD__HH:MM__SS
+    let date = new Date().toISOString();
+    date = date.slice(0,-5);
+    date = date.split(':');
 
-    // 0 + with slice(-2) ensures you have a leading 0 if needed
-    let year = date.getFullYear();
-    let month = ("0" + date.getMonth() + 1).slice(-2);
-    let day = ("0" + date.getDay() + 1).slice(-2);
-
-    let hours = ("0" + date.getHours()).slice(-2);
-    let minutes = ("0" + date.getMinutes()).slice(-2);
-    let seconds = ("0" + date.getSeconds()).slice(-2);
-
-    let timestamp = year + "." + month + "." + day + "__" + hours + ":" + minutes + "__" + seconds;
-
-    return timestamp;
+    let yearAndHour = date[0].replace(/-/g,".").replace(/T/g, "__");
+    let identifier = yearAndHour +  ":" + date[1] + "__" + date[2];
+    return identifier;
 }
 
 
@@ -160,7 +154,7 @@ function showFailureModal(text){
 
 
 function sendARequest(url, prefix, id ,request) {
-    let jsonRequest =  JSON.parse(request);
+    let jsonRequest = JSON.parse(request);
     return sendRequestAndSpin(url,prefix, id, jsonRequest);
 }
 

@@ -37,18 +37,58 @@
 {{ ui_elements.buttonSpinnerWithRequest("clear", "max_caen.sendARequest", url, prefix, 'clear', '{"clear":true}') }}
 {{ ui_elements.buttonSpinnerWithRequest("continue", "max_caen.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
     </div></div>
+<hr>
+<h5>Plotting</h5>
+
+<div class="input-group input-sm mb-3">
+  <label class="input-group-text" for="board_select">Board:</label>
+  <select class="form-select" id="board_select">
+    <option selected>Choose...</option>
+    <option value="1">Board-1</option>
+    <option value="2">Board-2</option>
+    <option value="3">Board-3</option>
+    <option value="4">Board-4</option>
+    <option value="5">Board-5</option>
+    <option value="6">Board-6</option>
+    <option value="7">Board-7</option>
+    <option value="8">Board-8</option>
+  </select>
+  <label class="input-group-text" for="channel_select">Channel:</label>
+  <select class="form-select" id="channel_select">
+    <option selected>Choose...</option>
+    <option value="0">Channel-0</option>
+    <option value="1">Channel-1</option>
+    <option value="2">Channel-2</option>
+    <option value="3">Channel-3</option>
+    <option value="4">Channel-4</option>
+    <option value="5">Channel-5</option>
+    <option value="6">Channel-6</option>
+    <option value="7">Channel-7</option>
+    <option value="8">Channel-8</option>
+    <option value="9">Channel-9</option>
+    <option value="10">Channel-10</option>
+    <option value="11">Channel-11</option>
+    <option value="12">Channel-12</option>
+    <option value="13">Channel-13</option>
+    <option value="14">Channel-14</option>
+    <option value="15">Channel-15</option>
+  </select>
+  <label class="input-group-text" for="channel_select">Update:</label>
+  <div class="input-group-text">
+      <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
   </div>
 </div>
-
       <div id="histo_chart">
       </div>
+  </div>
+
 <script type="module">
     import * as max_caen from '{{url_for('static', filename='max_caen.js')}}'
     window.max_caen = max_caen;
     max_caen.refreshData('{{url}}','{{prefix}}');
-    max_caen.drawGraph();
     window.setInterval(function() {
         max_caen.refreshData('{{url}}','{{prefix}}');
+        max_caen.drawGraph('{{url}}','{{prefix}}');
     }, 2000);
 </script>
 {% endblock %}

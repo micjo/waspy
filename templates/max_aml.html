@@ -29,6 +29,7 @@
         {{ ui_elements.value_row('Request Acknowledge:', prefix+'_request_id') }}
         {{ ui_elements.value_row('Request Finished:', prefix+'_request_finished') }}
         {{ ui_elements.value_row('Error:', prefix+'_error') }}
+        {{ ui_elements.value_row('Expiry Date:', prefix+'_expiry') }}
         {{ ui_elements.value_row_input(first_name+':', 'max_aml.sendFloat', url, prefix, 'first', 'set_m1_target_position', 'move')}}
         {{ ui_elements.value_row_input(second_name+':', 'max_aml.sendFloat', url, prefix, 'second', 'set_m2_target_position', 'move')}}
     </tbody>

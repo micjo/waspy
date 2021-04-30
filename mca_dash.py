@@ -2,8 +2,8 @@ from flask import Flask, render_template, abort, request, jsonify, app, redirect
 from flask_cors import CORS
 import requests
 import json
-import plotly.io as pio
-import plotly.express as px
+
+import aggregator as agg
 
 app = Flask(__name__)
 
@@ -11,8 +11,8 @@ app = Flask(__name__)
 config = {
     "motrona_rbs": "http://127.0.0.1:23000/api/latest",
     "aml_x_y": "http://127.0.0.1:22000/api/latest",
-    "aml_det_theta": "http://127.0.0.1:22000/api/latest",
-    "aml_phi_zeta": "http://127.0.0.1:22000/api/latest",
+    "aml_det_theta": "http://127.0.0.1:22001/api/latest",
+    "aml_phi_zeta": "http://127.0.0.1:22002/api/latest",
     "caen_charles_evans": "http://olympus:22000/api/latest",
 }
 
@@ -37,15 +37,32 @@ motrona_config = [
 rbs_config = {
    "aml" : aml_config,
    "caen" : caen_config,
-   "motrona" : motrona_config}
+   "motrona" : motrona_config
+}
 
+aggregator = agg.Aggregator(rbs_config)
+aggregator.run_in_background()
 
+@app.route("/trends/rbs_current")
+def rbs_current():
+    return jsonify(aggregator.getSamples())
 
+@app.route("/trends/aml_positions")
+def aml_position():
+    return jsonify(aggregator.getPositions())
 
-@app.route("/api/caps/<hw>")
+@app.route("/api/<hw>/caps")
 def api_caps(hw):
     resp = requests.get(config[hw] + "/caps")
     return resp.json(), resp.status_code
+
+@app.route("/api/<hw>/histogram/<board>-<channel>")
+def histogram(hw,board,channel):
+    try:
+        resp = requests.get(config[hw]+"/histogram/"+board+"-"+channel)
+        return resp.text, resp.status_code
+    except:
+        return jsonify(""), 404
 
 @app.route("/api/<hw>", methods=["POST", "GET"])
 def api_hw(hw):
