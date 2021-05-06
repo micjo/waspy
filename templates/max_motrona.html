@@ -3,6 +3,9 @@
 {% block title %}{{title}}{% endblock %}
 {% block content %}
 
+{%set winTitle =  config["title"] %}
+{%set url = '/api/' + prefix %}
+
 <script type="module">
     import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
     window.max_motrona = max_motrona;
@@ -10,8 +13,9 @@
 
 <hr>
 <div class="clearfix">
-    <h3 class="float-start">{{title}}</h3>
-    <h5 class="float-end">
+    <h3 class="float-start">{{winTitle}}</h3>
+    <h5 class="clearfix float-end">
+        <span class="badge bg-info" id="{{prefix}}_brief_status">-</span>
         <span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span>
     </h5>
 </div>
@@ -85,7 +89,6 @@
 
 
 <script type="module">
-    max_motrona.setMaxMode();
     max_motrona.refreshData('{{url}}','{{prefix}}');
     window.setInterval(function() {
         max_motrona.refreshData('{{url}}','{{prefix}}');

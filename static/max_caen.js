@@ -1,20 +1,14 @@
 import * as con from './daemon_connection.js'
 export {
     updateUi,
-    setMaxMode,
     sendARequest,
     sendInt,
     sendString,
     sendFloat,
     toggle,
     refreshData,
+    refreshDataRepeatedly,
     drawGraph
-}
-
-let maxMode = false;
-
-function setMaxMode() {
-    maxMode = true;
 }
 
 async function drawGraph(url) {
@@ -66,6 +60,13 @@ async function drawGraph(url) {
         });
 }
 
+function refreshDataRepeatedly(url, prefix, timeout) {
+    refreshData(url, prefix);
+    window.setInterval(function() {
+        refreshData(url,prefix);
+    }, timeout);
+}
+
 async function refreshData(url,prefix) {
     let hwData = await con.getStatus(url)
     updateUi(prefix, hwData);
@@ -73,18 +74,14 @@ async function refreshData(url,prefix) {
 
 function updateUi(prefix, hwData) {
     if (!hwData) {
-        con.setBadgeStateWithText(prefix + "_connect_status" , false, "Not Active");
+        con.setBadgeErrorWithText(prefix + "_connect_status" , false, "Not Active");
         return;
     }
-
-    con.setBadgeStateWithText(prefix + "_connect_status" , true, "Active");
-
-    con.updateElement(prefix + '_request_id', hwData["request_id"]);
-    con.updateElement(prefix + '_request_finished', hwData["request_finished"]);
-    con.updateElement(prefix + '_acquiring', hwData["acquisition_active"]);
-
-    if (maxMode) {
-    }
+    con.setBadgeErrorWithText(prefix + "_connect_status" , true, "Active");
+    con.setElementText(prefix + '_request_id', hwData["request_id"]);
+    con.setElementText(prefix + '_request_finished', hwData["request_finished"]);
+    con.setElementText(prefix + '_acquiring', hwData["acquisition_active"]);
+    con.setElementText(prefix + '_brief_status', "Acquiring: " + hwData["acquisition_active"]);
 
 }
 

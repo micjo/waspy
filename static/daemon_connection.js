@@ -1,5 +1,5 @@
 export {getEl,getStatus};
-export {setBadgeState, setBadgeSuccess, setBadgeDanger, setText,setBadgeStateWithText};
+export {setBadgeError, setBadgeSuccess, setBadgeDanger, setText,setBadgeErrorWithText, setBadgeType};
 export {sendRequestAndSpin, sendRequest, showFailureModal};
 
 export {
@@ -7,8 +7,11 @@ export {
     sendFloat,
     sendString,
     sendARequest,
-    updateElement,
-    toggle
+    setElementText,
+    setElementChecked,
+    toggle,
+    show,
+    hide,
 };
 
 async function postData(host, textBody) {
@@ -25,7 +28,7 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function setBadgeStateWithText(id, success, text) {
+function setBadgeErrorWithText(id, success, text) {
     if (success) {
         document.getElementById(id).innerText = text;
         document.getElementById(id).setAttribute(
@@ -40,7 +43,14 @@ function setText(id, text) {
     getEl(id).innerText = text;
 }
 
-function setBadgeState(id, errored) {
+function setBadgeType(id, bootstrapBadgeType) {
+    if (getEl(id) === null) {
+        return;
+    }
+    getEl(id).setAttribute('class', 'badge ' + bootstrapBadgeType);
+}
+
+function setBadgeError(id, errored) {
     if (errored) {
         getEl(id).setAttribute('class', 'badge bg-danger');
     }
@@ -70,10 +80,12 @@ function getUniqueIdentifier() {
 
 
 function hide(element) {
+    if (getEl(element) === null) {return; }
     getEl(element).setAttribute("style", "display:none");
 }
 
 function show(element) {
+    if (getEl(element) === null) {return; }
     getEl(element).setAttribute("style", "display:inline-block");
 }
 
@@ -195,7 +207,12 @@ async function toggle(url, prefix, id, requestKey) {
     return sendRequestAndSpin(url,prefix, id, request);
 }
 
-function updateElement(id, value) {
+
+function setElementText(id, value) {
+    if (getEl(id) === null) {
+        return;
+    }
+
     if (value === undefined) {
         getEl(id).innerText = "-";
     }
@@ -205,4 +222,11 @@ function updateElement(id, value) {
     else {
         getEl(id).innerText = value;
     }
+}
+
+function setElementChecked(id, checked) {
+    if (getEl(id) === null) {
+        return;
+    }
+    getEl(id).checked = checked;
 }

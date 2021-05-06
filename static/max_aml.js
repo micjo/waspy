@@ -4,18 +4,20 @@ export {
     load,
     submit,
     updateUi,
-    setMaxMode,
     sendARequest,
     sendInt,
     sendString,
     sendFloat,
     toggle,
-    refreshData
+    refreshData,
+    refreshDataRepeatedly
 }
 
-let maxMode = false;
-function setMaxMode() {
-    maxMode = true;
+function refreshDataRepeatedly(url, prefix, timeout) {
+    refreshData(url, prefix);
+    window.setInterval(function() {
+        refreshData(url,prefix);
+    }, timeout);
 }
 
 async function refreshData(url,prefix) {
@@ -26,46 +28,61 @@ async function refreshData(url,prefix) {
 
 function updateUi(prefix, hwData) {
     if (!hwData) {
-        con.setBadgeStateWithText(prefix + "_connect_status" , false, "Not Active");
+        con.setBadgeErrorWithText(prefix + "_connect_status" , false, "Not Active");
         return;
     }
-    con.setBadgeStateWithText(prefix + "_connect_status" , true, "Active");
+    con.setBadgeErrorWithText(prefix + "_connect_status" , true, "Active");
 
-    con.updateElement(prefix + '_request_id', hwData["request_id"]);
-    con.updateElement(prefix + '_request_finished', hwData["request_finished"]);
-    con.updateElement(prefix + '_expiry', hwData["expiry_date"]);
-    con.updateElement(prefix + '_error', hwData["error"]);
-    con.updateElement(prefix + '_first', hwData["motor_1_position"]);
-    con.updateElement(prefix + '_second', hwData["motor_2_position"]);
+    con.setElementText(prefix + '_request_id', hwData["request_id"]);
+    con.setElementText(prefix + '_request_finished', hwData["request_finished"]);
+    con.setElementText(prefix + '_expiry', hwData["expiry_date"]);
+    con.setElementText(prefix + '_error', hwData["error"]);
+    con.setElementText(prefix + '_first_temperature', hwData["motor_1_temperature"]);
+    con.setElementText(prefix + '_first_step', hwData["motor_1_steps"]);
+    con.setElementText(prefix + '_first_offset', hwData["motor_1_offset"]);
+    con.setElementText(prefix + '_update_m1_position', hwData["motor_1_updating_position"]);
+    con.setElementText(prefix + '_update_m1_temperature', hwData["motor_1_updating_temperature"]);
+    con.setElementText(prefix + '_second_temperature', hwData["motor_2_temperature"]);
+    con.setElementText(prefix + '_second_step', hwData["motor_2_steps"]);
+    con.setElementText(prefix + '_second_offset', hwData["motor_2_offset"]);
+    con.setElementText(prefix + '_update_m2_position', hwData["motor_2_updating_position"]);
+    con.setElementText(prefix + '_update_m2_temperature', hwData["motor_2_updating_temperature"]);
+    con.setElementText(prefix + '_debug_rs232', hwData["debug_rs232"]);
+    con.setElementText(prefix + '_debug_aml', hwData["debug_aml"]);
+    con.setElementText(prefix + '_debug_broker', hwData["debug_broker"]);
 
-    if (maxMode) {
-        con.updateElement(prefix + '_first_position', hwData["motor_1_position"]);
-        con.updateElement(prefix + '_adv_first_position', hwData["motor_1_position"]);
-        con.updateElement(prefix + '_first_temperature', hwData["motor_1_temperature"]);
-        con.updateElement(prefix + '_first_step', hwData["motor_1_steps"]);
-        con.updateElement(prefix + '_first_offset', hwData["motor_1_offset"]);
-        con.updateElement(prefix + '_update_m1_position', hwData["motor_1_updating_position"]);
-        con.updateElement(prefix + '_update_m1_temperature', hwData["motor_1_updating_temperature"]);
+    con.setElementChecked(prefix + "_update_m1_position_click", hwData["motor_1_updating_position"]);
+    con.setElementChecked(prefix + "_update_m1_temperature_click", hwData["motor_1_updating_temperature"]);
+    con.setElementChecked(prefix + "_debug_rs232_click", hwData["debug_rs232"]);
+    con.setElementChecked(prefix + "_debug_aml_click", hwData["debug_aml"]);
+    con.setElementChecked(prefix + "_debug_broker_click", hwData["debug_broker"]);
 
-        con.updateElement(prefix + '_second_position', hwData["motor_2_position"]);
-        con.updateElement(prefix + '_adv_second_position', hwData["motor_2_position"]);
-        con.updateElement(prefix + '_second_temperature', hwData["motor_2_temperature"]);
-        con.updateElement(prefix + '_second_step', hwData["motor_2_steps"]);
-        con.updateElement(prefix + '_second_offset', hwData["motor_2_offset"]);
-        con.updateElement(prefix + '_update_m2_position', hwData["motor_2_updating_position"]);
-        con.updateElement(prefix + '_update_m2_temperature', hwData["motor_2_updating_temperature"]);
+    let position_str = parseFloat(hwData["motor_1_position"]).toFixed(2);
+    position_str += ", " + parseFloat(hwData["motor_2_position"]).toFixed(2);
+    con.setElementText(prefix + "_brief_status", position_str);
 
-        con.updateElement(prefix + '_debug_rs232', hwData["debug_rs232"]);
-        con.updateElement(prefix + '_debug_aml', hwData["debug_aml"]);
-        con.updateElement(prefix + '_debug_broker', hwData["debug_broker"]);
-
-        con.getEl(prefix + "_update_m1_position_click").checked = hwData["motor_1_updating_position"];
-        con.getEl(prefix + "_update_m1_temperature_click").checked = hwData["motor_1_updating_temperature"];
-        con.getEl(prefix + "_debug_rs232_click").checked = hwData["debug_rs232"];
-        con.getEl(prefix + "_debug_aml_click").checked = hwData["debug_aml"];
-        con.getEl(prefix + "_debug_broker_click").checked = hwData["debug_broker"];
+    if (hwData["request_finished"]) {
+        con.hide(prefix + "_moving_status");
+        con.setElementText(prefix + '_first_position', hwData["motor_1_position"]);
+        con.setElementText(prefix + '_adv_first_position', hwData["motor_1_position"]);
+        con.setElementText(prefix + '_second_position', hwData["motor_2_position"]);
+        con.setElementText(prefix + '_adv_second_position', hwData["motor_2_position"]);
+        con.setElementText(prefix + '_first', hwData["motor_1_position"]);
+        con.setElementText(prefix + '_second', hwData["motor_2_position"]);
+        con.setBadgeType(prefix + "_brief_status", "bg-success");
     }
 
+    else {
+        con.show(prefix + "_moving_status");
+        con.setElementText(prefix + '_first_position', "-");
+        con.setElementText(prefix + '_adv_first_position', "-");
+        con.setElementText(prefix + '_second_position', "-");
+        con.setElementText(prefix + '_adv_second_position', "-");
+        con.setElementText(prefix + '_first', "-");
+        con.setElementText(prefix + '_second', "-");
+        con.setBadgeType(prefix + "_brief_status", "bg-secondary");
+        
+    }
 }
 
 function submit(url, prefix, id) {
