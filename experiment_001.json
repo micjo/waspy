@@ -1,0 +1,27 @@
+{
+    "type":"rbs",
+    "phi_start":0,
+    "phi_step":1,
+    "phi_end":5,
+    "limit":100,
+    "title":"experiment_1",
+    "storage":"/home/mic/tmp/experiment_1",
+    "experiment":
+        [
+            {"mtype":"rand", "ftitle":"reference(125,15)" , "x":1 , "y":1 , "file":"RBS21_100_R1A" },
+            {"mtype":"rand", "ftitle":"d20_200cy"         , "x":2  , "y":2  , "file":"RBS21_100_01A" },
+            {"mtype":"rand", "ftitle":"d20_300cy"         , "x":3  , "y":3  , "file":"RBS21_100_02A" },
+            {"mtype":"rand", "ftitle":"d21_200cy"         , "x":4  , "y":4  , "file":"RBS21_100_03A" },
+            {"mtype":"rand", "ftitle":"d20_300cy"         , "x":5  , "y":5  , "file":"RBS21_100_04A" },
+            {"mtype":"rand", "ftitle":"d22_200cy"         , "x":6 , "y":6   , "file":"RBS21_100_05A" },
+            {"mtype":"rand", "ftitle":"d22_300cy"         , "x":7 , "y":7  , "file":"RBS21_100_06A" },
+            {"mtype":"rand", "ftitle":"d23_200cy"         , "x":8 , "y":8  , "file":"RBS21_100_07A" },
+            {"mtype":"rand", "ftitle":"d23_300cy"         , "x":9 , "y":9  , "file":"RBS21_100_08A" },
+            {"mtype":"rand", "ftitle":"d20_TMS"           , "x":10, "y":10  , "file":"RBS21_100_09A" },
+            {"mtype":"rand", "ftitle":"d21_TMS"           , "x":11 , "y":11 , "file":"RBS21_100_10A" },
+            {"mtype":"rand", "ftitle":"d22_TMS"           , "x":12 , "y":12, "file":"RBS21_100_11A" },
+            {"mtype":"rand", "ftitle":"d23_TMS"           , "x":13 , "y":13  , "file":"RBS21_100_12A" }
+        ],
+
+    "end_position":  {"x":20 , "y":20, "theta":19, "zeta":19, "phi":18, "det":18}
+}

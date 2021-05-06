@@ -4,205 +4,114 @@
 
 {% block content %}
 
-
 <div class="row">
     <div class="col-sm">
-        {% for aml in rbs_config["aml"] %}
-        {% set prefix = aml["id"] %}
-        {% set dTitle = aml["title"] %}
-        {% set first_name = aml["first_name"] %}
-        {% set second_name = aml["second_name"] %}
-        {% set first_load = aml["first_load"] %}
-        {% set second_load = aml["second_load"] %}
-        {% set url = '/api/' + aml["id"] %}
-        <div class="card text-nowrap bg-light text-dark mt-2 mb-5">
+        {% for key,value in config.items() %}
+        {% set url = '/api/' + key %}
+        <div class="card text-nowrap bg-light text-dark mt-2 mb-3">
             <div class="card-header clearfix">
-                <h6 class="float-start"> {{dTitle}}  </h6>
-                <div class ="float-end">
-                <span class="badge bg-danger" id="{{prefix}}_connect_status">Not Active</span>
+                <h6 class="float-start"> {{value["title"]}}  </h6>
+                <div class ="clearfix float-end">
+                    <span class="badge bg-info" id="{{key}}_brief_status">-</span>
+                    {% if value["type"] == "aml" %}
+                    <span class="spinner-border spinner-border-sm" id="{{key}}_moving_status" style="display:none"></span>
+                    {% endif %}
+                    <span class="badge bg-secondary" id="{{key}}_connect_status">-</span>
                 </div>
             </div>
-            <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{prefix}}_fold" aria-expanded="false" aria-controls="{{prefix}}_fold">
+            <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{key}}_fold" aria-expanded="false" aria-controls="{{key}}_fold">
                 Expand Toggle
             </button>
-            <div class="collapse" id="{{prefix}}_fold">
+            <div class="collapse" id="{{key}}_fold">
                 <table class="table table-striped table-hover table-sm">
                     <thead> 
                         <tr> <th scope="col">Identifier</th> <th scope="col">Value</th> <th scope="col">Control</th> </tr>
                     </thead>
                     <tbody>
-                        {{ ui_elements.value_row('Request Acknowledge:', prefix +'_request_id') }}
-                        {{ ui_elements.value_row('Request Finished:', prefix+'_request_finished') }}
-                        {{ ui_elements.value_row('Error:', prefix+'_error') }}
-                        {{ ui_elements.value_row('Expiry Date:', prefix+'_expiry') }}
-                        {{ ui_elements.value_row_input(first_name+':', 'max_aml.sendFloat', url, prefix, 'first', 'set_m1_target_position', 'move')}}
-                        {{ ui_elements.value_row_input(second_name+':', 'max_aml.sendFloat', url, prefix, 'second', 'set_m2_target_position', 'move')}}
+                        {{ ui_elements.value_row('Request Id:', key +'_request_id') }}
+                        {{ ui_elements.value_row('Request Finished:', key+'_request_finished') }}
+                        {{ ui_elements.value_row('Error:', key+'_error') }}
+                        {% if value["type"] == "aml" %}
+                        {{ ui_elements.value_row('Expiry Date:', key+'_expiry') }}
+                        {{ ui_elements.value_row_input(value["first_name"]+':', 'max_aml.sendFloat', url, key, 'first', 'set_m1_target_position', 'move')}}
+                        {{ ui_elements.value_row_input(value["second_name"]+':', 'max_aml.sendFloat', url, key, 'second', 'set_m2_target_position', 'move')}}
+                        {% elif value["type"] == "motrona" %}
+                        {{ ui_elements.value_row('Counts:', key+'_counts') }}
+                        {{ ui_elements.value_row('Counting Status:', key+'_status') }}
+                        {{ ui_elements.value_row('charge(nC):', key+'_charge') }}
+                        {{ ui_elements.value_row('Counting time(msec):', key+'_counting_time') }}
+                        {{ ui_elements.value_row('Current(nA):', key+'_current') }}
+                        {{ ui_elements.value_row_input('Target Charge:', 'max_motrona.sendFloat', url, key, 'target_charge', 'target_charge','Set')}}
+                        {% elif value["type"] == "caen" %}
+                        {{ ui_elements.value_row('Acquiring data:', key+'_acquiring') }}
+                        {% endif %}
                     </tbody>
                 </table>
-
                 <div class="clearfix"><div class="btn-group float-end">
-                        {{ ui_elements.buttonSpinnerWithCall("Move Both", "max_aml.submit", url, prefix, 'submit') }}
-                        {{ ui_elements.buttonWithCall("Load", ui_elements.func3("max_aml.load", prefix, first_load, second_load ))}}
-                        {{ ui_elements.buttonSpinnerWithRequest("hide", "max_aml.sendARequest", url, prefix, 'hide', '{"hide":true}') }}
-                        {{ ui_elements.buttonSpinnerWithRequest("show", "max_aml.sendARequest", url, prefix, 'show', '{"hide":false}') }}
-                        {{ ui_elements.buttonSpinnerWithRequest("continue", "max_aml.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
+                        {% if value["type"] == "aml" %}
+                        {{ ui_elements.buttonSpinnerWithCall("Move Both", "max_aml.submit", url, key, 'submit') }}
+                        {{ ui_elements.buttonWithCall("Load", ui_elements.func3("max_aml.load", key, first_load, second_load ))}}
+                        {{ ui_elements.buttonSpinnerWithRequest("hide", "max_aml.sendARequest", url, key, 'hide', '{"hide":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("show", "max_aml.sendARequest", url, key, 'show', '{"hide":false}') }}
+                        {% elif value["type"] == "motrona" %}
+                        {{ ui_elements.buttonSpinnerWithRequest("pause", "max_motrona.sendARequest", url, key, 'pause', '{"pause_counting":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("clear start", "max_motrona.sendARequest", url, key, 'clearstart', '{"clear-start_counting":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("hide", "max_motrona.sendARequest", url, key, 'hide', '{"hide":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("show", "max_motrona.sendARequest", url, key, 'show', '{"hide":false}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.sendARequest", url, key, 'continue', '{"continue":true}') }}
+                        {% elif value["type"] == "caen" %}
+                        {{ ui_elements.buttonSpinnerWithRequest("start acquisition", "max_caen.sendARequest", url, key, 'acquire_start', '{"start_acquisition":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("stop acquisition", "max_caen.sendARequest", url, key, 'acquire_stop', '{"stop_acquisition":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("reset", "max_caen.sendARequest", url, key, 'reset', '{"reset":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("clear", "max_caen.sendARequest", url, key, 'clear', '{"clear":true}') }}
+                        {{ ui_elements.buttonSpinnerWithRequest("continue", "max_caen.sendARequest", url, key, 'continue', '{"continue":true}') }}
+                        {% endif %}
                     </div></div>
             </div></div>
             {% endfor %}
-
-
-            {% for motrona in rbs_config["motrona"] %}
-            {% set prefix = motrona["id"] %}
-            {% set dTitle = motrona["title"] %}
-            {% set url = '/api/' + motrona["id"] %}
-            <div class="card text-nowrap bg-light text-dark mt-2 mb-5">
-                <div class="card-header clearfix">
-                    <h6 class="float-start"> {{dTitle}}  </h6>
-                    <div class="float-end">
-                    <span class="badge bg-danger float-end" id="{{prefix}}_connect_status">Not Active</span>
-                    </div>
-                </div>
-                <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{prefix}}_fold" aria-expanded="false" aria-controls="{{prefix}}_fold">
-                    Expand Toggle
-                </button>
-                <div class="collapse" id="{{prefix}}_fold">
-                    <table class="table table-striped table-hover table-sm">
-                        <thead> 
-                            <tr> <th scope="col">Identifier</th> <th scope="col">Value</th> <th scope="col">Control</th> </tr>
-                        </thead>
-                        <tbody>
-                            {{ ui_elements.value_row('Request Id:', prefix+'_request_id') }}
-                            {{ ui_elements.value_row('Request Finish:', prefix+'_request_finished') }}
-                            {{ ui_elements.value_row('Counts:', prefix+'_counts') }}
-                            {{ ui_elements.value_row('Counting Status:', prefix+'_status') }}
-                            {{ ui_elements.value_row('charge(nC):', prefix+'_charge') }}
-                            {{ ui_elements.value_row('Counting time(msec):', prefix+'_counting_time') }}
-                            {{ ui_elements.value_row('Current(nA):', prefix+'_current') }}
-                            {{ ui_elements.value_row('Error Status:', prefix+'_error') }}
-                            {{ ui_elements.value_row_input('Target Charge:', 'max_motrona.sendFloat', url, prefix, 'target_charge', 'target_charge','Set')}}
-                        </tbody>
-                    </table>
-
-                    <div class="clearfix" style:"overflow: hidden"><div class="btn-group float-end">
-                            {{ ui_elements.buttonSpinnerWithRequest("pause", "max_motrona.sendARequest", url, prefix, 'pause', '{"pause_counting":true}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("clear start", "max_motrona.sendARequest", url, prefix, 'clearstart', '{"clear-start_counting":true}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("hide", "max_motrona.sendARequest", url, prefix, 'hide', '{"hide":true}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("show", "max_motrona.sendARequest", url, prefix, 'show', '{"hide":false}') }}
-                            {{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
-                        </div></div>
-
-                </div>
-            </div>
-            {% endfor %}
-
-            {% for caen in rbs_config["caen"] %}
-            {% set prefix = caen["id"] %}
-            {% set dTitle = caen["title"] %}
-            {% set url = '/api/' + caen["id"] %}
-            <div class="card text-nowrap mt-2 mb-5">
-                <div class="card-header clearfix">
-                    <h6 class="float-start"> {{dTitle}}  </h6>
-                    <div class="float-end">
-                        <span class="badge bg-danger" id="{{prefix}}_connect_status">Not Active</span>
-                    </div>
-                </div>
-                <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{prefix}}_fold" aria-expanded="false" aria-controls="{{prefix}}_fold">
-                    Expand Toggle
-                </button>
-                <div class="collapse" id="{{prefix}}_fold">
-                    <table class="table table-striped table-hover table-sm">
-                        <thead> 
-                            <tr> <th scope="col">Identifier</th> <th scope="col">Value</th> <th scope="col">Control</th> </tr>
-                        </thead>
-                        <tbody>
-                            {{ ui_elements.value_row('Request Id:', prefix+'_request_id') }}
-                            {{ ui_elements.value_row('Request Finish:', prefix+'_request_finished') }}
-                            {{ ui_elements.value_row('Acquiring data:', prefix+'_acquiring') }}
-                        </tbody>
-                    </table>
-
-                    <div class="clearfix"><div class="btn-group float-end">
-{{ ui_elements.buttonSpinnerWithRequest("start acquisition", "max_caen.sendARequest", url, prefix, 'acquire_start', '{"start_acquisition":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("stop acquisition", "max_caen.sendARequest", url, prefix, 'acquire_stop', '{"stop_acquisition":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("reset", "max_caen.sendARequest", url, prefix, 'reset', '{"reset":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("clear", "max_caen.sendARequest", url, prefix, 'clear', '{"clear":true}') }}
-{{ ui_elements.buttonSpinnerWithRequest("continue", "max_caen.sendARequest", url, prefix, 'continue', '{"continue":true}') }}
-                        </div></div>
-                </div>
-            </div>
-
-            {% endfor %}
     </div>
     <div class="col-sm">
-<div class="input-group input-sm mb-3 mt-2">
-  <label class="input-group-text" for="board_select">Board:</label>
-  <select class="form-select" id="board_select">
-    <option selected>Choose...</option>
-    <option value="1">Board-1</option>
-    <option value="2">Board-2</option>
-    <option value="3">Board-3</option>
-    <option value="4">Board-4</option>
-    <option value="5">Board-5</option>
-    <option value="6">Board-6</option>
-    <option value="7">Board-7</option>
-    <option value="8">Board-8</option>
-  </select>
-  <label class="input-group-text" for="channel_select">Channel:</label>
-  <select class="form-select" id="channel_select">
-    <option selected>Choose...</option>
-    <option value="0">Channel-0</option>
-    <option value="1">Channel-1</option>
-    <option value="2">Channel-2</option>
-    <option value="3">Channel-3</option>
-    <option value="4">Channel-4</option>
-    <option value="5">Channel-5</option>
-    <option value="6">Channel-6</option>
-    <option value="7">Channel-7</option>
-    <option value="8">Channel-8</option>
-    <option value="9">Channel-9</option>
-    <option value="10">Channel-10</option>
-    <option value="11">Channel-11</option>
-    <option value="12">Channel-12</option>
-    <option value="13">Channel-13</option>
-    <option value="14">Channel-14</option>
-    <option value="15">Channel-15</option>
-  </select>
-  <label class="input-group-text" for="channel_select">Update Caen data:</label>
-  <div class="input-group-text">
-      <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
-  </div>
-</div>
-      <div id="histo_chart">
-      </div>
-
-
-      <div class="clearfix">
-          <div class="float-end">
-              <div class="input-group input-sm mb-3 mt-2">
-                  <label class="input-group-text">Update RBS data:</label>
-                  <div class="input-group-text">
-                      <input class="form-check-input mt-0" id="update_rbs_request" type="checkbox" value="">
-                  </div>
-              </div>
-          </div>
-      </div>
-      <div id="rbs_current">
-      </div>
-
-      <div class="clearfix">
-          <div class="float-end">
-              <div class="input-group input-sm mb-3 mt-2">
-                  <label class="input-group-text">Motor X position:</label>
-                  <div class="input-group-text">
-                      <input class="form-check-input mt-0" id="update_pos_request" type="checkbox" value="">
-                  </div>
-              </div>
-          </div>
-      </div>
-      <div id="motor_pos_graph">
-      </div>
+        <div class="input-group input-sm mb-3 mt-2">
+            <label class="input-group-text" for="board_select">Board:</label>
+            <select class="form-select" id="board_select">
+                <option selected>Choose...</option>
+                <option value="1">Board-1</option>
+                <option value="2">Board-2</option>
+                <option value="3">Board-3</option>
+                <option value="4">Board-4</option>
+                <option value="5">Board-5</option>
+                <option value="6">Board-6</option>
+                <option value="7">Board-7</option>
+                <option value="8">Board-8</option>
+            </select>
+            <label class="input-group-text" for="channel_select">Channel:</label>
+            <select class="form-select" id="channel_select">
+                <option selected>Choose...</option>
+                <option value="0">Channel-0</option>
+                <option value="1">Channel-1</option>
+                <option value="2">Channel-2</option>
+                <option value="3">Channel-3</option>
+                <option value="4">Channel-4</option>
+                <option value="5">Channel-5</option>
+                <option value="6">Channel-6</option>
+                <option value="7">Channel-7</option>
+                <option value="8">Channel-8</option>
+                <option value="9">Channel-9</option>
+                <option value="10">Channel-10</option>
+                <option value="11">Channel-11</option>
+                <option value="12">Channel-12</option>
+                <option value="13">Channel-13</option>
+                <option value="14">Channel-14</option>
+                <option value="15">Channel-15</option>
+            </select>
+            <label class="input-group-text" for="channel_select">Update Caen data:</label>
+            <div class="input-group-text">
+                <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
+            </div>
+        </div>
+        <div id="histo_chart">
+        </div>
     </div>
-
 </div>
 
 <script type="module">
@@ -213,61 +122,20 @@
     window.max_motrona=max_motrona;
     window.max_aml=max_aml;
     window.max_caen=max_caen;
-
-    rbs_hw.refreshGraph();
+{% for key,value in config.items() %}
+{% if value["type"] == "aml" %}
+    max_aml.refreshDataRepeatedly('/api/' + '{{key}}', '{{key}}', 2000);
+{% elif value["type"] == "motrona" %}
+    max_motrona.refreshDataRepeatedly('/api/' + '{{key}}', '{{key}}', 2000);
+{% elif value["type"] == "caen" %}
+    max_caen.refreshDataRepeatedly('/api/' + '{{key}}', '{{key}}', 2000);
     window.setInterval(function() {
-        rbs_hw.refreshGraph();
+        max_caen.drawGraph('/api/' + '{{key}}')
     }, 2000);
-
-{% for motrona in rbs_config["motrona"]%}   
-    max_motrona.refreshData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
-    window.setInterval(function() {
-        max_motrona.refreshData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
-    }, 2000);
+{% endif %}
 {% endfor %}
 
-{% for aml in rbs_config["aml"]%}   
-    max_aml.refreshData('/api/{{aml["id"]}}', '{{aml["id"]}}');
-    window.setInterval(function() {
-        max_aml.refreshData('/api/{{aml["id"]}}', '{{aml["id"]}}');
-    }, 2000);
-{% endfor %}
 
-{% for caen in rbs_config["caen"]%}   
-    max_caen.refreshData('/api/{{caen["id"]}}', '{{caen["id"]}}');
-    window.setInterval(function() {
-        max_caen.refreshData('/api/{{caen["id"]}}', '{{caen["id"]}}');
-        max_caen.drawGraph('/api/{{caen["id"]}}');
-    }, 2000);
-{% endfor %}
+</script>
 
-    </script>
-<!--
-    <script type="module">
-        import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
-    import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
-    window.max_aml = max_aml;
-    window.max_motrona = max_motrona;
-    max_aml.setMinMode();
-    max_motrona.setMinMode();
-    max_aml.setMinMode();
-    max_motrona.setMinMode();
-{% for aml in aml_config %}
-    max_aml.refreshAllData('/api/{{aml["id"]}}', '{{aml["id"]}}');
-{% endfor %}
-{% for motrona in motrona_config %}
-    max_motrona.refreshAllData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
-{% endfor %}
-    window.setInterval(function() {
-        {% for aml in aml_config %}
-            max_aml.refreshAllData('/api/{{aml["id"]}}', '{{aml["id"]}}');
-        {% endfor %}
-        {% for motrona in motrona_config %}
-            max_motrona.refreshAllData('/api/{{motrona["id"]}}', '{{motrona["id"]}}');
-        {% endfor %}
-
-    }, 2000);
-    </script>
-    -->
-
-    {% endblock %}
+{% endblock %}

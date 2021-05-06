@@ -2,8 +2,7 @@
 {% import "ui_elements.html" as ui_elements %}
 
 
-{%set prefix = config["id"] %}
-{%set url = '/api/' + config["id"] %}
+{%set url = '/api/' + prefix %}
 {%set winTitle =  config["title"] %}
 {%set first_name = config["first_name"] %}
 {%set second_name = config["second_name"] %}
@@ -17,7 +16,9 @@
 <hr>
 <div class="clearfix">
     <h3 class="float-start"> {{winTitle}}  </h3>
-    <h5 class="float-end">
+    <h5 class="clearfix float-end">
+        <span class="badge bg-info" id="{{prefix}}_brief_status">-</span>
+        <span class="spinner-border spinner-border-sm" id="{{prefix}}_moving_status" style="display:none"></span>
         <span class="badge badge-danger" id="{{prefix}}_connect_status">Not Running</span>
     </h5>
 </div>
@@ -82,9 +83,7 @@
 <script type="module">
     import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
     window.max_aml = max_aml;
-    max_aml.setMaxMode();
     max_aml.refreshData('{{url}}','{{prefix}}', max_aml.updateUi);
-
     window.setInterval(function() {
         max_aml.refreshData('{{url}}','{{prefix}}', max_aml.updateUi);
     }, 2000);

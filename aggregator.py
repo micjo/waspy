@@ -38,12 +38,14 @@ class Aggregator:
     def aggregate(self):
         while True:
             response = rq.get("http://localhost:5000/api/"+self._config['motrona'][0]['id'])
-            current = response.json()['current(nA)']
+            time.sleep(1)
+            if response.status_code == 404:
+                continue
+            current = response.json()["current(nA)"]
             with self.aggregate_lock:
                 timestampStr = datetime.now().strftime("%H:%M:%S")
                 self._samples.append([timestampStr, current])
                 del self._samples[0]
-                time.sleep(1)
 
             response = rq.get("http://localhost:5000/api/"+self._config['aml'][0]['id'])
             motor_one_position = response.json()['motor_1_position']

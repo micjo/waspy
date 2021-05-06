@@ -2,9 +2,6 @@ import * as con from './daemon_connection.js'
 
 export {refreshGraph};
 
-
-
-
 function refreshGraph() {
     if (!con.getEl("update_rbs_request").checked) {
         return;

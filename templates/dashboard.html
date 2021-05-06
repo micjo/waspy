@@ -13,44 +13,24 @@
       <th scope="col">Other</th>
   </thead>
   <tbody>
-      {% for aml in rbs_config["aml"] %}
-      <tr>
-          <td> {{aml["title"]}}</td>
-          <td> <div class="badge bg-secondary" id={{aml["id"]}}_connect_state> </div></td>
-          <td> <div id={{aml["id"]}}_error_state> </div></td>
-          <td> <div id={{aml["id"]}}_request_id></div></td>
-          <td> <div id={{aml["id"]}}_busy></div></td>
-      </tr>
-      {% endfor %}
-
-      {% for caen in rbs_config["caen"] %}
-      <tr>
-          <td> {{caen["title"]}}</td>
-          <td> <div class="badge bg-secondary" id={{caen["id"]}}_connect_state> </div></td>
-          <td> <div id={{caen["id"]}}_error_state> </div></td>
-          <td> <div id={{caen["id"]}}_request_id></div></td>
-          <td> <div id={{caen["id"]}}_status></div></td>
-      </tr>
-      {% endfor %}
-
-      {% for motrona in rbs_config["motrona"] %}
-      <tr>
-          <td> {{motrona["title"]}}</td>
-          <td> <div class="badge bg-secondary" id={{motrona["id"]}}_connect_state> </div></td>
-          <td> <div id={{motrona["id"]}}_error_state> </div></td>
-          <td> <div id={{motrona["id"]}}_request_id></div></td>
-          <td> <div id={{motrona["id"]}}_status></div></td>
-      </tr>
+      {% for key,value in config.items() %}
+          <tr>
+              <td> {{value["title"]}}</td>
+              <td> <div class="badge bg-secondary" id={{key}}_connect_state> </div></td>
+              <td> <div id={{key}}_error_state> </div></td>
+              <td> <div id={{key}}_request_id></div></td>
+              <td> <div id={{key}}_status></div></td>
+          </tr>
       {% endfor %}
   </tbody>
 </table>
- 
+
 <script type="module">
     import * as dashboard from '{{url_for('static', filename='dashboard.js')}}'
 
-    dashboard.refreshAllData({{rbs_config|safe}});
+    dashboard.refreshAllData({{config|safe}});
     window.setInterval(function() {
-        dashboard.refreshAllData({{rbs_config|safe}});
+        dashboard.refreshAllData({{config|safe}});
     }, 2000);
 </script>
 
