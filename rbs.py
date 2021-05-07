@@ -8,6 +8,11 @@ import comm
 import json
 import threading
 import data_dump
+import pymsteams
+
+my_teams_message = pymsteams.connectorcard("https://imecinternational.webhook.office.com/webhookb2/27bf236c-227a-4ac1-ba5c-d1480181af65@a72d5a72-25ee-40f0-9bd1-067cb5b770d4/IncomingWebhook/d303c45f233f4288bb5dc22b2f8eafe7/de41a3d0-81c7-479d-8b2a-c63812604213")
+
+
 
 for _ in logging.root.manager.loggerDict:
     logging.getLogger(_).setLevel(logging.CRITICAL)
@@ -52,13 +57,17 @@ class RbsRunner:
     def _run_scene(self, scene, phi_range, storage):
         self._safe_update(scene, "execution_state", "Executing")
         comm.move_aml_both(scene["ftitle"], self._config["aml_x_y"], [ scene["x"], scene["y"] ])
+
+        start = time.time()
         for phi in phi_range:
             title = scene["ftitle"] + "_phi_" + str(phi)
             comm.move_aml_first(title, self._config["aml_phi_zeta"], phi)
             comm.clear_start_motrona_count(title, self._config["motrona_rbs"])
             comm.wait_for_motrona_counting_done(title, self._config["motrona_rbs"])
             self._safe_update(scene, "phi_progress_percentage", round(phi/phi_range[-1]*100,2))
+        end = time.time()
 
+        self._safe_update(scene, "measuring_time(sec)", str(round(end-start, 3)))
         data_dump.store_and_plot_histograms(self._config, storage, scene)
         self._safe_update(scene, "execution_state", "Done")
 
@@ -93,6 +102,8 @@ class RbsRunner:
 
         self._go_to_parking_position(title, full_experiment["end_position"])
         self._wrap_up()
+        my_teams_message.text("Experiment " + title + " Finished. Results available at: " + storage)
+        my_teams_message.send()
 
     def run_in_background(self, experiment):
         if self._get_running_state():
