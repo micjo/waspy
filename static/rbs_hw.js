@@ -15,29 +15,31 @@ async function refreshData(url) {
 }
 
 function updateUi(hwData) {
+
     con.getEl("rbs_status").innerHTML = "";
-    if (hwData["experiment"] !== undefined) {
-        con.setElementText("rbs_brief_status", "Experiment Ongoing");
-    }
-    else {
-        con.setElementText("rbs_brief_status", "Idle");
+    con.setElementText("rbs_brief_status", hwData["status"]);
+    if (hwData["status"] == "idle") {
         return;
     }
 
     for (const scene of hwData["experiment"]) {
-        console.log(scene);
         let sceneRow = document.createElement("tr");
 
         let sceneTitle = document.createElement("td");
         sceneTitle.innerText = scene["ftitle"]
 
+        let xPos = document.createElement("td");
+        xPos.innerText = scene["x"]
+
+        let yPos = document.createElement("td");
+        yPos.innerText = scene["y"]
+
         let sceneStatus = document.createElement("td");
         sceneStatus.innerText = scene["execution_state"]
 
         let sceneProgress = document.createElement("td");
-        let ratio = ((scene["phi_progress"] / hwData["phi_end"]) * 100).toFixed(0);
-        if (ratio != "NaN") {
-            console.log(ratio);
+        let ratio = scene["phi_progress_percentage"]
+        if (ratio != undefined) {
             let progress = document.createElement("div");
             progress.setAttribute("class", "progress");
             let progressBar = document.createElement("div");
@@ -47,7 +49,10 @@ function updateUi(hwData) {
             progress.appendChild(progressBar);
             sceneProgress.appendChild(progress);
         }
+
         sceneRow.appendChild(sceneTitle);
+        sceneRow.appendChild(xPos);
+        sceneRow.appendChild(yPos);
         sceneRow.appendChild(sceneStatus);
         sceneRow.appendChild(sceneProgress);
 
