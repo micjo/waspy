@@ -71,6 +71,31 @@
             {% endfor %}
     </div>
     <div class="col-sm">
+
+        <div class="card text-nowrap bg-light text-dark mt-2 mb-3">
+            <div class="card-header clearfix">
+                <h6 class="float-start"> RBS Status </h6>
+                <div class ="clearfix float-end">
+                    <span class="badge bg-info" id="rbs_brief_status">-</span>
+                </div>
+            </div>
+            <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#rbs_fold" aria-expanded="false" aria-controls="rbs_fold">
+                Expand Toggle
+            </button>
+            <div class="collapse" id="rbs_fold">
+                <table class="table table-striped table-hover table-sm">
+                <thead>
+                    <tr> <th scope="col">Scene Title</th> <th scope="col">Execution State</th> <th scope="col">Progress</th> </tr>
+                </thead>
+
+                <tbody id="rbs_status">
+                </tbody>
+
+            </table>
+            </div>
+            </div>
+
+
         <div class="input-group input-sm mb-3 mt-2">
             <label class="input-group-text" for="board_select">Board:</label>
             <select class="form-select" id="board_select">
@@ -108,8 +133,8 @@
             <div class="input-group-text">
                 <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
             </div>
-        </div>
-        <div id="histo_chart">
+            <div id="histo_chart">
+            </div>
         </div>
     </div>
 </div>
@@ -119,6 +144,9 @@
     import * as max_caen from '{{url_for('static', filename='max_caen.js')}}'
     import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
     import * as rbs_hw from '{{url_for('static', filename='rbs_hw.js')}}'
+
+    rbs_hw.refreshDataRepeatedly(2000);
+
     window.max_motrona=max_motrona;
     window.max_aml=max_aml;
     window.max_caen=max_caen;

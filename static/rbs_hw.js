@@ -1,6 +1,61 @@
 import * as con from './daemon_connection.js'
 
-export {refreshGraph};
+export {refreshGraph, refreshData, refreshDataRepeatedly};
+
+function refreshDataRepeatedly(timeout) {
+    refreshData("/api/exp/rbs");
+    window.setInterval(function() {
+        refreshData("/api/exp/rbs");
+    }, timeout);
+}
+
+async function refreshData(url) {
+    let hwData = await con.getStatus(url)
+    updateUi(hwData);
+}
+
+function updateUi(hwData) {
+    con.getEl("rbs_status").innerHTML = "";
+    if (hwData["experiment"] !== undefined) {
+        con.setElementText("rbs_brief_status", "Experiment Ongoing");
+    }
+    else {
+        con.setElementText("rbs_brief_status", "Idle");
+        return;
+    }
+
+    for (const scene of hwData["experiment"]) {
+        console.log(scene);
+        let sceneRow = document.createElement("tr");
+
+        let sceneTitle = document.createElement("td");
+        sceneTitle.innerText = scene["ftitle"]
+
+        let sceneStatus = document.createElement("td");
+        sceneStatus.innerText = scene["execution_state"]
+
+        let sceneProgress = document.createElement("td");
+        let ratio = ((scene["phi_progress"] / hwData["phi_end"]) * 100).toFixed(0);
+        if (ratio != "NaN") {
+            console.log(ratio);
+            let progress = document.createElement("div");
+            progress.setAttribute("class", "progress");
+            let progressBar = document.createElement("div");
+            progressBar.setAttribute("class", "progress-bar");
+            progressBar.setAttribute("style", "width: "+ ratio+ "%;");
+            progressBar.innerText = ratio + "%";
+            progress.appendChild(progressBar);
+            sceneProgress.appendChild(progress);
+        }
+        sceneRow.appendChild(sceneTitle);
+        sceneRow.appendChild(sceneStatus);
+        sceneRow.appendChild(sceneProgress);
+
+        con.getEl("rbs_status").appendChild(sceneRow);
+
+    }
+
+}
 
 function refreshGraph() {
     if (!con.getEl("update_rbs_request").checked) {
