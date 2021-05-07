@@ -22,7 +22,7 @@ def send_request_and_wait(url, request):
 def set_motrona_target_charge(id, url, target_charge):
     motrona_request = {}
     motrona_request["request_id"] = id
-    motrona_request["set_target_targe"] = target_charge
+    motrona_request["target_charge"] = target_charge
     send_request_and_wait(url, motrona_request)
 
 def move_aml_first(id, url, position):
@@ -71,7 +71,7 @@ def start_caen_acquisition(id, url):
     send_request_and_wait(url, request)
 
 def store_caen_histogram(url, location, board, channel):
-    print("storing histogram")
+    logging.info("storing histogram")
     filename = location + "_b" + str(board) + "-c" + str(channel) + ".txt"
     if not os.path.exists(os.path.dirname(filename)):
         try:

@@ -8,6 +8,8 @@ import comm
 import json
 import threading
 
+for _ in logging.root.manager.loggerDict:
+    logging.getLogger(_).setLevel(logging.CRITICAL)
 
 aml_x_y_url = 'http://127.0.0.1:5000/api/aml_x_y'
 aml_phi_zeta_url = 'http://127.0.0.1:5000/api/aml_phi_zeta'
@@ -62,21 +64,33 @@ class RbsRunner:
         self.lock = threading.Lock()
         self.__status = {}
 
+    def __update_scene_field(self, scene_index, field, status_str):
+        with self.lock:
+            scene = self.__status["experiment"][scene_index]
+            scene[field] = status_str
+
     def run(self, full_experiment):
         with self.lock:
+            if (self.__running):
+                print("experiment already active")
+                return;
             self.__running = True
             self.__status = full_experiment
+            for scene in full_experiment["experiment"]:
+                scene["execution_state"] = "Scheduled"
 
         storage = full_experiment["storage"]
         phi_range = get_phi_range(full_experiment)
         title = full_experiment["title"]
         motrona_limit = full_experiment["limit"]
 
-        comm.pause_motrona_count(title, self.config["motrona_rbs"])
-        comm.set_motrona_target_charge(title, self.config["motrona_rbs"], motrona_limit)
+        comm.pause_motrona_count(title +"_pause", self.config["motrona_rbs"])
+        comm.set_motrona_target_charge(title + "_charge", self.config["motrona_rbs"], motrona_limit)
         comm.start_caen_acquisition(title, self.config["caen_charles_evans"])
 
+        scene_index = 0
         for scene in full_experiment["experiment"]:
+            self.__update_scene_field(scene_index, "execution_state", "Executing")
             scene_title = scene["ftitle"]
             scene_file = scene["file"]
             x_target = scene["x"]
@@ -85,9 +99,12 @@ class RbsRunner:
             for phi in phi_range:
                 title = scene_title + "_phi_" +str(phi)
                 comm.move_aml_first(title, self.config["aml_phi_zeta"], phi)
+                self.__update_scene_field(scene_index, "phi_progress", str(phi))
                 comm.clear_start_motrona_count(title, self.config["motrona_rbs"])
-                comm.wait_for_motrona_counting_done(self.config["motrona_rbs"], title)
-            comm.store_caen_histogram(self.config["caen_charles_evans"], storage + "/" + scene_file, 0, 0)
+                comm.wait_for_motrona_counting_done(title, self.config["motrona_rbs"])
+            comm.store_caen_histogram(self.config["caen_charles_evans"], storage + "/" + scene_file, 1, 0)
+            self.__update_scene_field(scene_index,"execution_state", "Done")
+            scene_index += 1
 
         end_position = full_experiment["end_position"]
         x_y_end = [end_position["x"], end_position["y"]]
@@ -98,6 +115,9 @@ class RbsRunner:
         comm.move_aml_both(title + "_end", self.config["aml_phi_zeta"], phi_zeta_end)
         comm.move_aml_both(title + "_end", self.config["aml_det_theta"], det_theta_end)
 
+        with self.lock:
+            self.__running = False
+
     def run_in_background(self, experiment):
         if self.__get_running_state():
             print("Experiment ongoing - ignored request")
@@ -106,12 +126,6 @@ class RbsRunner:
         task = threading.Thread(target=self.run, args =(experiment,))
         task.start()
         return "Experiment launched in background"
-
-    def __get_experiment_status(self):
-        ret_val = ""
-        with self.lock:
-            ret_val = self.__status
-        return ret_val
 
     def __set_running_state(self, state):
         with self.lock:
@@ -125,4 +139,4 @@ class RbsRunner:
 
     def get_status(self):
         with self.lock:
-            return status
+            return self.__status

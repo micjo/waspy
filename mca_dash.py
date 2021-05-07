@@ -10,11 +10,11 @@ app = Flask(__name__)
 
 # contains all daemons
 config = {
-    "motrona_rbs": "http://127.0.0.1:23000/api/latest",
-    "aml_x_y": "http://127.0.0.1:22000/api/latest",
-    "aml_det_theta": "http://127.0.0.1:22000/api/latest",
-    "aml_phi_zeta": "http://127.0.0.1:22000/api/latest",
-    "caen_charles_evans": "http://127.0.0.1:22123/api/latest",
+    "motrona_rbs": "http://127.0.0.1:22200/api/latest",
+    "aml_x_y": "http://127.0.0.1:22100/api/latest",
+    "aml_det_theta": "http://127.0.0.1:22100/api/latest",
+    "aml_phi_zeta": "http://127.0.0.1:22100/api/latest",
+    "caen_charles_evans": "http://127.0.0.1:22300/api/latest",
 }
 
 root_config = {
