@@ -107,7 +107,7 @@ def get_file_header(scene, bc, aml_x_y_response, aml_phi_zeta_response, aml_det_
             title=scene["file"]+ "_" +bc,
             filename=scene["file"],
             date = datetime.datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
-            measure_time = motrona_response["counting_time(msec)"],
+            measure_time = scene["measuring_time(sec)"],
             ndpts = 65535,
             charge = motrona_response["charge(nC)"],
             sample_id = scene["ftitle"],
