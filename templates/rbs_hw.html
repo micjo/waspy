@@ -16,6 +16,9 @@
                     {% if value["type"] == "aml" %}
                     <span class="spinner-border spinner-border-sm" id="{{key}}_moving_status" style="display:none"></span>
                     {% endif %}
+                    {% if value["type"] == "motrona" %}
+                    <span class="spinner-border spinner-border-sm" id="{{key}}_counting_status" style="display:none"></span>
+                    {% endif %}
                     <span class="badge bg-secondary" id="{{key}}_connect_status">-</span>
                 </div>
             </div>

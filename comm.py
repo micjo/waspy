@@ -4,7 +4,7 @@ import requests
 import time
 import logging
 
-logging.basicConfig(filename='comm.log', encoding='utf-8', level=logging.DEBUG)
+logging.basicConfig(filename='comm.log', level=logging.DEBUG)
 
 def send_request_and_wait(url, request):
     logging.info("post to: " + url + ", content: " + str(request))

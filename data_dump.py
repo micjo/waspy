@@ -7,29 +7,29 @@ import datetime
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
-def plot_histograms(data_b1c0, data_b1c1, storage, scene):
-    data_b1c0_y_values = []
-    data_b1c0_x_values = []
+def plot_histograms(data_set0, data_set1, storage, scene):
+    data_set0_y_values = []
+    data_set0_x_values = []
     index = 0
-    for energylevel in data_b1c0.split(";"):
+    for energylevel in data_set0.split(";"):
         if (energylevel):
-            data_b1c0_x_values.append(index)
-            data_b1c0_y_values.append(int(energylevel))
+            data_set0_x_values.append(index)
+            data_set0_y_values.append(int(energylevel))
             index +=1
 
-    data_b1c1_y_values = []
-    data_b1c1_x_values = []
+    data_set1_y_values = []
+    data_set1_x_values = []
     index = 0
-    for energylevel in data_b1c1.split(";"):
+    for energylevel in data_set1.split(";"):
         if (energylevel):
-            data_b1c1_x_values.append(index)
-            data_b1c1_y_values.append(int(energylevel))
+            data_set1_x_values.append(index)
+            data_set1_y_values.append(int(energylevel))
             index +=1
 
     plot_location = storage + "/" + scene["file"] + ".png"
-    fig = make_subplots(rows=2, cols=1, subplot_titles=("b1c0", "b1c1"))
-    fig.append_trace(go.Scatter( x = data_b1c0_x_values, y = data_b1c0_y_values, name="b1c0"), row=1, col=1)
-    fig.append_trace(go.Scatter( x = data_b1c1_x_values, y = data_b1c1_y_values, name="b1c1"), row=2, col=1)
+    fig = make_subplots(rows=2, cols=1, subplot_titles=("data_b6c0", "data_b6c1"))
+    fig.append_trace(go.Scatter( x = data_set0_x_values, y = data_set0_y_values, name="data_b6c0"), row=1, col=1)
+    fig.append_trace(go.Scatter( x = data_set1_x_values, y = data_set1_y_values, name="data_b6c1"), row=2, col=1)
 
     fig.update_xaxes(title_text="Energy Bin", row=1, col=1)
     fig.update_xaxes(title_text="Energy Bin", row=2, col=1)
@@ -40,9 +40,9 @@ def plot_histograms(data_b1c0, data_b1c1, storage, scene):
     fig.write_image(plot_location)
 
 def store_and_plot_histograms(config, storage, scene):
-    data_b1c0 = store_histogram(config,storage,scene,1,0)
-    data_b1c1 = store_histogram(config,storage,scene,1,1)
-    plot_histograms(data_b1c0, data_b1c1, storage, scene)
+    data_set0 = store_histogram(config,storage,scene,6,0)
+    data_set1 = store_histogram(config,storage,scene,6,1)
+    plot_histograms(data_set0, data_set1, storage, scene)
 
 
 def store_histogram(config, storage, scene, board, channel):
@@ -55,6 +55,7 @@ def store_histogram(config, storage, scene, board, channel):
     c = str(channel)
     bc = "b"+b+"c"+c
     filename = storage + "/" + scene["file"]  + "_" +bc+ ".txt"
+    print(filename)
     if not os.path.exists(os.path.dirname(filename)):
         try:
             os.makedirs(os.path.dirname(filename))
