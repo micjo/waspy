@@ -94,7 +94,7 @@ class RbsRunner:
         title = full_experiment["title"]
 
         self._start_caen_and_motrona(title, full_experiment["limit"])
-        storage = full_experiment["storage"]
+        storage = full_experiment["storage"] + "/" + full_experiment["title"]
         phi_range = get_phi_range(full_experiment)
 
         for scene in full_experiment["experiment"]:

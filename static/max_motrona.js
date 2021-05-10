@@ -35,7 +35,6 @@ function updateUi(prefix, hwData) {
     con.setElementText(prefix + '_target_charge', hwData["target_charge(nC)"]);
     con.setElementText(prefix + '_counts', hwData["counts"]);
     con.setElementText(prefix + '_status', hwData["status"]);
-    con.setElementText(prefix + '_brief_status', "Counting: " + hwData["status"]);
     con.setElementText(prefix + '_charge', hwData["charge(nC)"]);
     con.setElementText(prefix + '_counting_time', hwData["counting_time(msec)"]);
     con.setElementText(prefix + '_current', hwData["current(nA)"]);
@@ -60,6 +59,20 @@ function updateUi(prefix, hwData) {
     con.setElementChecked(prefix + "_debug_rs232", hwData["debug_rs232"]);
     con.setElementChecked(prefix + "_debug_motrona", hwData["debug_motrona"]);
     con.setElementChecked(prefix + "_debug_broker", hwData["debug_broker"]);
+
+    if (hwData["status"] === "Counting") {
+        con.show(prefix + "_counting_status");
+    }
+    else {
+        con.hide(prefix + "_counting_status");
+    
+    }
+
+    let brief_str = "Counting: " + hwData["status"] + ", Charge: "
+    brief_str += parseFloat(hwData["charge(nC)"]).toFixed(2);
+    brief_str += " -> "
+    brief_str += parseFloat(hwData["target_charge(nC)"]).toFixed(2);
+    con.setElementText(prefix + '_brief_status', brief_str);
 }
 
 async function sendARequest(url, prefix, id ,request) {
