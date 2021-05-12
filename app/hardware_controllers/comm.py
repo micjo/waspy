@@ -8,6 +8,8 @@ logging.basicConfig(filename='comm.log', level=logging.DEBUG)
 
 def send_request_and_wait(url, request):
     logging.info("post to: " + url + ", content: " + str(request))
+    time.sleep(1)
+    return
     requests.post(url, json=request)
     while True:
         time.sleep(0.2)
@@ -57,6 +59,8 @@ def pause_motrona_count(id, url):
     send_request_and_wait(url, motrona_request)
 
 def wait_for_motrona_counting_done(id, url):
+    time.sleep(1)
+    return
     while True:
         time.sleep(1)
         response = requests.get(url).json()
