@@ -21,17 +21,16 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           {{ ui_elements.activeLink('dashboard','Dashboard') }}
-          {{ ui_elements.activeLink('rbs_hw','RBS Hardware') }}
-          {{ ui_elements.activeLinkWithOneArg('hw','aml_x_y', 'AML X Y') }}
-          {{ ui_elements.activeLinkWithOneArg('hw','aml_phi_zeta', 'AML Phi Zeta') }}
-          {{ ui_elements.activeLinkWithOneArg('hw','aml_det_theta', 'AML Det Theta') }}
-          {{ ui_elements.activeLinkWithOneArg('hw','motrona_rbs', 'Motrona RBS') }}
-          {{ ui_elements.activeLinkWithOneArg('hw','caen_charles_evans', 'Caen Charles Evans') }}
+          {{ ui_elements.activeLink('rbs_experiment.rbs_hw','RBS Hardware') }}
+          {{ ui_elements.activeLinkWithOneArg('hardware_controllers.hw','aml_x_y', 'AML X Y') }}
+          {{ ui_elements.activeLinkWithOneArg('hardware_controllers.hw','aml_phi_zeta', 'AML Phi Zeta') }}
+          {{ ui_elements.activeLinkWithOneArg('hardware_controllers.hw','aml_det_theta', 'AML Det Theta') }}
+          {{ ui_elements.activeLinkWithOneArg('hardware_controllers.hw','motrona_rbs', 'Motrona RBS') }}
+          {{ ui_elements.activeLinkWithOneArg('hardware_controllers.hw','caen_charles_evans', 'Caen Charles Evans') }}
       </ul>
     </div>
   </div>
 </nav>
-
 
 <div class="modal fade" id="modalFail" >
   <div class="modal-dialog">

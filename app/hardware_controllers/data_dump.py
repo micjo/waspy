@@ -1,4 +1,4 @@
-import comm
+import app.hardware_controllers.comm as comm
 import logging
 import os
 import errno

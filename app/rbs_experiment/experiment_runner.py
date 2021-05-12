@@ -4,18 +4,13 @@ import logging
 import requests
 import time
 import sys
-import comm
+import app.hardware_controllers.comm as comm
 import json
 import threading
-import data_dump
+import app.hardware_controllers.data_dump as data_dump
 import pymsteams
 
 my_teams_message = pymsteams.connectorcard("https://imecinternational.webhook.office.com/webhookb2/27bf236c-227a-4ac1-ba5c-d1480181af65@a72d5a72-25ee-40f0-9bd1-067cb5b770d4/IncomingWebhook/d303c45f233f4288bb5dc22b2f8eafe7/de41a3d0-81c7-479d-8b2a-c63812604213")
-
-
-
-for _ in logging.root.manager.loggerDict:
-    logging.getLogger(_).setLevel(logging.CRITICAL)
 
 def get_phi_range(full_experiment):
     phi_step = full_experiment["phi_step"]
@@ -35,7 +30,6 @@ class RbsRunner:
     def _safe_update(self, container, key, value):
         with self.lock:
             container[key] = value
-
 
     def _start_caen_and_motrona(self, title, motrona_limit):
         comm.pause_motrona_count(title +"_pause", self._config["motrona_rbs"])
@@ -88,7 +82,10 @@ class RbsRunner:
             self._running = False
 
     def run(self, full_experiment):
+        print("run called")
+        
         if (not self._try_go_into_running_state(full_experiment)):
+            print("Cannot go into running State. Is an experiment already running?")
             return
 
         title = full_experiment["title"]
