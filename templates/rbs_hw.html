@@ -142,10 +142,10 @@
 </div>
 
 <script type="module">
-    import * as max_motrona from '{{url_for('static', filename='max_motrona.js')}}'
-    import * as max_caen from '{{url_for('static', filename='max_caen.js')}}'
-    import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
-    import * as rbs_hw from '{{url_for('static', filename='rbs_hw.js')}}'
+    import * as max_motrona from '{{url_for('static', path='max_motrona.js')}}'
+    import * as max_caen from '{{url_for('static', path='max_caen.js')}}'
+    import * as max_aml from '{{url_for('static', path='max_aml.js')}}'
+    import * as rbs_hw from '{{url_for('static', path='rbs_hw.js')}}'
 
     rbs_hw.refreshDataRepeatedly(2000);
 

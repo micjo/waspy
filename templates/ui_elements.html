@@ -148,15 +148,15 @@
 
 {% macro activeLink(url, title) -%}
 <li class="nav-item ms-2 me-2 flex-nowrap ">
-    <a href="{{url_for(url)}}" class="nav-link  {% if request.path == url_for(url )%} active {%endif%}">
+    <a href="{{url}}" class="nav-link  {% if request.path == url %} active {%endif%}">
        {{title}}
    </a>
 </li>
 {%endmacro -%}
 
-{% macro activeLinkWithOneArg(url, arg, title) -%}
+{% macro activeDirectLink(url, title) -%}
 <li class="nav-item ms-2 me-2 flex-nowrap">
-    <a href="{{url_for(url, hwType=arg)}}" class="nav-link  {% if request.path == url_for(url, hwType=arg)%} active {%endif%}">
+    <a href="{{url}}" class="nav-link  {% if request.path == url %} active {%endif%}">
        {{title}}
    </a>
 </li>
