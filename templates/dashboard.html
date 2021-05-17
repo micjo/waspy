@@ -24,7 +24,7 @@
 </table>
 
 <script type="module">
-    import * as dashboard from '{{url_for('static', filename='dashboard.js')}}'
+    import * as dashboard from '{{url_for('static', path='dashboard.js')}}'
 
     dashboard.refreshAllData({{config|safe}});
     window.setInterval(function() {

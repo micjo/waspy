@@ -82,7 +82,7 @@
   </div>
 
 <script type="module">
-    import * as max_caen from '{{url_for('static', filename='max_caen.js')}}'
+    import * as max_caen from '{{url_for('static', path='max_caen.js')}}'
     window.max_caen = max_caen;
     max_caen.refreshData('{{url}}','{{prefix}}');
     window.setInterval(function() {

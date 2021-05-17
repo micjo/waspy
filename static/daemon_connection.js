@@ -105,7 +105,11 @@ function getEl(element) {
 async function getStatus(url) {
     let dataFromDm;
     await fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (response.status == 200) {
+                return response.json()
+            }
+        })
         .then(data => { dataFromDm = data; });
     return dataFromDm;
 }

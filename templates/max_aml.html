@@ -79,7 +79,7 @@
 </table>
 
 <script type="module">
-    import * as max_aml from '{{url_for('static', filename='max_aml.js')}}'
+    import * as max_aml from '{{url_for('static', path='max_aml.js')}}'
     window.max_aml = max_aml;
     max_aml.refreshData('{{url}}','{{prefix}}', max_aml.updateUi);
     window.setInterval(function() {

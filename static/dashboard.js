@@ -10,7 +10,7 @@ async function refreshAllData(rbs_config) {
     for (const key in rbs_config) {
         let hwData = await con.getStatus("/api/" + key);
 
-        if (hwData === "") {
+        if (hwData === "" || hwData == undefined) {
             con.setElementText(key + "_connect_state", "Disconnected");
             con.setElementText(key + "_error_state", "-");
             con.setElementText(key + "_request_id", "-");
