@@ -33,7 +33,6 @@ class RbsRunner:
         comm.set_motrona_target_charge(title + "_charge", self._config["motrona_rbs"], motrona_limit)
         comm.start_caen_acquisition(title, self._config["caen_charles_evans"])
 
-
     def _try_go_into_running_state(self, full_experiment):
         with self.lock:
             if self._running:
