@@ -19,7 +19,7 @@ for key, daemon in config.daemons:
             hardware_id = request.url.path.split("/")[2]
             try:
                 bc = str(board) + "-" + str(channel)
-                url = config.direct_urls.dict()[hardware_id]
+                url = config.urls.dict()[hardware_id]
                 getHistogramSession = await session.get(url + "/histogram/" + bc)
                 response.status_code = getHistogramSession.status
                 resp = await getHistogramSession.text()
@@ -32,7 +32,7 @@ for key, daemon in config.daemons:
     async def api_key_get(request: Request, response: Response):
         hardware_id = request.url.path.split("/")[2]
         try:
-            url = config.direct_urls.dict()[hardware_id]
+            url = config.urls.dict()[hardware_id]
             getSession = await session.get(url)
             response.status_code = getSession.status
             resp = await getSession.json()
@@ -46,8 +46,8 @@ for key, daemon in config.daemons:
     async def api_key_post(request:Request, response:Response, hardware_command:HardwareSchema): # type: ignore
         hardware_id = request.url.path.split("/")[2]
         try:
-            url = config.direct_urls.dict()[hardware_id]
-            postSession = await session.post(url[hardware_id], json=hardware_command.__root__)
+            url = config.urls.dict()[hardware_id]
+            postSession = await session.post(url, json=hardware_command.__root__)
             response.status_code = postSession.status
             resp = await postSession.text()
         except Exception as e:

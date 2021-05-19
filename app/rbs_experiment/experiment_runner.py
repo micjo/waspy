@@ -1,11 +1,6 @@
 #!/bin/python
 
-import logging
-import requests
 import time
-import sys
-import app.hardware_controllers.comm as comm
-import json
 import threading
 import app.hardware_controllers.data_dump as data_dump
 
@@ -79,7 +74,7 @@ class RbsRunner:
 
     def run(self, full_experiment):
         print("run called")
-        
+
         if (not self._try_go_into_running_state(full_experiment)):
             print("Cannot go into running State. Is an experiment already running?")
             return
@@ -95,8 +90,6 @@ class RbsRunner:
 
         self._go_to_parking_position(title, full_experiment["end_position"])
         self._wrap_up()
-        my_teams_message.text("Experiment " + title + " Finished. Results available at: " + storage)
-        my_teams_message.send()
 
     def run_in_background(self, experiment):
         if self._get_running_state():
