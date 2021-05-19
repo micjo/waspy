@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request
 import asyncio
 import app.rbs_experiment.rbs_experiment as rbs
 import config
-from app.rbs_experiment.entities import RbsSchema
+from app.rbs_experiment.entities import RbsModel
 
 templates = Jinja2Templates(directory="templates")
 
@@ -23,8 +23,13 @@ async def rbs_hw(request: Request):
 async def get_rbs_experiment():
     return runner.status
 
+@router.post("/api/exp_stop", tags=["RBS API"])
+async def rbs_experiment_stop():
+    runner.abort()
+    return ""
+
 @router.post("/api/exp/rbs_dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
-async def post_rbs_experiment(rbs_experiment: RbsSchema):   # type : ignore
+async def post_rbs_experiment(rbs_experiment: RbsModel):   # type : ignore
     return {"Verification" : "Passed", "experiment": rbs_experiment}
 
 

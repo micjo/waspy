@@ -79,3 +79,10 @@ async def clear_and_arm_caen_acquisition(request_id, url):
     request['start_acquisition'] = True
     await post_request(url, request)
 
+async def stop_caen_acquisition(request_id, url):
+    request = {}
+    request['request_id'] = request_id
+    request['stop_acquisition'] = True
+    await post_request(url, request)
+
+
