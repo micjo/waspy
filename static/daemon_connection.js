@@ -1,6 +1,7 @@
 export {getEl,getStatus};
 export {setBadgeError, setBadgeSuccess, setBadgeDanger, setText,setBadgeErrorWithText, setBadgeType};
 export {sendRequestAndSpin, sendRequest, showFailureModal};
+export {postData};
 
 export {
     sendInt,

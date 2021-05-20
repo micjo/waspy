@@ -1,17 +1,16 @@
-import config, asyncio
+import asyncio
 from pathlib import Path
-from config import urls
 import logging
-from app.rbs_experiment.entities import RbsModel,SceneModel,CaenDetectorModel
-import app.rbs_experiment.daemon_comm as comm
+from app.rbs_experiment.entities import RbsModel,SceneModel,CaenDetectorModel, StatusModel, empty_experiment
+import app.hardware_controllers.daemon_comm as comm
 import time
 import app.rbs_experiment.entities as entities
 import traceback
 from app.hardware_controllers.data_dump import store_and_plot_histograms
 from typing import List
+from config import daemons, watch_dir
 
 logging.basicConfig(level=logging.INFO)
-
 
 def _pick_first_file_from_path(path):
     scan_path = Path(path)
@@ -20,15 +19,6 @@ def _pick_first_file_from_path(path):
         return files[0]
     except:
         return ""
-        # experiment = ""
-        # try:
-            # experiment = RbsModel.parse_file(f)
-            # f.rename(f.parent / "ongoing" / f.name)
-            # logging.info("New experiment scheduled: " + str(experiment.json()))
-        # except Exception as exc:
-            # f.rename(f.parent / "failed" / f.name)
-            # logging.error(exc)
-        # return experiment
 
 def _make_folders(path):
     Path.mkdir(Path(path), exist_ok=True)
@@ -49,9 +39,13 @@ def _move_to_folder(file, folderPath):
 class RbsExperiment:
     def __init__(self):
         self.run = False
-        self.status = entities.ExperimentStatusModel()
+        self.state = entities.ExperimentStateModel(status=StatusModel.Idle,
+                experiment= empty_experiment)
         self.experiment_routine = None
-        _make_folders(config.watch_dir)
+        _make_folders(watch_dir)
+
+    def get_state(self):
+        return self.state.dict()
 
     def abort(self):
         self.experiment_routine.cancel()
@@ -59,7 +53,7 @@ class RbsExperiment:
     async def run_main(self):
         while True:
             await asyncio.sleep(1)
-            f = _pick_first_file_from_path(config.watch_dir)
+            f = _pick_first_file_from_path(watch_dir)
             if(f):
                 try:
                     f = _move_to_folder(f, "ongoing")
@@ -74,16 +68,17 @@ class RbsExperiment:
     async def _run_scene(self, scene: SceneModel, detectors: List[CaenDetectorModel], phi_range, storage_folder):
         scene.execution_state = "Executing"
         start = time.time()
-        await comm.move_aml_both(scene.ftitle, urls.aml_x_y, [scene.x, scene.y])
-        await comm.clear_and_arm_caen_acquisition(scene.ftitle, urls.caen_charles_evans)
+        await comm.move_aml_both(scene.ftitle, daemons.aml_x_y.url, [scene.x, scene.y])
+        await comm.clear_and_arm_caen_acquisition(scene.ftitle, daemons.caen_charles_evans.url)
 
-        scene.phi_progress = 0
+        scene.phi_progress = "0"
         for phi in phi_range:
             title = scene.ftitle + "_phi_" + str(phi)
-            await comm.move_aml_first(title, urls.aml_phi_zeta, phi)
-            await comm.clear_start_motrona_count(title, urls.motrona_rbs)
-            await comm.motrona_counting_done(urls.motrona_rbs)
-            scene.phi_progress = round (phi/phi_range[-1]) * 100
+            await comm.move_aml_first(title, daemons.aml_phi_zeta.url, phi)
+            await comm.clear_start_motrona_count(title, daemons.motrona_rbs.url)
+            await comm.motrona_counting_done(daemons.motrona_rbs.url)
+            scene.phi_progress = round(phi/phi_range[-1] * 100,2)
+            print(self.state.experiment.dict())
 
         #store_plot_histogram is slow and CPU bound -> run in background thread
         await asyncio.get_event_loop().run_in_executor(None,
@@ -94,22 +89,24 @@ class RbsExperiment:
         scene.execution_state = "Done"
 
     async def _run_experiment(self, experiment: RbsModel):
-        self.status.state = "Running"
-        self.status.experiment = experiment
+        self.state.status = StatusModel.Running
+        self.state.experiment = experiment
         title = experiment.title
 
         charge_limit = experiment.limit
-        await comm.pause_motrona_count(title + "_pause", urls.motrona_rbs)
-        await comm.set_motrona_target_charge(title + "_charge", urls.motrona_rbs, charge_limit)
+        await comm.pause_motrona_count(title + "_pause", daemons.motrona_rbs.url)
+        await comm.set_motrona_target_charge(title + "_charge", daemons.motrona_rbs.url, charge_limit)
         phi_range = get_phi_range(experiment)
         storage_folder = Path(experiment.storage) / Path(experiment.title)
 
         for scene in experiment.scenario:
             await self._run_scene(scene, experiment.detectors,  phi_range, storage_folder)
 
-        end = experiment.end_position
-        await comm.move_aml_both(title + "_end", urls.aml_x_y, [end.x, end.y])
-        await comm.move_aml_both(title + "_end", urls.aml_phi_zeta, [end.phi, end.zeta])
-        await comm.move_aml_both(title + "_end", urls.aml_det_theta, [end.det, end.theta])
+        self.state.status = StatusModel.Parking
 
-        self.status.state = "Idle"
+        end = experiment.end_position
+        await comm.move_aml_both(title + "_end", daemons.aml_x_y.url, [end.x, end.y])
+        await comm.move_aml_both(title + "_end", daemons.aml_phi_zeta.url, [end.phi, end.zeta])
+        await comm.move_aml_both(title + "_end", daemons.aml_det_theta.url, [end.det, end.theta])
+
+        self.state.status = StatusModel.Idle

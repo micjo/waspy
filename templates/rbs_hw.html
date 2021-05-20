@@ -86,63 +86,67 @@
             </button>
             <div class="collapse" id="rbs_fold">
                 <table class="table table-striped table-hover table-sm">
-                <thead>
-                    <tr> <th scope="col">Scene Title</th> <th scope="col">X</th><th scope="col">Y</th><th scope="col">Execution State</th> <th scope="col">Progress</th> </tr>
-                </thead>
+                    <thead>
+                        <tr> <th scope="col">Scene Title</th> <th scope="col">X</th><th scope="col">Y</th><th scope="col">Execution State</th> <th scope="col">Progress</th> </tr>
+                    </thead>
 
-                <tbody id="rbs_status">
-                </tbody>
+                    <tbody id="rbs_status">
+                    </tbody>
 
-            </table>
+
+                </table>
+                    <div class="clearfix"><div class="btn-group float-end">
+                        {{ ui_elements.buttonSpinner("Abort", 'abort_spinner', "rbs_hw.abort()") }}
+                    </div>
+                    </div>
             </div>
-            </div>
 
 
-        <div class="input-group input-sm mb-3 mt-2">
-            <label class="input-group-text" for="board_select">Board:</label>
-            <select class="form-select" id="board_select">
-                <option selected>Choose...</option>
-                <option value="1">Board-1</option>
-                <option value="2">Board-2</option>
-                <option value="3">Board-3</option>
-                <option value="4">Board-4</option>
-                <option value="5">Board-5</option>
-                <option value="6">Board-6</option>
-                <option value="7">Board-7</option>
-                <option value="8">Board-8</option>
-            </select>
-            <label class="input-group-text" for="channel_select">Channel:</label>
-            <select class="form-select" id="channel_select">
-                <option selected>Choose...</option>
-                <option value="0">Channel-0</option>
-                <option value="1">Channel-1</option>
-                <option value="2">Channel-2</option>
-                <option value="3">Channel-3</option>
-                <option value="4">Channel-4</option>
-                <option value="5">Channel-5</option>
-                <option value="6">Channel-6</option>
-                <option value="7">Channel-7</option>
-                <option value="8">Channel-8</option>
-                <option value="9">Channel-9</option>
-                <option value="10">Channel-10</option>
-                <option value="11">Channel-11</option>
-                <option value="12">Channel-12</option>
-                <option value="13">Channel-13</option>
-                <option value="14">Channel-14</option>
-                <option value="15">Channel-15</option>
-            </select>
-            <label class="input-group-text" for="channel_select">Update Caen data:</label>
-            <div class="input-group-text">
-                <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
+            <div class="input-group input-sm mb-3 mt-2">
+                <label class="input-group-text" for="board_select">Board:</label>
+                <select class="form-select" id="board_select">
+                    <option selected>Choose...</option>
+                    <option value="1">Board-1</option>
+                    <option value="2">Board-2</option>
+                    <option value="3">Board-3</option>
+                    <option value="4">Board-4</option>
+                    <option value="5">Board-5</option>
+                    <option value="6">Board-6</option>
+                    <option value="7">Board-7</option>
+                    <option value="8">Board-8</option>
+                </select>
+                <label class="input-group-text" for="channel_select">Channel:</label>
+                <select class="form-select" id="channel_select">
+                    <option selected>Choose...</option>
+                    <option value="0">Channel-0</option>
+                    <option value="1">Channel-1</option>
+                    <option value="2">Channel-2</option>
+                    <option value="3">Channel-3</option>
+                    <option value="4">Channel-4</option>
+                    <option value="5">Channel-5</option>
+                    <option value="6">Channel-6</option>
+                    <option value="7">Channel-7</option>
+                    <option value="8">Channel-8</option>
+                    <option value="9">Channel-9</option>
+                    <option value="10">Channel-10</option>
+                    <option value="11">Channel-11</option>
+                    <option value="12">Channel-12</option>
+                    <option value="13">Channel-13</option>
+                    <option value="14">Channel-14</option>
+                    <option value="15">Channel-15</option>
+                </select>
+                <label class="input-group-text" for="channel_select">Update Caen data:</label>
+                <div class="input-group-text">
+                    <input class="form-check-input mt-0" id="update_graph_request" type="checkbox" value="" aria-label="Checkbox for following text input">
+                </div>
             </div>
-        </div>
             <div id="histo_chart">
             </div>
+        </div>
     </div>
-</div>
 
-<script type="module">
-    import * as max_motrona from '{{url_for('static', path='max_motrona.js')}}'
+    <script type="module">
+        import * as max_motrona from '{{url_for('static', path='max_motrona.js')}}'
     import * as max_caen from '{{url_for('static', path='max_caen.js')}}'
     import * as max_aml from '{{url_for('static', path='max_aml.js')}}'
     import * as rbs_hw from '{{url_for('static', path='rbs_hw.js')}}'
@@ -152,6 +156,7 @@
     window.max_motrona=max_motrona;
     window.max_aml=max_aml;
     window.max_caen=max_caen;
+    window.rbs_hw=rbs_hw;
 {% for key,value in config.items() %}
 {% if value["type"] == "aml" %}
     max_aml.refreshDataRepeatedly('/api/' + '{{key}}', '{{key}}', 2000);
@@ -166,6 +171,6 @@
 {% endfor %}
 
 
-</script>
+    </script>
 
-{% endblock %}
+    {% endblock %}

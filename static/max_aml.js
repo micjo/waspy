@@ -27,7 +27,6 @@ async function refreshData(url,prefix) {
 
 
 function updateUi(prefix, hwData) {
-    console.log(prefix);
     if (!hwData) {
         con.setBadgeErrorWithText(prefix + "_connect_status" , false, "Not Active");
         return;

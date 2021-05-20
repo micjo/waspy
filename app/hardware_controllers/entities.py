@@ -1,7 +1,7 @@
 import requests
 from pydantic.generics import GenericModel
 from typing import Dict
-from config import urls
+from config import daemons
 
 def get_page_type(hardware_type):
     if (hardware_type == "aml"): return "max_aml.html"
@@ -12,19 +12,19 @@ def get_page_type(hardware_type):
 class MotronaSchema(GenericModel):
     __root__: Dict
     class Config:
-        try: schema_extra = requests.get(urls.motrona_rbs + "/caps").json()
+        try: schema_extra = requests.get(daemons.motrona_rbs.url + "/caps").json()
         except: pass
 
 class CaenSchema(GenericModel):
     __root__: Dict
     class Config:
-        try: schema_extra = requests.get(urls.caen_charles_evans + "/caps").json()
+        try: schema_extra = requests.get(daemons.caen_charles_evans.url + "/caps").json()
         except: pass
 
 class AmlSchema(GenericModel):
     __root__: Dict
     class Config:
-        try: schema_extra = requests.get(urls.aml_x_y + "/caps").json()
+        try: schema_extra = requests.get(daemons.aml_x_y.url + "/caps").json()
         except: pass
 
 class NoSchema(GenericModel):
