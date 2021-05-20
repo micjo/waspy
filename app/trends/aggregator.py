@@ -1,7 +1,9 @@
+import asyncio
 import threading
 import requests as rq
 import time
 from datetime import datetime
+from config import DaemonConfig
 
 aml_config = [
     {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",
@@ -29,31 +31,28 @@ rbs_config = {
 
 
 class Aggregator:
-    def __init__(self, config):
+    def __init__(self, config: DaemonConfig):
         self._config = config
-        self._samples = [ ["", None] ]*120
-        self._positions = [ ["", None] ]*120
+        self._samples = [ ["inf", 0] ]*120
+        self._positions = [ ["inf", 0] ]*120
         self.aggregate_lock = threading.Lock()
 
+#should switch these to aiohttp
     def aggregate(self):
-        while True:
-            response = rq.get("http://localhost:5000/api/"+self._config['motrona'][0]['id'])
-            time.sleep(1)
-            if response.status_code == 404:
-                continue
-            current = response.json()["current(nA)"]
-            with self.aggregate_lock:
-                timestampStr = datetime.now().strftime("%H:%M:%S")
-                self._samples.append([timestampStr, current])
-                del self._samples[0]
+        timestampStr = datetime.now().strftime("%H:%M:%S")
+        response = rq.get(self._config.motrona_rbs.url)
+        if response.status_code == 404:
+            return
+        current = response.json()["current(nA)"]
+        with self.aggregate_lock:
+            self._samples.append([timestampStr, current])
+            del self._samples[0]
 
-            response = rq.get("http://localhost:5000/api/"+self._config['aml'][0]['id'])
-            motor_one_position = response.json()['motor_1_position']
-            with self.aggregate_lock:
-                timestampStr = datetime.now().strftime("%H:%M:%S")
-                self._positions.append([timestampStr, motor_one_position])
-                del self._positions[0]
-                time.sleep(1)
+        response = rq.get(self._config.aml_x_y.url)
+        motor_one_position = response.json()['motor_1_position']
+        with self.aggregate_lock:
+            self._positions.append([timestampStr, motor_one_position])
+            del self._positions[0]
 
     def getPositions(self):
         with self.aggregate_lock:
@@ -63,17 +62,21 @@ class Aggregator:
         with self.aggregate_lock:
             return self._samples
 
-    def run_in_background(self):
-        back = threading.Thread(target=self.aggregate, args=())
-        back.start()
+    async def run_main(self):
+        while True:
+            await asyncio.sleep(1)
+            start =  time.time()
+            self.aggregate()
+            end = time.time()
+            print("aggregating took " + str(end- start) + " msec");
 
 
-if __name__ == "__main__":
-    agg = Aggregator(rbs_config)
-    agg.run_in_background()
+# if __name__ == "__main__":
+    # agg = Aggregator(rbs_config)
+    # agg.run_in_background()
 
 
-    while True:
-        print("im in the main")
-        print(agg.getSamples())
-        time.sleep(1)
+    # while True:
+        # print("im in the main")
+        # print(agg.getSamples())
+        # time.sleep(1)
