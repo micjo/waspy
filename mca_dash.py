@@ -6,6 +6,11 @@ import config
 
 from app.rbs_experiment.router import router as rbs_router
 from app.hardware_controllers.router import router as hw_router
+from app.trends.router import app_dash
+
+from fastapi.middleware.wsgi import WSGIMiddleware
+
+
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -21,3 +26,5 @@ async def dashboard(request: Request):
 @app.get("/favicon.ico")
 def favicon():
     return FileResponse('static/favicon.png')
+
+app.mount("/dash", WSGIMiddleware(app_dash.server))
