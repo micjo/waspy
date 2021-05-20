@@ -1,11 +1,11 @@
 import * as con from './daemon_connection.js'
 
-export {refreshGraph, refreshData, refreshDataRepeatedly};
+export {refreshGraph, refreshData, refreshDataRepeatedly, abort};
 
 function refreshDataRepeatedly(timeout) {
-    refreshData("/api/exp/rbs");
+    refreshData("/api/rbs/state");
     window.setInterval(function() {
-        refreshData("/api/exp/rbs");
+        refreshData("/api/rbs/state");
     }, timeout);
 }
 
@@ -14,15 +14,24 @@ async function refreshData(url) {
     updateUi(hwData);
 }
 
+async function abort() {
+    console.log("aborting")
+    con.show("abort_spinner");
+    con.postData("/api/rbs/abort", "");
+    con.hide("abort_spinner");
+}
+
 function updateUi(hwData) {
 
     con.getEl("rbs_status").innerHTML = "";
     con.setElementText("rbs_brief_status", hwData["status"]);
-    if (hwData["status"] == "idle") {
+    if (hwData["status"] == "Idle") {
         return;
     }
 
-    for (const scene of hwData["experiment"]) {
+    console.log(hwData);
+
+    for (const scene of hwData["experiment"]["scenario"]) {
         let sceneRow = document.createElement("tr");
 
         let sceneTitle = document.createElement("td");
@@ -38,7 +47,7 @@ function updateUi(hwData) {
         sceneStatus.innerText = scene["execution_state"]
 
         let sceneProgress = document.createElement("td");
-        let ratio = scene["phi_progress_percentage"]
+        let ratio = scene["phi_progress"]
         if (ratio != undefined) {
             let progress = document.createElement("div");
             progress.setAttribute("class", "progress");

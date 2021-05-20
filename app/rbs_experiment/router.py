@@ -19,16 +19,16 @@ async def router_startup():
 async def rbs_hw(request: Request):
     return templates.TemplateResponse("rbs_hw.html", {"request":request, "config": config.daemons.dict()})
 
-@router.get("/api/exp/rbs", tags=["RBS API"])
+@router.get("/api/rbs/state", tags=["RBS API"])
 async def get_rbs_experiment():
-    return runner.status
+    return runner.get_state()
 
-@router.post("/api/exp_stop", tags=["RBS API"])
-async def rbs_experiment_stop():
+@router.post("/api/rbs/abort", tags=["RBS API"])
+async def rbs_experiment_abort():
     runner.abort()
     return ""
 
-@router.post("/api/exp/rbs_dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
+@router.post("/api/rbs/dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
 async def post_rbs_experiment(rbs_experiment: RbsModel):   # type : ignore
     return {"Verification" : "Passed", "experiment": rbs_experiment}
 

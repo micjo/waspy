@@ -1,60 +1,58 @@
 import logging
+import math
 import requests
 import datetime
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from config import urls
+from config import daemons
 from pathlib import Path
 from app.rbs_experiment.entities import SceneModel,CaenDetectorModel
 from typing import List
 
 def store_and_plot_histograms(storage, scene: SceneModel, detectors: List[CaenDetectorModel]):
     print("store and plot histograms")
+
+    fig = make_subplots(rows=len(detectors), cols=1)
+    detector_index = 1
     for detector in detectors:
-        b = str(detector.board)
-        c = str(detector.channel)
-        data = requests.get(urls.caen_charles_evans + "/histogram/" +b+ "-" +c).text.split(";")
-        store_data(data, storage, scene, detector)
+        packed_data = get_histogram_and_pack(detector)
+        store_data(packed_data, storage, scene, detector)
+        append_histogram_plot(packed_data, fig, detector, detector_index)
+        detector_index += 1
 
-# def store_histogram_plot(data, storage, scene: SceneModel, title):
-    # data_set0_y_values = []
-    # data_set0_x_values = []
-    # index = 0
-    # for energylevel in data_set0.split(";"):
-        # if (energylevel):
-            # data_set0_x_values.append(index)
-            # data_set0_y_values.append(int(energylevel))
-            # index +=1
+    plot_location = storage / Path(scene.file + ".png")
+    fig.update_layout(height=1080, width=1920, title_text= scene.ftitle)
+    fig.write_image(plot_location.as_posix())
 
-    # data_set1_y_values = []
-    # data_set1_x_values = []
-    # index = 0
-    # for energylevel in data_set1.split(";"):
-        # if (energylevel):
-            # data_set1_x_values.append(index)
-            # data_set1_y_values.append(int(energylevel))
-            # index +=1
+def get_histogram_and_pack(detector: CaenDetectorModel):
+    b = str(detector.board)
+    c = str(detector.channel)
+    raw_data = requests.get(daemons.caen_charles_evans.url + "/histogram/" +b+ "-" +c).text.split(";")
+    raw_data.pop()
+    data = [int(x) for x in raw_data]
+    return pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
 
-    # plot_location = storage / Path(scene.file + ".png")
-    # fig = make_subplots(rows=2, cols=1, subplot_titles=("data_b6c0", "data_b6c1"))
-    # fig.append_trace(go.Scatter( x = data_set0_x_values, y = data_set0_y_values, name="data_b6c0"), row=1, col=1) #type: ignore
-    # fig.append_trace(go.Scatter( x = data_set1_x_values, y = data_set1_y_values, name="data_b6c1"), row=2, col=1) #type: ignore
+def append_histogram_plot(data: List[int], fig, detector: CaenDetectorModel, detector_index):
+    x_values = list(range(0, len(data)))
+    title = "b" + str(detector.board) + "c" + str(detector.channel)
+    fig.append_trace(go.Scatter(x = x_values, y = data, name = title), row=detector_index, col=1) #type: ignore
+    fig.update_xaxes(title_text="Energy Bin", row=detector_index, col=1) #type: ignore
+    fig.update_yaxes(title_text="Occurrence Rate", row=detector_index, col=1) #type: ignore
 
-    # fig.update_xaxes(title_text="Energy Bin", row=1, col=1) #type: ignore
-    # fig.update_xaxes(title_text="Energy Bin", row=2, col=1) #type: ignore
-    # fig.update_yaxes(title_text="Occurrence Rate", row=1, col=1) #type: ignore
-    # fig.update_yaxes(title_text="Occurrence Rate", row=2, col=1) #type: ignore
+def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
+    subset = data[channel_min:channel_max]
+    samples_to_group_in_bin = math.floor(len(subset) / channel_width)
+    packed_data = []
+    for index in range(0, samples_to_group_in_bin * channel_width, samples_to_group_in_bin):
+        bin_sum = sum(subset[index:index + samples_to_group_in_bin])
+        packed_data.append(bin_sum)
+    return packed_data
 
-    # fig.update_layout(height=1080, width=1920, title_text= scene.ftitle)
-    # fig.write_image(plot_location.as_posix())
-
-
-def store_data(data, storage, scene: SceneModel, detector: CaenDetectorModel):
-    print("store_Data")
-    aml_x_y_response = requests.get(urls.aml_x_y).json()
-    aml_phi_zeta_response = requests.get(urls.aml_phi_zeta).json()
-    aml_det_theta_response = requests.get(urls.aml_det_theta).json()
-    motrona_response = requests.get(urls.motrona_rbs).json()
+def store_data(data: List[int], storage, scene: SceneModel, detector: CaenDetectorModel):
+    aml_x_y_response = requests.get(daemons.aml_x_y.url).json()
+    aml_phi_zeta_response = requests.get(daemons.aml_phi_zeta.url).json()
+    aml_det_theta_response = requests.get(daemons.aml_det_theta.url).json()
+    motrona_response = requests.get(daemons.motrona_rbs.url).json()
 
     b = str(detector.board)
     c = str(detector.channel)
@@ -65,17 +63,16 @@ def store_data(data, storage, scene: SceneModel, detector: CaenDetectorModel):
     logging.info("storing histogram of " +bc)
     write_caen_histogram(filename, header, data)
 
-def write_caen_histogram(location, header, dataDump):
+def write_caen_histogram(location, header, data: List[int]):
     index = 0
-    data = ""
-    for energylevel in dataDump:
-        if (energylevel):
-            data += str(index) + ", "  + energylevel + "\n"
-            index += 1
+    dataString = ""
+    for energylevel in data:
+        dataString += str(index) + ", "  + str(energylevel) + "\n"
+        index += 1
 
     with open(location, 'w+') as file:
         file.write(header)
-        file.write(data)
+        file.write(dataString)
 
 def get_file_header(scene: SceneModel, bc, aml_x_y_response, aml_phi_zeta_response, aml_det_theta_response, motrona_response):
     header = """

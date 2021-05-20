@@ -11,29 +11,11 @@ session = aiohttp.ClientSession()
 
 router = APIRouter()
 
-for key, daemon in config.daemons:
-
-    if daemon.type == "caen":
-        @router.get("/api/" + key + "/histogram/{board}-{channel}", tags=["Daemon API"])
-        async def histogram(request: Request, response: Response, board: int, channel: int):
-            hardware_id = request.url.path.split("/")[2]
-            try:
-                bc = str(board) + "-" + str(channel)
-                url = config.urls.dict()[hardware_id]
-                getHistogramSession = await session.get(url + "/histogram/" + bc)
-                response.status_code = getHistogramSession.status
-                resp = await getHistogramSession.text()
-            except Exception as e:
-                response.status_code = status.HTTP_400_BAD_REQUEST
-                resp = str(e)
-            return resp
-
+def build_get_api(key, daemon):
     @router.get("/api/" + key, tags=["Daemon API"])
-    async def api_key_get(request: Request, response: Response):
-        hardware_id = request.url.path.split("/")[2]
+    async def api_key_get(response: Response): #type: ignore
         try:
-            url = config.urls.dict()[hardware_id]
-            getSession = await session.get(url)
+            getSession = await session.get(daemon.url)
             response.status_code = getSession.status
             resp = await getSession.json()
         except Exception as e:
@@ -41,13 +23,25 @@ for key, daemon in config.daemons:
             resp = str(e)
         return resp
 
+def build_histogram_api(key, daemon):
+    @router.get("/api/" + key + "/histogram/{board}-{channel}", tags=["Daemon API"])
+    async def histogram(response: Response, board: int, channel: int):
+        try:
+            bc = str(board) + "-" + str(channel)
+            getHistogramSession = await session.get(daemon.url + "/histogram/" + bc)
+            response.status_code = getHistogramSession.status
+            resp = await getHistogramSession.text()
+        except Exception as e:
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            resp = str(e)
+        return resp
+
+def build_post_api(key, daemon):
     HardwareSchema = get_schema_type(daemon.type)
     @router.post("/api/" + key, tags=["Daemon API"])
-    async def api_key_post(request:Request, response:Response, hardware_command:HardwareSchema): # type: ignore
-        hardware_id = request.url.path.split("/")[2]
+    async def api_key_post(response:Response, hardware_command:HardwareSchema): # type: ignore
         try:
-            url = config.urls.dict()[hardware_id]
-            postSession = await session.post(url, json=hardware_command.__root__)
+            postSession = await session.post(daemon.url, json=hardware_command.__root__)
             response.status_code = postSession.status
             resp = await postSession.text()
         except Exception as e:
@@ -55,10 +49,18 @@ for key, daemon in config.daemons:
             resp = str(e)
         return resp
 
+def build_webui(key, daemon):
     @router.get("/hw/" + key, response_class=HTMLResponse, summary="WebUI for hardware",description="WebUI", tags=["WebUI"])
     async def hw(request:Request):
-        hardware_id = request.url.path.split("/")[2]
-        active_daemon = config.daemons.dict()[hardware_id]
-        print(active_daemon)
-        page_type = get_page_type(active_daemon["type"])
-        return templates.TemplateResponse(page_type, {"request": request, "prefix": hardware_id, "config": active_daemon})
+        page_type = get_page_type(daemon.type)
+        return templates.TemplateResponse(page_type, {"request": request, "config": config.daemons.dict(), "prefix": key})
+
+for key, daemon in config.daemons:
+    if daemon.type == "caen":
+        build_histogram_api(key, daemon)
+    build_get_api(key, daemon)
+    build_post_api(key, daemon)
+    build_webui(key, daemon)
+
+
+

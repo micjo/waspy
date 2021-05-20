@@ -16,7 +16,6 @@ async def wait_for_request_done(url, request):
         else:
             raise Exception(url + ": " + error_message)
 
-
 async def post_request(url, request):
     logging.info("post to: " +url + ", content: " + str(request))
     await session.post(url, json=request)
@@ -84,5 +83,3 @@ async def stop_caen_acquisition(request_id, url):
     request['request_id'] = request_id
     request['stop_acquisition'] = True
     await post_request(url, request)
-
-

@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 {% import "ui_elements.html" as ui_elements %}
 
-
 {%set url = '/api/' + prefix %}
-{%set winTitle =  config["title"] %}
-{%set first_name = config["first_name"] %}
-{%set second_name = config["second_name"] %}
-{%set first_load = config["first_load"] %}
-{%set second_load = config["second_load"] %}
+{%set winTitle =  config[prefix]["title"] %}
+{%set first_name = config[prefix]["first_name"] %}
+{%set second_name = config[prefix]["second_name"] %}
+{%set first_load = config[prefix]["first_load"] %}
+{%set second_load = config[prefix]["second_load"] %}
 
 {% block content %}
 
@@ -87,4 +86,4 @@
     }, 2000);
 </script>
 
-{% endblock %}
+{% endblock %}#}

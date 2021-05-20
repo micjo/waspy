@@ -10,15 +10,15 @@ class SceneModel(BaseModel):
     y: int
     file: str
     execution_state: Optional[str]  # pylint: disable=E1136
-    phi_progress: Optional[int] # pylint: disable=E1136
+    phi_progress: Optional[str] # pylint: disable=E1136
     measuring_time_msec: Optional[str] # pylint: disable=E1136
 
 class CaenDetectorModel(BaseModel):
     board: int
     channel: int
-    channel_min: int
-    channel_max: int
-    channel_width: int = Field(description="The range between min and max will be rescaled to this value, The bins are combined with integer sized bin intervals. values on the maximum side are potentially discared")
+    bins_min: int
+    bins_max: int
+    bins_width: int = Field(description="The range between min and max will be rescaled to this value, The bins are combined with integer sized bin intervals. values on the maximum side are potentially discared")
 
 class EndPositionModel(BaseModel):
     x: int
@@ -51,8 +51,8 @@ class RbsModel(BaseModel):
             "storage":"/home/mic/tmp/experiment_1",
             "detectors":
             [
-                {"board": 1, "channel":0, "channel_min":0, "channel_max":7000, "channel_width":1024},
-                {"board": 1, "channel":1, "channel_min":0, "channel_max":7000, "channel_width":1024}
+                {"board": 1, "channel":0, "bins_min":0, "bins_max":7000, "bins_width":1024},
+                {"board": 1, "channel":1, "bins_min":0, "bins_max":7000, "bins_width":1024}
             ],
             "scenario":
                 [
@@ -64,12 +64,25 @@ class RbsModel(BaseModel):
         }
         }
 
-class StateEnum(str, Enum):
+class StatusModel(str, Enum):
     Idle = "Idle"
     Running = "Running"
     Parking = "Parking"
 
-class ExperimentStatusModel:
-    state: str
+class ExperimentStateModel(BaseModel):
+    status: StatusModel
     experiment: RbsModel
+    class Config:
+        use_enum_values = True
 
+empty_experiment = RbsModel.parse_raw('''{
+"exp_type":"rbs",
+"phi_start":0,
+"phi_step":0,
+"phi_end":0,
+"limit":0,
+"title":"string",
+"storage":"string",
+"detectors": [{"board": 0, "channel":0, "bins_min":0, "bins_max":0, "bins_width":0}],
+"scenario": [{"mtype":"string", "ftitle":"string" , "x":0 , "y":0  , "file":"string" }],
+"end_position":  {"x":0 , "y":0, "theta":0, "zeta":0, "phi":0, "det":0}}''')
