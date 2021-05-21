@@ -65,10 +65,7 @@ class Aggregator:
     async def run_main(self):
         while True:
             await asyncio.sleep(1)
-            start =  time.time()
             self.aggregate()
-            end = time.time()
-            print("aggregating took " + str(end- start) + " msec");
 
 
 # if __name__ == "__main__":

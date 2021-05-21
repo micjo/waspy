@@ -56,20 +56,15 @@ app_dash.layout = html.Div(children=[
             n_intervals=0
     )
 ])
-
-
+\
 @app_dash.callback(Output('example-graph', 'figure'),
               Input('interval-component', 'n_intervals'))
 def update_graph(n):
-    print("update graph")
-
     positions = aggr.getPositions()
     currents = aggr.getSamples()
     timestamps = [x for x,y in positions]
     position_values = [float(y) for x,y in positions]
     current_values = [float(y) for x,y in currents]
-    print(position_values)
-    print(current_values)
     figure = go.Figure(
             data = [
                 go.Scatter(x=timestamps, y = position_values, name="position"), #type: ignore
@@ -78,7 +73,7 @@ def update_graph(n):
             layout = go.Layout( uirevision="ee")
             )
 
-    figure.update_yaxes(range=[-50,50])
+    figure.update_yaxes(range=[-300,300])
 
 
     return figure
