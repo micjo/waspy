@@ -28,17 +28,22 @@ class EndPositionModel(BaseModel):
     det: int
     theta: int
 
+class StorageModel(BaseModel):
+    local: str = Field(description="The base folder location where the results will be stored")
+    remote: str = Field(description="The base folder location where the results will be stored")
+
 class RbsModel(BaseModel):
     exp_type: str
     phi_start: int
-    phi_step: int
+    phi_step: int # rename to phi_increment
     phi_end: int
     limit: int
-    title: str = Field(description="This is the subfolder where the results will be stored")
-    storage: str = Field(description="The base folder location where the results will be stored")
+    rqm_number: str = Field(description="This is the subfolder where the results will be stored")
+    storage: StorageModel
     scenario: List[SceneModel]
     end_position: EndPositionModel
     detectors: List[CaenDetectorModel]
+
     class Config:
         schema_extra = {
             'example': {
@@ -47,8 +52,11 @@ class RbsModel(BaseModel):
             "phi_step":1,
             "phi_end":5,
             "limit":100,
-            "title":"experiment_1",
-            "storage":"/home/mic/tmp/experiment_1",
+            "rqm_number":"experiment_1",
+            "storage": {
+                "local" : "C:/DATA/flask",
+                "remote" : "W:/transfer_RBS"
+            },
             "detectors":
             [
                 {"board": 1, "channel":0, "bins_min":0, "bins_max":7000, "bins_width":1024},
@@ -81,8 +89,8 @@ empty_experiment = RbsModel.parse_raw('''{
 "phi_step":0,
 "phi_end":0,
 "limit":0,
-"title":"string",
-"storage":"string",
+"rqm_number":"string",
+"storage":{"local":"string","remote": "string"},
 "detectors": [{"board": 0, "channel":0, "bins_min":0, "bins_max":0, "bins_width":0}],
 "scenario": [{"mtype":"string", "ftitle":"string" , "x":0 , "y":0  , "file":"string" }],
 "end_position":  {"x":0 , "y":0, "theta":0, "zeta":0, "phi":0, "det":0}}''')

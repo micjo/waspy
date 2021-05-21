@@ -52,6 +52,6 @@ daemons_lab = makeDaemonConfig('''{
     "caen_charles_evans" : {"type":"caen", "title":"CAEN Charles Evans", "url":"http://169.254.13.109:22123/api/latest" }
     }''')
 
-daemons = daemons_local
+daemons = daemons_lab
 
-watch_dir = "/tmp/watch/"
+watch_dir = "C:/DATA/flask/watch/"

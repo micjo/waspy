@@ -1,6 +1,1 @@
-#!/bin/bash
-
-set FLASK_APP=mca_dash.py
-set FLASK_ENV=development
-python -m flask run --host=0.0.0.0
-
+python -m uvicorn mca_dash:app --reload --host=0.0.0.0 --port=5000 --no-use-colors

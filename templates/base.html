@@ -25,6 +25,7 @@
           {% for key,value in config.items() %}
             {{ ui_elements.activeDirectLink('/hw/'+ key, value.title) }}
           {% endfor %}
+        {{ ui_elements.activeLink('/docs','Docs') }}
       </ul>
     </div>
   </div>

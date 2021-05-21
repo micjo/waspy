@@ -4,13 +4,15 @@ import logging
 
 session = aiohttp.ClientSession()
 
+logging.basicConfig(level=logging.INFO, filename="debug.log")
+
 async def wait_for_request_done(url, request):
     while True:
         await asyncio.sleep(0.2)
         getSession = await session.get(url)
         response = await getSession.json()
         error_message = response["error"]
-        if (error_message == "Success" or error_message == "No Error"):
+        if (error_message == "Success" or error_message == "No error"):
             if (response['request_finished'] and response["request_id"] == request["request_id"]):
                 break
         else:

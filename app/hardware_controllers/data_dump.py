@@ -9,20 +9,22 @@ from pathlib import Path
 from app.rbs_experiment.entities import SceneModel,CaenDetectorModel
 from typing import List
 
-def store_and_plot_histograms(storage, scene: SceneModel, detectors: List[CaenDetectorModel]):
-    print("store and plot histograms")
-
+def store_and_plot_histograms(locations: List[str], scene: SceneModel, detectors: List[CaenDetectorModel]):
     fig = make_subplots(rows=len(detectors), cols=1)
     detector_index = 1
     for detector in detectors:
         packed_data = get_histogram_and_pack(detector)
-        store_data(packed_data, storage, scene, detector)
+
+        for location in locations:
+            store_data(packed_data, Path(location), scene, detector)
         append_histogram_plot(packed_data, fig, detector, detector_index)
         detector_index += 1
 
-    plot_location = storage / Path(scene.file + ".png")
-    fig.update_layout(height=1080, width=1920, title_text= scene.ftitle)
-    fig.write_image(plot_location.as_posix())
+    fig.update_layout(height=1080, width=1920, title_text=scene.ftitle)
+
+    for location in locations:
+        plot_location = Path(location) / Path(scene.file + ".png")
+        fig.write_image(plot_location.as_posix())
 
 def get_histogram_and_pack(detector: CaenDetectorModel):
     b = str(detector.board)
@@ -41,6 +43,7 @@ def append_histogram_plot(data: List[int], fig, detector: CaenDetectorModel, det
 
 def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
     subset = data[channel_min:channel_max]
+    print("channel width" + str(channel_width) + "subset len" + str(len(subset)))
     samples_to_group_in_bin = math.floor(len(subset) / channel_width)
     packed_data = []
     for index in range(0, samples_to_group_in_bin * channel_width, samples_to_group_in_bin):
@@ -111,8 +114,8 @@ def get_file_header(scene: SceneModel, bc, aml_x_y_response, aml_phi_zeta_respon
             title=scene.file + "_" +bc,
             filename=scene.file,
             date = datetime.datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
-            measure_time = scene.measuring_time_msec,
-            ndpts = 65535,
+            measure_time = scene.measuring_time_msec, #TODO - THIS IS NONE ???
+            ndpts = 1024,
             charge = motrona_response["charge(nC)"],
             sample_id = scene.ftitle,
             sample_x = aml_x_y_response["motor_1_position"],
