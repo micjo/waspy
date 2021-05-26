@@ -76,7 +76,7 @@ async def motrona_counting_done(url):
 async def clear_and_arm_caen_acquisition(request_id, url):
     request = {}
     request['request_id'] = request_id
-    request['clear_acquisition'] = True
+    request['clear'] = True
     request['start_acquisition'] = True
     await post_request(url, request)
 

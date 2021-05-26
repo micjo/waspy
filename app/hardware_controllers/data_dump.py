@@ -8,10 +8,12 @@ from config import daemons
 from pathlib import Path
 from app.rbs_experiment.entities import SceneModel,CaenDetectorModel
 from typing import List
+import traceback
 
 def store_and_plot_histograms(locations: List[str], scene: SceneModel, detectors: List[CaenDetectorModel]):
     fig = make_subplots(rows=len(detectors), cols=1)
     detector_index = 1
+
     for detector in detectors:
         packed_data = get_histogram_and_pack(detector)
 
@@ -43,7 +45,6 @@ def append_histogram_plot(data: List[int], fig, detector: CaenDetectorModel, det
 
 def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
     subset = data[channel_min:channel_max]
-    print("channel width" + str(channel_width) + "subset len" + str(len(subset)))
     samples_to_group_in_bin = math.floor(len(subset) / channel_width)
     packed_data = []
     for index in range(0, samples_to_group_in_bin * channel_width, samples_to_group_in_bin):

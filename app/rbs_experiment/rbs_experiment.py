@@ -12,7 +12,7 @@ from app.hardware_controllers.data_dump import store_and_plot_histograms
 from typing import List
 from config import daemons, watch_dir
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename="debug.log")
 
 def _pick_first_file_from_path(path):
     scan_path = Path(path)
@@ -68,8 +68,8 @@ class RbsExperiment:
                     _move_to_folder(f, "../done")
                 except:
                     _move_to_folder(f, "../failed")
-                    traceback.print_exc()
-
+                    print(traceback.format_exc())
+                    logging.error(traceback.format_exc())
 
 # rename scene to recipe
     async def _run_scene(self, scene: SceneModel, detectors: List[CaenDetectorModel], phi_range, locations):
@@ -89,7 +89,6 @@ class RbsExperiment:
         #store_plot_histogram is slow and CPU bound -> run in background thread
         await asyncio.get_event_loop().run_in_executor(None,
                 store_and_plot_histograms, locations, scene, detectors)
-
         end = time.time()
         scene.measuring_time_msec = str(round(end-start, 3))
         scene.execution_state = "Done"
