@@ -19,7 +19,6 @@ async function drawGraph(url) {
     let board = con.getEl("board_select").value;
     let channel = con.getEl("channel_select").value;
     let fullPath = url + "/histogram/" + board + "-" + channel;
-    console.log(fullPath);
 
     fetch(url + "/histogram/" + board + "-" + channel)
         .then(response => {
@@ -49,7 +48,8 @@ async function drawGraph(url) {
               title: 'histogram',
               uirevision: 'test',
               autosize:'true',
-              height:300
+              height:300,
+              xaxis: {range: [0,8096]}
             };
 
             Plotly.newPlot('histo_chart', plotdata, layout);
@@ -79,6 +79,7 @@ function updateUi(prefix, hwData) {
     }
     con.setBadgeErrorWithText(prefix + "_connect_status" , true, "Active");
     con.setElementText(prefix + '_request_id', hwData["request_id"]);
+    con.setElementText(prefix + '_error', hwData["error"]);
     con.setElementText(prefix + '_request_finished', hwData["request_finished"]);
     con.setElementText(prefix + '_acquiring', hwData["acquisition_active"]);
     con.setElementText(prefix + '_brief_status', "Acquiring: " + hwData["acquisition_active"]);

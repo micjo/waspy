@@ -33,6 +33,13 @@ class DaemonConfig(BaseModel):
     class Config:
         use_enum_values = True
 
+class DirConfig(BaseModel):
+    watch_dir: str
+    ongoing_dir: str
+    done_dir: str
+    failed_dir: str
+    data_dir: str
+
 def makeDaemonConfig(json_data) -> DaemonConfig:
     return DaemonConfig.parse_raw(json_data)
 
@@ -52,6 +59,15 @@ daemons_lab = makeDaemonConfig('''{
     "caen_charles_evans" : {"type":"caen", "title":"CAEN Charles Evans", "url":"http://169.254.13.109:22123/api/latest" }
     }''')
 
+
 daemons = daemons_lab
 
-watch_dir = "C:/DATA/flask/watch/"
+dir_config = DirConfig.parse_raw('''{
+    "watch_dir": "C:/ACQ/_01_watch",
+    "ongoing_dir": "C:/ACQ/_02_ongoing",
+    "done_dir": "C:/ACQ/_03_done",
+    "failed_dir": "C:/ACQ/_04_failed",
+    "data_dir": "C:/ACQ/_05_data"
+}''')
+
+

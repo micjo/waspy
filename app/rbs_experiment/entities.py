@@ -28,9 +28,6 @@ class EndPositionModel(BaseModel):
     det: int
     theta: int
 
-class StorageModel(BaseModel):
-    local: str = Field(description="The base folder location where the results will be stored")
-    remote: str = Field(description="The base folder location where the results will be stored")
 
 class RbsModel(BaseModel):
     exp_type: str
@@ -39,7 +36,6 @@ class RbsModel(BaseModel):
     phi_end: int
     limit: int
     rqm_number: str = Field(description="This is the subfolder where the results will be stored")
-    storage: StorageModel
     scenario: List[SceneModel]
     end_position: EndPositionModel
     detectors: List[CaenDetectorModel]
@@ -53,10 +49,6 @@ class RbsModel(BaseModel):
             "phi_end":5,
             "limit":100,
             "rqm_number":"experiment_1",
-            "storage": {
-                "local" : "C:/DATA/flask",
-                "remote" : "W:/transfer_RBS"
-            },
             "detectors":
             [
                 {"board": 1, "channel":0, "bins_min":0, "bins_max":7000, "bins_width":1024},
