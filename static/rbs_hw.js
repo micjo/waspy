@@ -29,8 +29,6 @@ function updateUi(hwData) {
         return;
     }
 
-    console.log(hwData);
-
     for (const scene of hwData["experiment"]["scenario"]) {
         let sceneRow = document.createElement("tr");
 
