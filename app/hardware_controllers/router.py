@@ -2,7 +2,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import APIRouter, Request, Response, status
 
-import config
+from app.config import config
 import aiohttp
 from app.hardware_controllers.entities import get_schema_type, get_page_type
 

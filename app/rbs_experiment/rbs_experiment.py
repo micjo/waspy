@@ -1,21 +1,21 @@
-import asyncio
-from pathlib import Path
-import logging
-
-import config
-from app.rbs_experiment.entities import RbsModel,SceneModel,CaenDetectorModel, StatusModel, empty_experiment
-import app.hardware_controllers.daemon_comm as comm
-import time
-import app.rbs_experiment.entities as entities
-import traceback
+from app.config.config import daemons, input_dir, output_dir, output_dir_remote
 from app.hardware_controllers.data_dump import store_and_plot_histograms
+from app.rbs_experiment.entities import RbsModel,SceneModel,CaenDetectorModel, StatusModel, empty_experiment
+from pathlib import Path
+from shutil import copy2
 from typing import List
-from config import daemons, dir_config
+import app.hardware_controllers.daemon_comm as comm
+import app.rbs_experiment.entities as entities
+import asyncio
+import logging
+import time
+import traceback
 
 logging.basicConfig(level=logging.INFO, filename="debug.log")
 
 
 def _pick_first_file_from_path(path):
+    print("scanning")
     files = [file for file in path.iterdir() if file.is_file()]
     try:
         return files[0]
@@ -24,11 +24,11 @@ def _pick_first_file_from_path(path):
 
 
 def _make_folders():
-    Path.mkdir(Path(dir_config.watch_dir) , exist_ok=True)
-    Path.mkdir(Path(dir_config.ongoing_dir), exist_ok=True)
-    Path.mkdir(Path(dir_config.done_dir), exist_ok=True)
-    Path.mkdir(Path(dir_config.failed_dir), exist_ok=True)
-    Path.mkdir(Path(dir_config.data_dir), exist_ok=True)
+    Path.mkdir(input_dir.watch, parents=True, exist_ok=True)
+    Path.mkdir(output_dir.ongoing, parents=True, exist_ok=True)
+    Path.mkdir(output_dir.done, parents=True, exist_ok=True)
+    Path.mkdir(output_dir.failed, parents=True, exist_ok=True)
+    Path.mkdir(output_dir.data, parents=True, exist_ok=True)
 
 
 def get_phi_range(full_experiment):
@@ -38,21 +38,25 @@ def get_phi_range(full_experiment):
     return list(range(phi_start, phi_end+phi_step, phi_step))
 
 
-def _move_to_folder(file, folder_path):
-    file.rename(folder_path / file.name)
-    return folder_path / file.name
+def _move_and_try_copy(file, move_folder, copy_folder):
+    file.rename(move_folder / file.name)
+    file = move_folder / file.name
+    copy2(file, copy_folder)
+    return file
 
 
 class RbsExperiment:
     def __init__(self):
-        self.run = False
+        self.dir_scan_paused = False
         self.state = entities.ExperimentStateModel(status=StatusModel.Idle,
                 experiment= empty_experiment)
         self.experiment_routine = None
         _make_folders()
 
     def get_state(self):
-        return self.state.dict()
+        rbs_state = self.state.dict()
+        rbs_state["dir_scan_paused"] = self.dir_scan_paused
+        return rbs_state
 
     def abort(self):
         self.state.status = StatusModel.Idle
@@ -62,23 +66,24 @@ class RbsExperiment:
     async def run_main(self):
         while True:
             await asyncio.sleep(1)
-            print("checking folder : " + dir_config.watch_dir )
-            f = _pick_first_file_from_path(Path(dir_config.watch_dir))
+            if self.dir_scan_paused:
+                continue
+
+            f = _pick_first_file_from_path(input_dir.watch)
             if(f):
                 try:
-                    # todo: copy ongoing file to remote dir - this is an unstable connection
-                    f = _move_to_folder(f, Path(dir_config.ongoing_dir))
+                    f = _move_and_try_copy(f, output_dir.ongoing, output_dir_remote.ongoing)
                     experiment = RbsModel.parse_file(f)
                     self.experiment_routine = asyncio.create_task(self._run_experiment(experiment))
                     await self.experiment_routine
-                    _move_to_folder(f, Path(dir_config.done_dir))
+                    _move_and_try_copy(f, output_dir.done, output_dir_remote.done)
                 except:
-                    _move_to_folder(f, Path(dir_config.failed_dir))
+                    _move_and_try_copy(f, output_dir.failed, output_dir_remote.failed)
                     print(traceback.format_exc())
                     logging.error(traceback.format_exc())
 
 # rename scene to recipe
-    async def _run_scene(self, scene: SceneModel, detectors: List[CaenDetectorModel], phi_range, locations):
+    async def _run_scene(self, scene: SceneModel, detectors: List[CaenDetectorModel], phi_range, rqm_number):
         scene.execution_state = "Executing"
         start = time.time()
         await comm.move_aml_both(scene.ftitle, daemons.aml_x_y.url, [scene.x, scene.y])
@@ -92,11 +97,11 @@ class RbsExperiment:
             await comm.motrona_counting_done(daemons.motrona_rbs.url)
             # scene.phi_progress = round(phi/phi_range[-1] * 100,2)
 
-        #store_plot_histogram is slow and CPU bound -> run in background thread
-        await asyncio.get_event_loop().run_in_executor(None,
-                store_and_plot_histograms, locations, scene, detectors)
         end = time.time()
-        scene.measuring_time_msec = str(round(end-start, 3))
+        time_delta = (end-start)
+        scene.measuring_time_sec = str(round(time_delta, 3))
+        #store_plot_histogram is slow and CPU bound -> run in background thread
+        await asyncio.get_event_loop().run_in_executor(None, store_and_plot_histograms, rqm_number, scene, detectors)
         scene.execution_state = "Done"
 
     async def _run_experiment(self, experiment: RbsModel):
@@ -109,17 +114,16 @@ class RbsExperiment:
         await comm.set_motrona_target_charge(title + "_charge", daemons.motrona_rbs.url, charge_limit)
         phi_range = get_phi_range(experiment)
 
-        ##TODO: add remote directory here
-        locations_with_subfolder = [ dir_config.data_dir + "/" + experiment.rqm_number]
-
         for scene in experiment.scenario:
-            await self._run_scene(scene, experiment.detectors,  phi_range, locations_with_subfolder)
+            await self._run_scene(scene, experiment.detectors,  phi_range, experiment.rqm_number)
 
         self.state.status = StatusModel.Parking
-
         end = experiment.end_position
         await comm.move_aml_both(title + "_end", daemons.aml_x_y.url, [end.x, end.y])
         await comm.move_aml_both(title + "_end", daemons.aml_phi_zeta.url, [end.phi, end.zeta])
         await comm.move_aml_both(title + "_end", daemons.aml_det_theta.url, [end.det, end.theta])
 
         self.state.status = StatusModel.Idle
+
+    def pause_dir_scan(self, pause):
+        self.dir_scan_paused = pause

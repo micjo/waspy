@@ -11,7 +11,7 @@ class SceneModel(BaseModel):
     file: str
     execution_state: Optional[str]  # pylint: disable=E1136
     phi_progress: Optional[str] # pylint: disable=E1136
-    measuring_time_msec: Optional[str] # pylint: disable=E1136
+    measuring_time_sec: Optional[str] # pylint: disable=E1136
 
 class CaenDetectorModel(BaseModel):
     board: int
@@ -28,6 +28,8 @@ class EndPositionModel(BaseModel):
     det: int
     theta: int
 
+class PauseModel(BaseModel):
+    pause_dir_scan: bool
 
 class RbsModel(BaseModel):
     exp_type: str

@@ -3,8 +3,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi import APIRouter, Request
 import asyncio
 import app.rbs_experiment.rbs_experiment as rbs
-import config
-from app.rbs_experiment.entities import RbsModel
+from app.config import config
+from app.rbs_experiment.entities import RbsModel, PauseModel
 
 templates = Jinja2Templates(directory="templates")
 
@@ -32,4 +32,6 @@ async def rbs_experiment_abort():
 async def post_rbs_experiment(rbs_experiment: RbsModel):   # type : ignore
     return {"Verification" : "Passed", "experiment": rbs_experiment}
 
-
+@router.post("/api/rbs/pause_dir_scan", tags=["RBS API"], summary="Start/stop scanning the configured directory for experiments to execute")
+async def pause_rbs_dir_scan(request: PauseModel):
+    runner.pause_dir_scan(request.pause_dir_scan)

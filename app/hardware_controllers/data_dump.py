@@ -4,29 +4,38 @@ import requests
 import datetime
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from config import daemons
+from app.config.config import daemons, output_dir, output_dir_remote
 from pathlib import Path
 from app.rbs_experiment.entities import SceneModel,CaenDetectorModel
 from typing import List
+from shutil import copy2
 import traceback
 
-def store_and_plot_histograms(locations: List[str], scene: SceneModel, detectors: List[CaenDetectorModel]):
+
+def _try_copy(file, folder):
+    try:
+        copy2(file, folder)
+    except:
+        logging.error(traceback.format_exc())
+
+
+def store_and_plot_histograms(rqm_number, scene: SceneModel, detectors: List[CaenDetectorModel]):
     fig = make_subplots(rows=len(detectors), cols=1)
+    fig.update_layout(height=1080, width=1920, title_text=scene.ftitle)
     detector_index = 1
 
     for detector in detectors:
         packed_data = get_histogram_and_pack(detector)
 
-        for location in locations:
-            store_data(packed_data, Path(location), scene, detector)
+        #todo refactor store data to return the string to write to the file this
+        # will make it easier to also write the content to the remote file ( not implemented yet)
+
+        store_data(packed_data, output_dir.data / rqm_number, scene, detector)
         append_histogram_plot(packed_data, fig, detector, detector_index)
         detector_index += 1
 
-    fig.update_layout(height=1080, width=1920, title_text=scene.ftitle)
-
-    for location in locations:
-        plot_location = Path(location) / Path(scene.file + ".png")
-        fig.write_image(plot_location.as_posix())
+    plot_location = output_dir.data / rqm_number / Path(scene.file + ".png")
+    fig.write_image(plot_location.as_posix())
 
 def get_histogram_and_pack(detector: CaenDetectorModel):
     b = str(detector.board)
@@ -86,7 +95,7 @@ def get_file_header(scene: SceneModel, bc, aml_x_y_response, aml_phi_zeta_respon
 *
 * Filename no extension := {filename}
 * DATE/Time             := {date}
-* MEASURING TIME[sec]   := {measure_time}
+* MEASURING TIME[sec]   := {measure_time_sec}
 * ndpts                 := {ndpts}
 *
 * ANAL.IONS(Z)          := 4.002600
@@ -115,7 +124,7 @@ def get_file_header(scene: SceneModel, bc, aml_x_y_response, aml_phi_zeta_respon
             title=scene.file + "_" +bc,
             filename=scene.file,
             date = datetime.datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
-            measure_time = scene.measuring_time_msec, #TODO - THIS IS NONE ???
+            measure_time_sec = scene.measuring_time_sec,
             ndpts = 1024,
             charge = motrona_response["charge(nC)"],
             sample_id = scene.ftitle,
