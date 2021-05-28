@@ -1,6 +1,6 @@
 import * as con from './daemon_connection.js'
 
-export {refreshGraph, refreshData, refreshDataRepeatedly, abort};
+export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume};
 
 function refreshDataRepeatedly(timeout) {
     refreshData("/api/rbs/state");
@@ -15,10 +15,17 @@ async function refreshData(url) {
 }
 
 async function abort() {
-    console.log("aborting")
-    con.show("abort_spinner");
     con.postData("/api/rbs/abort", "");
-    con.hide("abort_spinner");
+}
+
+async function pause() {
+    let request = { "pause_dir_scan": true};
+    await con.postData("/api/rbs/pause_dir_scan", JSON.stringify(request));
+}
+
+async function resume() {
+    let request = { "pause_dir_scan": false };
+    await con.postData("/api/rbs/pause_dir_scan", JSON.stringify(request));
 }
 
 function updateUi(hwData) {
