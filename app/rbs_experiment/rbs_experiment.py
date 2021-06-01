@@ -114,19 +114,18 @@ class RbsExperiment:
         self.state.status = StatusModel.Running
         self.state.experiment = experiment
         title = experiment.rqm_number
-        charge_limit = experiment.limit
-
-        await _move_to_position(experiment.starting_position)
+        phi_range = get_phi_range(experiment)
+        charge_limit = experiment.limit / len(phi_range)
+        print(charge_limit)
+        await _move_to_position(title + "_start", experiment.starting_position)
         await comm.pause_motrona_count(title + "_pause", daemons.motrona_rbs.url)
         await comm.set_motrona_target_charge(title + "_charge", daemons.motrona_rbs.url, charge_limit)
-        phi_range = get_phi_range(experiment)
 
         for scene in experiment.recipe:
             await self._run_scene(scene, experiment.detectors,  phi_range, experiment.rqm_number)
 
         self.state.status = StatusModel.Parking
-        end = experiment.parking_position
-        await _move_to_position(title, end)
+        await _move_to_position(title, experiment.parking_position)
 
         self.state.status = StatusModel.Idle
 
