@@ -27,7 +27,7 @@ async function onMoveAml(prefix, activeAml) {
 function updateAml(prefix, activeAml) {
     con.getEl(prefix + "_first").innerText = activeAml.firstMotorPosition;
     con.getEl(prefix + "_second").innerText = activeAml.secondMotorPosition;
-    con.setConnected(prefix + "_connect_status", activeAml.connected);
+    con.setConnected(prefix + "_sanity_status", activeAml.connected);
     con.getEl(prefix + "_request_id").innerText = activeAml.requestId;
     con.getEl(prefix + "_busy_status").innerText = activeAml.busy;
     con.getEl(prefix + "_expiry_date").innerText = activeAml.completionTime;
@@ -159,7 +159,7 @@ function updateCaen() {
     con.getEl("caen_histogram_folder").innerText = caen1.histogramLocation;
     con.getEl("caen_list_data_folder").innerText = caen1.listDataLocation;
     con.getEl("caen_list_data_timeout").innerText = caen1.listDataTimeout;
-    con.setConnected("caen_connect_status", caen1.connected);
+    con.setConnected("caen_sanity_status", caen1.connected);
     con.getEl("caen_time").innerText = con.getUniqueIdentifier();
 
     if (!caen1.requestAcknowledge) {

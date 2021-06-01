@@ -24,11 +24,8 @@ async function refreshData(url,prefix) {
 }
 
 function updateUi(prefix, hwData) {
-    if (!hwData) {
-        con.setBadgeErrorWithText(prefix + "_connect_status" , false, "Not Active");
-        return;
-    }
-    con.setBadgeErrorWithText(prefix + "_connect_status" , true, "Active");
+    con.setSanityBadge(prefix, hwData);
+    if (!hwData) { return; }
 
     con.setElementText(prefix + '_request_id', hwData["request_id"]);
     con.setElementText(prefix + '_request_finished', hwData["request_finished"]);

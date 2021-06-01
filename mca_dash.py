@@ -1,3 +1,9 @@
+import logging
+logging.basicConfig(
+    format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
+    level=logging.INFO,
+    datefmt='%Y.%m.%d__%H:%M__%S',
+    filename="debug_log.txt")
 from fastapi import FastAPI, Request
 from fastapi.openapi.docs import (
     get_redoc_html,
@@ -24,7 +30,7 @@ app.include_router(hw_router)
 
 @app.get("/", response_class=HTMLResponse, tags=["WebUI"])
 async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request, "config": config.daemons.dict()})
+    return templates.TemplateResponse("dashboard.jinja2", {"request": request, "config": config.daemons.dict()})
 
 
 @app.get("/favicon.ico")

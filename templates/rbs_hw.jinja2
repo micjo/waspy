@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% import "ui_elements.html" as ui_elements %}
+{% extends "base.jinja2" %}
+{% import "ui_elements.jinja2" as ui_elements %}
 
 {% block content %}
 
@@ -18,7 +18,7 @@
                     {% if value["type"] == "motrona" %}
                     <span class="spinner-border spinner-border-sm" id="{{key}}_counting_status" style="display:none"></span>
                     {% endif %}
-                    <span class="badge bg-secondary" id="{{key}}_connect_status">-</span>
+                    <span class="badge bg-secondary" id="{{key}}_sanity_status">-</span>
                 </div>
             </div>
             <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{key}}_fold" aria-expanded="false" aria-controls="{{key}}_fold">
@@ -62,6 +62,7 @@
                         {{ ui_elements.buttonSpinnerWithRequest("show", "max_motrona.sendARequest", url, key, 'show', '{"hide":false}') }}
                         {{ ui_elements.buttonSpinnerWithRequest("continue", "max_motrona.sendARequest", url, key, 'continue', '{"continue":true}') }}
                         {% elif value["type"] == "caen" %}
+                        {{ ui_elements.buttonSpinnerWithRequest("connect and configure", "max_caen.sendARequest", url, prefix, 'start_all', '{"open_connection":true, "write_registry":true, "acquire_data":true, "start_acquisition": true}') }}
                         {{ ui_elements.buttonSpinnerWithRequest("start acquisition", "max_caen.sendARequest", url, key, 'acquire_start', '{"start_acquisition":true}') }}
                         {{ ui_elements.buttonSpinnerWithRequest("stop acquisition", "max_caen.sendARequest", url, key, 'acquire_stop', '{"stop_acquisition":true}') }}
                         {{ ui_elements.buttonSpinnerWithRequest("reset", "max_caen.sendARequest", url, key, 'reset', '{"reset":true}') }}

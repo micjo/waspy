@@ -1,5 +1,5 @@
 export {getEl,getStatus};
-export {setBadgeError, setBadgeSuccess, setBadgeDanger, setText,setBadgeErrorWithText, setBadgeType};
+export {setBadgeError, setBadgeSuccess, setBadgeDanger, setText,setBadgeErrorWithText, setBadgeWarningWithText, setBadgeType, setSanityBadge};
 export {sendRequestAndSpin, sendRequest, showFailureModal};
 export {postData};
 
@@ -37,6 +37,29 @@ function setBadgeErrorWithText(id, success, text) {
     } else {
         document.getElementById(id).innerText = text;
         document.getElementById(id).setAttribute('class', 'badge bg-danger');
+    }
+}
+
+function setBadgeWarningWithText(id, success, text) {
+    if (success) {
+        document.getElementById(id).innerText = text;
+        document.getElementById(id).setAttribute(
+            'class', 'badge bg-success');
+    } else {
+        document.getElementById(id).innerText = text;
+        document.getElementById(id).setAttribute('class', 'badge bg-warning');
+    }
+}
+
+function setSanityBadge(prefix, hwData) {
+    if (!hwData) {
+        setBadgeErrorWithText(prefix + "_sanity_status", false, "Not connected !!");
+        return;
+    }
+
+    setBadgeErrorWithText(prefix + "_sanity_status", true, "Connected");
+    if (hwData["error"] !== "Success" && hwData["error"] !== "No error") {
+        setBadgeWarningWithText(prefix + "_sanity_status", false, "Error !!")
     }
 }
 

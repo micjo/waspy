@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.jinja2" %}
 
 {% block content %}
 
@@ -26,9 +26,9 @@
 <script type="module">
     import * as dashboard from '{{url_for('static', path='dashboard.js')}}'
 
-    dashboard.refreshAllData({{config|safe}});
+    dashboard.refreshAllData( {{config|safe}} );
     window.setInterval(function() {
-        dashboard.refreshAllData({{config|safe}});
+        dashboard.refreshAllData( {{config|safe}} );
     }, 2000);
 </script>
 

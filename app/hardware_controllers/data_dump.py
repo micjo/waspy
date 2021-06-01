@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from app.config.config import daemons, output_dir, output_dir_remote
 from pathlib import Path
-from app.rbs_experiment.entities import SceneModel,CaenDetectorModel
+from app.rbs_experiment.entities import RecipeInstruction,CaenDetectorModel
 from typing import List
 from shutil import copy2
 import traceback
@@ -19,7 +19,7 @@ def _try_copy(file, folder):
         logging.error(traceback.format_exc())
 
 
-def store_and_plot_histograms(rqm_number, scene: SceneModel, detectors: List[CaenDetectorModel]):
+def store_and_plot_histograms(rqm_number, scene: RecipeInstruction, detectors: List[CaenDetectorModel]):
     fig = make_subplots(rows=len(detectors), cols=1)
     fig.update_layout(height=1080, width=1920, title_text=scene.ftitle)
     detector_index = 1
@@ -61,7 +61,7 @@ def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
         packed_data.append(bin_sum)
     return packed_data
 
-def store_data(data: List[int], storage, scene: SceneModel, detector: CaenDetectorModel):
+def store_data(data: List[int], storage, scene: RecipeInstruction, detector: CaenDetectorModel):
     aml_x_y_response = requests.get(daemons.aml_x_y.url).json()
     aml_phi_zeta_response = requests.get(daemons.aml_phi_zeta.url).json()
     aml_det_theta_response = requests.get(daemons.aml_det_theta.url).json()
@@ -87,7 +87,7 @@ def write_caen_histogram(location, header, data: List[int]):
         file.write(header)
         file.write(dataString)
 
-def get_file_header(scene: SceneModel, bc, aml_x_y_response, aml_phi_zeta_response, aml_det_theta_response, motrona_response):
+def get_file_header(scene: RecipeInstruction, bc, aml_x_y_response, aml_phi_zeta_response, aml_det_theta_response, motrona_response):
     header = """
 % Comments
 % Title                 := {title}
