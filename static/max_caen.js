@@ -18,7 +18,6 @@ async function drawGraph(url) {
 
     let board = con.getEl("board_select").value;
     let channel = con.getEl("channel_select").value;
-    let fullPath = url + "/histogram/" + board + "-" + channel;
 
     fetch(url + "/histogram/" + board + "-" + channel)
         .then(response => {
@@ -73,17 +72,14 @@ async function refreshData(url,prefix) {
 }
 
 function updateUi(prefix, hwData) {
-    if (!hwData) {
-        con.setBadgeErrorWithText(prefix + "_connect_status" , false, "Not Active");
-        return;
-    }
-    con.setBadgeErrorWithText(prefix + "_connect_status" , true, "Active");
-    con.setElementText(prefix + '_request_id', hwData["request_id"]);
+    con.setSanityBadge(prefix, hwData);
+    if (!hwData) { return; }
+
     con.setElementText(prefix + '_error', hwData["error"]);
+    con.setElementText(prefix + '_request_id', hwData["request_id"]);
     con.setElementText(prefix + '_request_finished', hwData["request_finished"]);
     con.setElementText(prefix + '_acquiring', hwData["acquisition_active"]);
     con.setElementText(prefix + '_brief_status', "Acquiring: " + hwData["acquisition_active"]);
-
 }
 
 async function sendARequest(url, prefix, id ,request) {

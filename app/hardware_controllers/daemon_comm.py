@@ -7,8 +7,6 @@ session = aiohttp.ClientSession()
 logging.basicConfig(level=logging.INFO, filename="debug.log")
 
 async def wait_for_request_done(url, request):
-    await asyncio.sleep(0.2)
-    return
     while True:
         await asyncio.sleep(0.2)
         getSession = await session.get(url)
@@ -23,16 +21,12 @@ async def wait_for_request_done(url, request):
 async def post_request(url, request):
     logging.info("post to: " +url + ", content: " + str(request))
     print("post to: " +url + ", content: " + str(request))
-    await asyncio.sleep(0.2)
-    return
     await session.post(url, json=request)
     await wait_for_request_done(url, request)
 
 async def get_json_status(url):
     logging.info("getting status from: " +url)
     print("getting status from: " +url)
-    await asyncio.sleep(0.2)
-    return
     getSession = await session.get(url)
     response = await getSession.json()
     return response
@@ -75,8 +69,6 @@ async def pause_motrona_count(request_id, url):
     await post_request(url, motrona_request)
 
 async def motrona_counting_done(url):
-    await asyncio.sleep(0.2)
-    return
     while True:
         await asyncio.sleep(1)
         response = await get_json_status(url)

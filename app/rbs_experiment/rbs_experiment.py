@@ -1,6 +1,6 @@
 from app.config.config import daemons, input_dir, output_dir, output_dir_remote
 from app.hardware_controllers.data_dump import store_and_plot_histograms
-from app.rbs_experiment.entities import RbsModel,SceneModel,CaenDetectorModel, StatusModel, empty_experiment
+from app.rbs_experiment.entities import RbsModel,RecipeInstruction,CaenDetectorModel, StatusModel, empty_experiment, PositionModel
 from pathlib import Path
 from shutil import copy2
 from typing import List
@@ -11,11 +11,7 @@ import logging
 import time
 import traceback
 
-logging.basicConfig(level=logging.INFO, filename="debug.log")
-
-
 def _pick_first_file_from_path(path):
-    print("scanning")
     files = [file for file in path.iterdir() if file.is_file()]
     try:
         return files[0]
@@ -41,8 +37,17 @@ def get_phi_range(full_experiment):
 def _move_and_try_copy(file, move_folder, copy_folder):
     file.rename(move_folder / file.name)
     file = move_folder / file.name
-    copy2(file, copy_folder)
+    try:
+        copy2(file, copy_folder)
+    except:
+        print(traceback.format_exc())
+        logging.error(traceback.format_exc())
     return file
+
+async def _move_to_position(title: str, position: PositionModel):
+    await comm.move_aml_both(title + "_end", daemons.aml_x_y.url, [position.x, position.y])
+    await comm.move_aml_both(title + "_end", daemons.aml_phi_zeta.url, [position.phi, position.zeta])
+    await comm.move_aml_both(title + "_end", daemons.aml_det_theta.url, [position.det, position.theta])
 
 
 class RbsExperiment:
@@ -65,6 +70,7 @@ class RbsExperiment:
 
     async def run_main(self):
         while True:
+            logging.info("scanning")
             await asyncio.sleep(1)
             if self.dir_scan_paused:
                 continue
@@ -83,7 +89,7 @@ class RbsExperiment:
                     logging.error(traceback.format_exc())
 
 # rename scene to recipe
-    async def _run_scene(self, scene: SceneModel, detectors: List[CaenDetectorModel], phi_range, rqm_number):
+    async def _run_scene(self, scene: RecipeInstruction, detectors: List[CaenDetectorModel], phi_range, rqm_number):
         scene.execution_state = "Executing"
         start = time.time()
         await comm.move_aml_both(scene.ftitle, daemons.aml_x_y.url, [scene.x, scene.y])
@@ -108,22 +114,22 @@ class RbsExperiment:
         self.state.status = StatusModel.Running
         self.state.experiment = experiment
         title = experiment.rqm_number
-
         charge_limit = experiment.limit
+
+        await _move_to_position(experiment.starting_position)
         await comm.pause_motrona_count(title + "_pause", daemons.motrona_rbs.url)
         await comm.set_motrona_target_charge(title + "_charge", daemons.motrona_rbs.url, charge_limit)
         phi_range = get_phi_range(experiment)
 
-        for scene in experiment.scenario:
+        for scene in experiment.recipe:
             await self._run_scene(scene, experiment.detectors,  phi_range, experiment.rqm_number)
 
         self.state.status = StatusModel.Parking
-        end = experiment.end_position
-        await comm.move_aml_both(title + "_end", daemons.aml_x_y.url, [end.x, end.y])
-        await comm.move_aml_both(title + "_end", daemons.aml_phi_zeta.url, [end.phi, end.zeta])
-        await comm.move_aml_both(title + "_end", daemons.aml_det_theta.url, [end.det, end.theta])
+        end = experiment.parking_position
+        await _move_to_position(title, end)
 
         self.state.status = StatusModel.Idle
+
 
     def pause_dir_scan(self, pause):
         self.dir_scan_paused = pause
