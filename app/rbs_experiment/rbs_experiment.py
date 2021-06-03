@@ -1,6 +1,6 @@
 from app.config.config import daemons, input_dir, output_dir, output_dir_remote
 from app.hardware_controllers.data_dump import store_and_plot_histograms
-from app.rbs_experiment.entities import RbsModel,RecipeInstruction,CaenDetectorModel, StatusModel, empty_experiment, PositionModel
+from app.rbs_experiment.entities import RbsModel,Recipe,CaenDetectorModel, StatusModel, empty_rqm, PositionModel
 from pathlib import Path
 from shutil import copy2
 from typing import List
@@ -54,7 +54,7 @@ class RbsExperiment:
     def __init__(self):
         self.dir_scan_paused = False
         self.state = entities.ExperimentStateModel(status=StatusModel.Idle,
-                experiment= empty_experiment)
+                                                   experiment= empty_rqm)
         self.experiment_routine = None
         _make_folders()
 
@@ -65,7 +65,7 @@ class RbsExperiment:
 
     def abort(self):
         self.state.status = StatusModel.Idle
-        self.state.experiment = empty_experiment
+        self.state.experiment = empty_rqm
         self.experiment_routine.cancel()
 
     async def run_main(self):
@@ -89,7 +89,7 @@ class RbsExperiment:
                     logging.error(traceback.format_exc())
 
 # rename scene to recipe
-    async def _run_scene(self, scene: RecipeInstruction, detectors: List[CaenDetectorModel], phi_range, rqm_number):
+    async def _run_scene(self, scene: Recipe, detectors: List[CaenDetectorModel], phi_range, rqm_number):
         scene.execution_state = "Executing"
         start = time.time()
         await comm.move_aml_both(scene.ftitle, daemons.aml_x_y.url, [scene.x, scene.y])
@@ -121,7 +121,7 @@ class RbsExperiment:
         await comm.pause_motrona_count(title + "_pause", daemons.motrona_rbs.url)
         await comm.set_motrona_target_charge(title + "_charge", daemons.motrona_rbs.url, charge_limit)
 
-        for scene in experiment.recipe:
+        for scene in experiment.recipes:
             await self._run_scene(scene, experiment.detectors,  phi_range, experiment.rqm_number)
 
         self.state.status = StatusModel.Parking

@@ -57,7 +57,7 @@ function setSanityBadge(prefix, hwData) {
         return;
     }
 
-    setBadgeErrorWithText(prefix + "_sanity_status", true, "Connected");
+    setBadgeErrorWithText(prefix + "_sanity_status", true, "Running");
     if (hwData["error"] !== "Success" && hwData["error"] !== "No error") {
         setBadgeWarningWithText(prefix + "_sanity_status", false, "Error !!")
     }
