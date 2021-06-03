@@ -4,7 +4,7 @@ from typing import List, Optional
 from enum import Enum
 
 
-class RecipeInstruction(BaseModel):
+class Recipe(BaseModel):
     mtype: str
     ftitle: str
     x: int
@@ -44,7 +44,7 @@ class RbsModel(BaseModel):
     phi_end: int
     limit: int
     rqm_number: str = Field(description="This is the subfolder where the results will be stored")
-    recipe: List[RecipeInstruction]
+    recipes: List[Recipe]
     parking_position: PositionModel
     starting_position: PositionModel
     detectors: List[CaenDetectorModel]
@@ -57,14 +57,14 @@ class RbsModel(BaseModel):
                 "phi_step": 1,
                 "phi_end": 5,
                 "limit": 100,
-                "rqm_number": "experiment_1",
+                "rqm_number": "some_rqm_number",
                 "starting_position": {"x": 20, "y": 20, "theta": 19, "zeta": 19, "phi": 18, "det": 18},
                 "detectors":
                     [
                         {"board": 1, "channel": 0, "bins_min": 0, "bins_max": 7000, "bins_width": 1024},
                         {"board": 1, "channel": 1, "bins_min": 0, "bins_max": 7000, "bins_width": 1024}
                     ],
-                "recipe":
+                "recipes":
                     [
                         {"mtype": "rand", "ftitle": "ref(125,15)", "x": 1, "y": 1, "file": "RBS21_100_R1A"},
                         {"mtype": "rand", "ftitle": "d20_200cy", "x": 2, "y": 2, "file": "RBS21_100_01A"}
@@ -89,7 +89,7 @@ class ExperimentStateModel(BaseModel):
         use_enum_values = True
 
 
-empty_experiment = RbsModel.parse_raw('''{
+empty_rqm = RbsModel.parse_raw('''{
 "exp_type":"rbs",
 "phi_start":0,
 "phi_step":0,
@@ -99,5 +99,5 @@ empty_experiment = RbsModel.parse_raw('''{
 "starting_position":  {"x":0 , "y":0, "theta":0, "zeta":0, "phi":0, "det":0},
 "storage":{"local":"string","remote": "string"},
 "detectors": [{"board": 0, "channel":0, "bins_min":0, "bins_max":0, "bins_width":0}],
-"recipe": [{"mtype":"string", "ftitle":"string" , "x":0 , "y":0  , "file":"string" }],
+"recipes": [{"mtype":"string", "ftitle":"string" , "x":0 , "y":0  , "file":"string" }],
 "parking_position":  {"x":0 , "y":0, "theta":0, "zeta":0, "phi":0, "det":0}}''')
