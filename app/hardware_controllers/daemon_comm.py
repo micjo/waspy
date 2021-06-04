@@ -1,3 +1,5 @@
+from typing import List
+
 import aiohttp
 import asyncio
 import logging
@@ -89,3 +91,13 @@ async def clear_and_arm_caen_acquisition(request_id, url):
 async def stop_caen_acquisition(request_id, url):
     request = {'request_id': request_id, 'stop_acquisition': True}
     await post_request(url, request)
+
+
+async def get_caen_histogram(base_url, board: int, channel: int) -> List[int]:
+    url = base_url + "/histogram/" + str(board) + "-" + str(channel)
+    get_session = await session.get(url)
+    raw_data = await get_session.text()
+    raw_data = raw_data.split(";")
+    raw_data.pop()
+    data = [int(x) for x in raw_data]
+    return data

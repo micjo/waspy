@@ -1,4 +1,4 @@
-from app.config.entities import DaemonConfig, OutputDirConfig, InputDirConfig
+from app.setup.entities import DaemonConfig, OutputDirConfig, InputDirConfig
 
 daemons = DaemonConfig.parse_raw('''{
     "aml_x_y" : {"type":"aml", "title": "AML X Y", "first_name":"X", "second_name":"Y", "first_load":72.50, "second_load":61.7, "url": "http://127.0.0.1:22000/api/latest"},

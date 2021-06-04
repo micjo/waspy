@@ -1,9 +1,3 @@
-import logging
-logging.basicConfig(
-    format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
-    level=logging.INFO,
-    datefmt='%Y.%m.%d__%H:%M__%S',
-    filename="debug_log.txt")
 from fastapi import FastAPI, Request
 from fastapi.openapi.docs import (
     get_redoc_html,
@@ -13,7 +7,7 @@ from fastapi.openapi.docs import (
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, FileResponse
-from app.config import config
+from app.setup import config
 
 from app.rbs_experiment.router import router as rbs_router
 from app.hardware_controllers.router import router as hw_router

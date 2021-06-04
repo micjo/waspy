@@ -1,7 +1,7 @@
 import requests
 from pydantic.generics import GenericModel
 from typing import Dict
-from app.config.config import daemons
+from app.setup.config import daemons
 
 def get_page_type(hardware_type):
     if (hardware_type == "aml"): return "max_aml.jinja2"
