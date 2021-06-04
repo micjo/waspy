@@ -4,7 +4,7 @@ import requests
 import datetime
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from app.config.config import daemons, output_dir, output_dir_remote
+from app.setup.config import daemons, output_dir, output_dir_remote
 from pathlib import Path
 from app.rbs_experiment.entities import Recipe, CaenDetectorModel
 from typing import List

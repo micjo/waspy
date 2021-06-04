@@ -1,6 +1,12 @@
-import app.config.home_setup as home_setup
-import app.config.lab_setup as lab_setup
-from app.config.entities import DaemonConfig, OutputDirConfig, InputDirConfig
+import app.setup.home_setup as home_setup
+import app.setup.lab_setup as lab_setup
+from app.setup.entities import DaemonConfig, OutputDirConfig, InputDirConfig
+import logging
+logging.basicConfig(
+    format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
+    level=logging.INFO,
+    datefmt='%Y.%m.%d__%H:%M__%S',
+    filename="debug_log.txt")
 
 
 daemons: DaemonConfig = home_setup.daemons

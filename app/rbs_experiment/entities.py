@@ -1,5 +1,5 @@
 from pydantic.generics import BaseModel
-from pydantic import Field
+from pydantic import Field, validator
 from typing import List, Optional
 from enum import Enum
 
@@ -13,6 +13,44 @@ class Recipe(BaseModel):
     execution_state: Optional[str]  # pylint: disable=E1136
     phi_progress: Optional[str]  # pylint: disable=E1136
     measuring_time_sec: Optional[str]  # pylint: disable=E1136
+
+
+class PositionCoordinates(BaseModel):
+    x: Optional[float]
+    y: Optional[float]
+    phi: Optional[float]
+    zeta: Optional[float]
+    detector: Optional[float]
+    theta: Optional[float]
+
+
+class CoordinateEnum(str, Enum):
+    zeta = "zeta"
+    theta = "theta"
+
+
+class VaryCoordinate(BaseModel):
+    name: CoordinateEnum
+    start: float
+    end: float
+    increment: float
+
+    class Config:
+        use_enum_values = True
+
+    @validator('increment')
+    def increment_must_be_positive_and_non_zero(cls, increment):
+        if not increment > 0:
+            raise ValueError('increment must be positive and non-zero')
+        return increment
+
+    @validator('end')
+    def start_must_be_smaller_than_end(cls, end, values):
+        if 'start' not in values:
+            return
+        if not values['start'] < end:
+            raise ValueError('end must be larger than start')
+        return end
 
 
 class CaenDetectorModel(BaseModel):

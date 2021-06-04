@@ -2,7 +2,7 @@ import asyncio
 import threading
 import requests as rq
 from datetime import datetime
-from app.config.config import DaemonConfig
+from app.setup.config import DaemonConfig
 
 aml_config = [
     {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",

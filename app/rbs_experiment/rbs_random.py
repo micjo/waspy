@@ -1,4 +1,4 @@
-from app.config.config import daemons, input_dir, output_dir, output_dir_remote
+from app.setup.config import daemons, input_dir, output_dir, output_dir_remote
 from app.hardware_controllers.data_dump import store_and_plot_histograms
 from app.rbs_experiment.entities import RbsModel,Recipe,CaenDetectorModel, StatusModel, empty_rqm, PositionModel
 from pathlib import Path
@@ -50,6 +50,8 @@ async def _move_to_position(title: str, position: PositionModel):
     await comm.move_aml_both(title + "_end", daemons.aml_det_theta.url, [position.det, position.theta])
 
 
+#TODO: right now this only supports random measurements. however it is requested to have a system that can run both
+# rbs_random and rbs_channling tasks as a single larger rqm. Folder watching should be moved to a 'higher' component
 class RbsExperiment:
     def __init__(self):
         self.dir_scan_paused = False
@@ -70,7 +72,6 @@ class RbsExperiment:
 
     async def run_main(self):
         while True:
-            logging.info("scanning")
             await asyncio.sleep(1)
             if self.dir_scan_paused:
                 continue
