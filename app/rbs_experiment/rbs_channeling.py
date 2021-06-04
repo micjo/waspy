@@ -62,13 +62,13 @@ async def run_experiment(task_list: ChannelingModel):
 
         charge_limit_per_step = recipe.total_accumulated_charge / len(positions)
         await control.counting_pause_and_set_target(recipe.title, charge_limit_per_step)
-        await control.clear_and_arm_acquisition(recipe.title)
 
         for index, position in enumerate(positions):
+            await control.clear_and_arm_acquisition(recipe.title)
             await control.move_then_count_till_target(recipe.title + "_" + str(index), position)
 
-        for index, detector in enumerate(task_list.detectors):
-            data = await control.get_packed_histogram(detector)
-            # todo: finish integration step and then do fitting
+            for index, detector in enumerate(task_list.detectors):
+                data = await control.get_packed_histogram(detector)
+                # todo: finish integration step and then do fitting
 
 
