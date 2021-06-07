@@ -1,37 +1,14 @@
 from pydantic.generics import BaseModel
 from pydantic import validator
 from typing import List, Optional
-from app.rbs_experiment.entities import CoordinateEnum, VaryCoordinate, CaenDetectorModel
+from app.rbs_experiment.entities import CoordinateEnum, VaryCoordinate, CaenDetectorModel, Window
+from app.rbs_experiment.py_fitter import fit_smooth_and_minimize
 from enum import Enum
 import logging
+import time
 
 import app.rbs_experiment.rbs_daemon_control as control
 from app.rbs_experiment.entities import PositionCoordinates
-
-
-class Window(BaseModel):
-    start: int
-    end: int
-
-    @validator('start', allow_reuse=True)
-    def start_larger_than_zero(cls, start):
-        if not start >= 0:
-            raise ValueError('start must be positive')
-        return start
-
-    @validator('end', allow_reuse=True)
-    def end_larger_than_zero(cls, end):
-        if not end >= 0:
-            raise ValueError('end must be positive')
-        return end
-
-    @validator('end', allow_reuse=True)
-    def start_must_be_smaller_than_end(cls, end, values):
-        if 'start' not in values:
-            return
-        if not values['start'] < end:
-            raise ValueError("end must be larger than start")
-        return end
 
 
 class OptimizeHistogram(BaseModel):
@@ -54,21 +31,64 @@ class ChannelingModel(BaseModel):
     detectors: List[CaenDetectorModel]
     recipes: List[ChannelingRecipe]
 
+    class Config:
+        schema_extra = {
+            'example':
+                {
+                    "rqm_number": "some_rqm_number",
+                    "detectors":
+                        [
+                            {"board": 1, "channel": 0, "bins_min": 0, "bins_max": 1024, "bins_width": 1024},
+                        ],
+                    "recipes":
+                        [
+                            {
+                                "title": "string",
+                                "start_position": {"x": 4, "y": 5, "phi": 0, "zeta": 3, "detector": 0, "theta": 3},
+                                "file_stem": "string",
+                                "total_accumulated_charge": 0,
+                                "minimize_histogram": {
+                                    "vary_coordinate": {"name": "zeta", "start": 0, "end": 2, "increment": 1},
+                                    "integration_window": {"start": 0, "end": 20}
+                                }
+                            },
+                            {
+                                "title": "string",
+                                "start_position": {},
+                                "file_stem": "string",
+                                "total_accumulated_charge": 0,
+                                "minimize_histogram": {
+                                    "vary_coordinate": {"name": "theta", "start": 0, "end": 2, "increment": 1},
+                                    "integration_window": {"start": 0, "end": 20}
+                                }
+                            }
+                        ],
+                }
+        }
+
+
+async def get_integrated_energy_yields(recipe: ChannelingRecipe, detector: CaenDetectorModel):
+    await control.move_to_position(recipe.title, recipe.start_position)
+    angle_values = control.make_coordinate_range(recipe.minimize_histogram.vary_coordinate)
+    angle_to_vary = recipe.minimize_histogram.vary_coordinate.name
+
+    charge_limit_per_step = recipe.total_accumulated_charge / len(angle_values)
+    await control.counting_pause_and_set_target(recipe.title, charge_limit_per_step)
+
+    energy_yields = []
+    for angle in angle_values:
+        await control.move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
+        time.sleep(1)
+        data = await control.get_packed_histogram(detector)
+        energy_yields.append(control.get_sum(data, recipe.minimize_histogram.integration_window))
+    return angle_values, energy_yields
+
 
 async def run_experiment(task_list: ChannelingModel):
     for recipe in task_list.recipes:
-        await control.move_to_position(recipe.title, recipe.start_position)
-        positions = control.make_position_range(recipe.minimize_histogram.vary_coordinate)
+        # todo: how should the detector be described in json ? right now just take the first one from the list
+        angle_values, energy_yields = await get_integrated_energy_yields(recipe, task_list.detectors[0])
+        min_angle = fit_smooth_and_minimize(angle_values, energy_yields, save_plot=True, plot_x_label="test",
+                                            plot_file_name="test.png")
 
-        charge_limit_per_step = recipe.total_accumulated_charge / len(positions)
-        await control.counting_pause_and_set_target(recipe.title, charge_limit_per_step)
-
-        for index, position in enumerate(positions):
-            await control.clear_and_arm_acquisition(recipe.title)
-            await control.move_then_count_till_target(recipe.title + "_" + str(index), position)
-
-            for index, detector in enumerate(task_list.detectors):
-                data = await control.get_packed_histogram(detector)
-                # todo: finish integration step and then do fitting
-
-
+        await control.move_to_angle("move_to_opt_angle", recipe.minimize_histogram.vary_coordinate.name, min_angle)
