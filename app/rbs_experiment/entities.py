@@ -3,6 +3,29 @@ from pydantic import Field, validator
 from typing import List, Optional
 from enum import Enum
 
+class Window(BaseModel):
+    start: int
+    end: int
+
+    @validator('start', allow_reuse=True)
+    def start_larger_than_zero(cls, start):
+        if not start >= 0:
+            raise ValueError('start must be positive')
+        return start
+
+    @validator('end', allow_reuse=True)
+    def end_larger_than_zero(cls, end):
+        if not end >= 0:
+            raise ValueError('end must be positive')
+        return end
+
+    @validator('end', allow_reuse=True)
+    def start_must_be_smaller_than_end(cls, end, values):
+        if 'start' not in values:
+            return
+        if not values['start'] < end:
+            raise ValueError("end must be larger than start")
+        return end
 
 class Recipe(BaseModel):
     mtype: str

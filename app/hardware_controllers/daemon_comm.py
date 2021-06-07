@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, filename="debug.log")
 
 
 async def wait_for_request_done(url, request):
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.2)
     return
     while True:
         await asyncio.sleep(0.2)
@@ -27,7 +27,7 @@ async def wait_for_request_done(url, request):
 async def post_request(url, request):
     logging.info("post to: " + url + ", content: " + str(request))
     print("post to: " + url + ", content: " + str(request))
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.2)
     return
     await session.post(url, json=request)
     await wait_for_request_done(url, request)
@@ -63,6 +63,8 @@ async def move_aml_both(request_id, url, positions):
 
 
 async def clear_start_motrona_count(request_id, url):
+    """ When the motrona counting is active, a gate signal will enable the caen acquisition.
+    For this to work, the caen acquisition has to be started aka 'armed' """
     motrona_request = {"request_id": request_id, "clear-start_counting": True}
     await post_request(url, motrona_request)
 
@@ -73,7 +75,7 @@ async def pause_motrona_count(request_id, url):
 
 
 async def motrona_counting_done(url):
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.2)
     return
     while True:
         await asyncio.sleep(1)
@@ -85,7 +87,9 @@ async def motrona_counting_done(url):
 
 async def clear_and_arm_caen_acquisition(request_id, url):
     request = {'request_id': request_id, 'clear': True, 'start_acquisition': True}
-    await post_request(url, request)
+    await session.post(url, json=request)
+    await wait_for_request_done(url, request)
+    # await post_request(url, request)
 
 
 async def stop_caen_acquisition(request_id, url):
