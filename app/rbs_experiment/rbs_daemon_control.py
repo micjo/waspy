@@ -2,11 +2,19 @@ import math
 
 import app.hardware_controllers.daemon_comm as comm
 from app.rbs_experiment.entities import PositionCoordinates, VaryCoordinate, CoordinateEnum, CaenDetectorModel, Window
-from app.setup.config import daemons
+from app.setup.config import daemons, output_dir, output_dir_remote
 from typing import List
+import app.rbs_experiment.py_fitter as fit
 
+import app.rbs_experiment.entities as rbs
 import logging
 import numpy as np
+import matplotlib.pyplot as plt
+import traceback
+import datetime
+import time
+from shutil import copy2
+from pathlib import Path
 
 
 async def move_to_position(identifier: str, position: PositionCoordinates):
@@ -28,6 +36,8 @@ async def move_to_position(identifier: str, position: PositionCoordinates):
 
 
 async def move_to_angle(identifier: str, coordinate: CoordinateEnum, value):
+    if coordinate == CoordinateEnum.phi:
+        await move_to_position(identifier, PositionCoordinates(phi=value))
     if coordinate == CoordinateEnum.zeta:
         await move_to_position(identifier, PositionCoordinates(zeta=value))
     if coordinate == CoordinateEnum.theta:
@@ -56,7 +66,7 @@ def make_coordinate_range(vary_coordinate: VaryCoordinate) -> List[float]:
     return np.around(coordinate_range, decimals=2)
 
 
-async def get_packed_histogram(detector: CaenDetectorModel):
+async def get_packed_histogram(detector: CaenDetectorModel) -> List[int]:
     data = await comm.get_caen_histogram(daemons.caen_charles_evans.url, detector.board, detector.channel)
     packed = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
     return packed
@@ -74,3 +84,204 @@ def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
         bin_sum = sum(subset[index:index + samples_to_group_in_bin])
         packed_data.append(bin_sum)
     return packed_data
+
+
+def try_copy(source, destination):
+    try:
+        Path.mkdir(destination.parent, exist_ok=True)
+        copy2(source, destination)
+    except:
+        print(traceback.format_exc())
+        logging.error(traceback.format_exc())
+
+
+def get_file_header(file_stem,  sample_id, detector_id, measuring_time_msec):
+    aml_x_y_response = comm.get_json_status(daemons.aml_x_y.url)
+    aml_phi_zeta_response = comm.get_json_status(daemons.aml_phi_zeta.url)
+    aml_det_theta_response = comm.get_json_status(daemons.aml_det_theta.url)
+    motrona_response = comm.get_json_status(daemons.motrona_rbs.url)
+    header = """
+ % Comments
+ % Title                 := {title}
+ % Section := <raw_data>
+ *
+ * Filename no extension := {filename}
+ * DATE/Time             := {date}
+ * MEASURING TIME[sec]   := {measure_time_sec}
+ * ndpts                 := {ndpts}
+ *
+ * ANAL.IONS(Z)          := 4.002600
+ * ANAL.IONS(symb)       := He+
+ * ENERGY[MeV]           := 1.5 MeV
+ * Charge[nC]            := {charge}
+ *
+ * Sample ID             := {sample_id}
+ * Sample X              := {sample_x}
+ * Sample Y              := {sample_y}
+ * Sample Zeta           := {sample_zeta}
+ * Sample Theta          := {sample_theta}
+ * Sample Phi            := {sample_phi}
+ * Sample Det            := {sample_det}
+ *
+ * Detector name         := {det_name}
+ * Detector ZETA         := 0.0
+ * Detector Omega[mSr]   := 0.42
+ * Detector offset[keV]  := 33.14020
+ * Detector gain[keV/ch] := 1.972060
+ * Detector FWHM[keV]    := 18.0
+ *
+ % Section :=  </raw_data>
+ % End comments
+""".format(
+        title=file_stem + "_" + detector_id,
+        filename=file_stem,
+        date=datetime.datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
+        measure_time_sec=measuring_time_msec,
+        ndpts=1024,
+        charge=motrona_response["charge(nC)"],
+        sample_id=sample_id,
+        sample_x=aml_x_y_response["motor_1_position"],
+        sample_y=aml_x_y_response["motor_2_position"],
+        sample_phi=aml_phi_zeta_response["motor_1_position"],
+        sample_zeta=aml_phi_zeta_response["motor_2_position"],
+        sample_det=aml_det_theta_response["motor_1_position"],
+        sample_theta=aml_det_theta_response["motor_2_position"],
+        det_name=detector_id
+    )
+    return header
+
+
+def format_caen_histogram(data: List[int]):
+    index = 0
+    data_string = ""
+    for energy_level in data:
+        data_string += " " + str(index) + ", " + str(energy_level) + "\n"
+        index += 1
+    return data_string
+
+
+def store_histogram(sub_folder, file_stem, detector_id, measuring_time_msec, sample_id, data: List[int]):
+    header = get_file_header(file_stem, sample_id, detector_id, measuring_time_msec)
+    formatted_data = format_caen_histogram(data)
+    full_data = header + "\n" + formatted_data
+
+    histogram_file = file_stem + "_" + detector_id + ".txt"
+    histogram_path = output_dir.data / sub_folder / histogram_file
+    Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
+    with open(histogram_path, 'w+') as f:
+        f.write(full_data)
+
+    remote_histogram_path = output_dir_remote.data / sub_folder / histogram_file
+    try_copy(histogram_path, remote_histogram_path)
+
+
+def plot():
+    y = np.array([3,8,1,10])
+    y_2 = np.array([4,9,2,8])
+    plt.plot(y)
+    plt.plot(y_2)
+    plt.xlabel("what")
+    plt.ylabel("dat")
+    plt.grid()
+    plt.savefig("/home/mic/plot.png")
+    plt.savefig("/home/mic/plot_1.png")
+
+
+    yvals1 = [i**2 for i in range(0, 10)]
+    yvals2 = [i**3 for i in range(0, 10)]
+
+    f, ax = plt.subplots()
+    plt.savefig("/home/mic/plot_2.png")
+    ax.plot(yvals1)
+    ax.plot(yvals2)
+    plt.savefig("/home/mic/plot_3.png")
+
+
+async def run_recipe(self, recipe: rbs.RbsRqmRecipe, rqm_number):
+    recipe.execution_state = "Executing"
+    start = time.time()
+    await comm.move_aml_both(recipe.ftitle, daemons.aml_x_y.url, [recipe.x, recipe.y])
+    await comm.clear_and_arm_caen_acquisition(recipe.ftitle, daemons.caen_charles_evans.url)
+
+    recipe.phi_progress = "0"
+    for phi in phi_range:
+        title = recipe.ftitle + "_phi_" + str(phi)
+        await comm.move_aml_first(title, daemons.aml_phi_zeta.url, phi)
+        await comm.clear_start_motrona_count(title, daemons.motrona_rbs.url)
+        await comm.motrona_counting_done(daemons.motrona_rbs.url)
+        # scene.phi_progress = round(phi/phi_range[-1] * 100,2)
+
+    end = time.time()
+    time_delta = (end - start)
+    recipe.measuring_time_sec = str(round(time_delta, 3))
+    # store_plot_histogram is slow and CPU bound -> run in background thread
+    await asyncio.get_event_loop().run_in_executor(None, store_and_plot_histograms, rqm_number, recipe, detectors)
+    recipe.execution_state = "Done"
+
+
+async def run_pre_channeling(storage_folder, recipe: rbs.RbsRqmRecipe, detectors: List[CaenDetectorModel]):
+    await move_to_position(recipe.title, recipe.start_position)
+    angle_values = make_coordinate_range(recipe.vary_coordinate)
+    angle_to_vary = recipe.vary_coordinate.name
+
+    charge_limit_per_step = recipe.total_charge / len(angle_values)
+    await counting_pause_and_set_target(recipe.title, charge_limit_per_step)
+    detector_optimize = detectors[recipe.optimize_detector_index]
+    active_detectors = [detectors[index] for index in recipe.detector_indices]
+
+    energy_yields = []
+    for angle in angle_values:
+        start = time.time()
+        await move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
+        data = await get_packed_histogram(detector_optimize)
+        integrated_energy_yield = get_sum(data, recipe.integration_window)
+        energy_yields.append(integrated_energy_yield)
+        end = time.time()
+        measuring_time_msec = end - start
+
+        for detector in active_detectors:
+            data = await get_packed_histogram(detector)
+            file_stem = recipe.file_stem + "_" + angle_to_vary + "_" + str(angle)
+            store_histogram(storage_folder, file_stem, detector.to_string(), measuring_time_msec, recipe.title, data)
+
+    min_angle = fit.fit_smooth_and_minimize(angle_values, energy_yields, save_plot=True, plot_x_label=angle_to_vary,
+                                            plot_file_name="test.png")
+
+    await move_to_angle(recipe.title + "_move_to_min_angle", angle_to_vary, min_angle)
+
+
+async def run_random(storage_folder, recipe: rbs.RbsRqmRecipe, detectors: List[CaenDetectorModel]):
+    start = time.time()
+    await move_to_position(recipe.title, recipe.start_position)
+    angle_values = make_coordinate_range(recipe.vary_coordinate)
+    angle_to_vary = recipe.vary_coordinate.name
+
+    charge_limit_per_step = recipe.total_charge / len(angle_values)
+    await counting_pause_and_set_target(recipe.title, charge_limit_per_step)
+
+    for angle in angle_values:
+        await move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
+    end = time.time()
+    measuring_time_msec = end - start
+
+    active_detectors = [detectors[index] for index in recipe.detector_indices]
+    for detector in active_detectors:
+        data = await get_packed_histogram(detector)
+        store_histogram(storage_folder, recipe.file_stem, detector.to_string, measuring_time_msec, recipe.title, data)
+
+
+async def run_recipe_list(rbs_rqm: rbs.RbsRqm,  rbs_rqm_status: rbs.RbsRqmStatus):
+    storage_folder = rbs_rqm.rqm_number
+
+    rbs_rqm_status.run_status = rbs.StatusModel.Running
+
+    for recipe in rbs_rqm.recipes:
+        if recipe.type == rbs.RecipeType.pre_channeling:
+            await run_pre_channeling(storage_folder, recipe, rbs_rqm.detectors)
+        if recipe.type == rbs.RecipeType.random:
+            await run_random(storage_folder, recipe, rbs_rqm.detectors)
+
+    rbs_rqm_status.run_status = rbs.StatusModel.Parking
+    await move_to_position(rbs_rqm.rqm_number + "_parking" , rbs_rqm.parking_position)
+
+    rbs_rqm_status.run_status = rbs.StatusModel.Idle
