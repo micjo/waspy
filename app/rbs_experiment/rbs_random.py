@@ -55,8 +55,8 @@ async def _move_to_position(title: str, position: PositionModel):
 class RbsExperiment:
     def __init__(self):
         self.dir_scan_paused = False
-        self.state = entities.ExperimentStateModel(status=StatusModel.Idle,
-                                                   experiment= empty_rqm)
+        # self.state = entities.ExperimentStateModel(status=StatusModel.Idle,
+        #                                            experiment= empty_rqm)
         self.experiment_routine = None
         _make_folders()
 

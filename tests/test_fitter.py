@@ -8,13 +8,6 @@ angles = ["-2.0", "-1.8", "-1.6", "-1.4", "-1.2", "-1.0", "-0.8", "-0.6", "-0.4"
           "0.4", "0.6", "0.8", "1.0", "1.2", "1.4", "1.6", "1.8", "2.0"]
 
 
-# def test_fit_and_plot_from_file():
-#     min_index, min, min_data = fitter.fit_and_plot("testing","some_axis")
-#     assert(min == 79.5)
-#     assert(min_data == 91.0)
-#     assert(min_index == 0.57)
-
-
 def test_fit_and_plot():
     float_angles = [float(x) for x in angles]
     minimum_angle = fitter.fit_smooth_and_minimize(float_angles, energy_yields, save_plot=True, plot_file_name="plot.png", plot_x_label="test")
