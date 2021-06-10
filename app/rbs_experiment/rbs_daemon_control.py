@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import traceback
 import datetime
+import asyncio
 import time
 from shutil import copy2
 from pathlib import Path
@@ -21,6 +22,8 @@ async def move_to_position(identifier: str, position: PositionCoordinates):
     logging.info("Moving rbs system to '" + str(position) + "'")
     print("Moving rbs system to '" + str(position) + "'")
 
+    if position is None:
+        return
     if position.x is not None:
         await comm.move_aml_first(identifier, daemons.aml_x_y.url, position.x)
     if position.y is not None:
@@ -67,6 +70,9 @@ def make_coordinate_range(vary_coordinate: VaryCoordinate) -> List[float]:
 
 
 async def get_packed_histogram(detector: CaenDetectorModel) -> List[int]:
+    print("zzzz - waiting for some caen data")
+    logging.info("zzz - waiting for some caen data")
+    await asyncio.sleep(2)
     data = await comm.get_caen_histogram(daemons.caen_charles_evans.url, detector.board, detector.channel)
     packed = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
     return packed
@@ -95,11 +101,11 @@ def try_copy(source, destination):
         logging.error(traceback.format_exc())
 
 
-def get_file_header(file_stem,  sample_id, detector_id, measuring_time_msec):
-    aml_x_y_response = comm.get_json_status(daemons.aml_x_y.url)
-    aml_phi_zeta_response = comm.get_json_status(daemons.aml_phi_zeta.url)
-    aml_det_theta_response = comm.get_json_status(daemons.aml_det_theta.url)
-    motrona_response = comm.get_json_status(daemons.motrona_rbs.url)
+async def get_file_header(file_stem,  sample_id, detector_id, measuring_time_msec):
+    aml_x_y_response = await comm.get_json_status(daemons.aml_x_y.url)
+    aml_phi_zeta_response = await comm.get_json_status(daemons.aml_phi_zeta.url)
+    aml_det_theta_response = await comm.get_json_status(daemons.aml_det_theta.url)
+    motrona_response = await comm.get_json_status(daemons.motrona_rbs.url)
     header = """
  % Comments
  % Title                 := {title}
@@ -160,14 +166,15 @@ def format_caen_histogram(data: List[int]):
     return data_string
 
 
-def store_histogram(sub_folder, file_stem, detector_id, measuring_time_msec, sample_id, data: List[int]):
-    header = get_file_header(file_stem, sample_id, detector_id, measuring_time_msec)
+async def store_histogram(sub_folder, file_stem, detector_id, measuring_time_msec, sample_id, data: List[int]):
+    header = await get_file_header(file_stem, sample_id, detector_id, measuring_time_msec)
     formatted_data = format_caen_histogram(data)
     full_data = header + "\n" + formatted_data
 
     histogram_file = file_stem + "_" + detector_id + ".txt"
     histogram_path = output_dir.data / sub_folder / histogram_file
     Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
+    logging.info("writing to path: " + str(histogram_path))
     with open(histogram_path, 'w+') as f:
         f.write(full_data)
 
@@ -242,7 +249,7 @@ async def run_pre_channeling(storage_folder, recipe: rbs.RbsRqmRecipe, detectors
         for detector in active_detectors:
             data = await get_packed_histogram(detector)
             file_stem = recipe.file_stem + "_" + angle_to_vary + "_" + str(angle)
-            store_histogram(storage_folder, file_stem, detector.to_string(), measuring_time_msec, recipe.title, data)
+            await store_histogram(storage_folder, file_stem, detector.to_string(), measuring_time_msec, recipe.title, data)
 
     min_angle = fit.fit_smooth_and_minimize(angle_values, energy_yields, save_plot=True, plot_x_label=angle_to_vary,
                                             plot_file_name="test.png")
@@ -267,7 +274,7 @@ async def run_random(storage_folder, recipe: rbs.RbsRqmRecipe, detectors: List[C
     active_detectors = [detectors[index] for index in recipe.detector_indices]
     for detector in active_detectors:
         data = await get_packed_histogram(detector)
-        store_histogram(storage_folder, recipe.file_stem, detector.to_string, measuring_time_msec, recipe.title, data)
+        await store_histogram(storage_folder, recipe.file_stem, detector.to_string(), measuring_time_msec, recipe.title, data)
 
 
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm,  rbs_rqm_status: rbs.RbsRqmStatus):

@@ -67,8 +67,8 @@ class RbsRunner:
             if f:
                 try:
                     f = _move_and_try_copy(f, output_dir.ongoing, output_dir_remote.ongoing)
-                    experiment = rbs.RbsRqmStatus.parse_file(f)
-                    self.experiment_routine = asyncio.create_task(control.run_recipe_list(self.status, experiment))
+                    experiment = rbs.RbsRqm.parse_file(f)
+                    self.experiment_routine = asyncio.create_task(control.run_recipe_list(experiment, self.rbs_status))
                     await self.experiment_routine
                     _move_and_try_copy(f, output_dir.done, output_dir_remote.done)
                 except:
