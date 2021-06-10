@@ -14,9 +14,9 @@ runner = rbs_runner.RbsRunner()
 router = APIRouter()
 
 
-# @router.on_event('startup')
-# async def router_startup():
-#     asyncio.create_task(runner.run_main())
+@router.on_event('startup')
+async def router_startup():
+    asyncio.create_task(runner.run_main())
 
 
 @router.get("/rbs_hw", response_class=HTMLResponse, tags=["WebUI"])
@@ -45,9 +45,11 @@ async def post_rbs_experiment(task_list: channeling.ChannelingModel):
     await channeling.run_experiment(task_list)
     return {"Verification": "Passed"}
 
+
 @router.post("/api/rbs_channeling/go", tags=["RBS API"], summary="Verify an RBS experiment")
 async def post_test():
    await runner.run_main()
+
 
 @router.get("/api/rbs_channeling/get", tags=["RBS API"], summary="Verify an RBS experiment")
 async def get_test():
