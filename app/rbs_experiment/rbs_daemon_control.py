@@ -205,7 +205,7 @@ def plot_energy_yields_and_clear(sub_folder, file_stem, angles, yields, smooth_a
     plt.ylabel("yield").set_fontsize(15)
     plt.title(file_stem)
 
-    yield_plot_file = file_stem + ".png"
+    yield_plot_file = file_stem + "_yields.png"
     yield_plot_path = output_dir.data / sub_folder / yield_plot_file
     Path.mkdir(yield_plot_path.parent, parents=True, exist_ok=True)
     logging.info("Storing yield plot to path: " + str(yield_plot_path))
@@ -263,10 +263,10 @@ async def run_pre_channeling(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: Li
             append_histogram_plot(detector, data)
         store_histogram_plot_and_clear(sub_folder, file_stem)
 
-    store_yields(sub_folder, file_stem, angle_values, energy_yields)
+    store_yields(sub_folder, recipe.file_stem, angle_values, energy_yields)
 
     smooth_angles, smooth_yields = fit.fit_and_smooth(angle_values, energy_yields)
-    plot_energy_yields_and_clear(sub_folder, file_stem, angle_values, energy_yields, smooth_angles, smooth_yields, angle_to_vary)
+    plot_energy_yields_and_clear(sub_folder, recipe.file_stem, angle_values, energy_yields, smooth_angles, smooth_yields, angle_to_vary)
     index_for_minimum_yield = np.argmin(smooth_yields)
     min_angle = round(smooth_angles[index_for_minimum_yield], 2)
 
