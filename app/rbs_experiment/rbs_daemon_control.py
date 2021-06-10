@@ -229,6 +229,7 @@ def store_histogram_plot_and_clear(sub_folder, file_stem):
     plt.xlabel("energy level")
     plt.grid()
     plt.legend()
+    plt.title(file_stem)
     plt.savefig(histogram_path)
     remote_histogram_path = output_dir_remote.data / sub_folder / histogram_file
     try_copy(histogram_path, remote_histogram_path)
