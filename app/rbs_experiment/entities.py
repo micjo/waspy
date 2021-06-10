@@ -88,14 +88,14 @@ class VaryCoordinate(BaseModel):
 class CaenDetectorModel(BaseModel):
     board: int
     channel: int
+    color: str = Field(
+        description="This is a matplotlib color, please refer to the docs to see which strings are valid")
+    identifier: str = Field(
+        description="This will be used in the filenames for storage and in the plots for titles")
     bins_min: int
     bins_max: int
     bins_width: int = Field(
         description="The range between min and max will be rescaled to this value, The bins are combined with integer sized bin intervals. values on the maximum side are potentially discared")
-
-    def to_string(self):
-        return str(self.board) + "_" + str(self.channel)
-
 
 
 class PositionModel(BaseModel):
@@ -135,8 +135,10 @@ class RbsModel(BaseModel):
                 "starting_position": {"x": 20, "y": 20, "theta": 19, "zeta": 19, "phi": 18, "det": 18},
                 "detectors":
                     [
-                        {"board": 1, "channel": 0, "bins_min": 0, "bins_max": 7000, "bins_width": 1024},
-                        {"board": 1, "channel": 1, "bins_min": 0, "bins_max": 7000, "bins_width": 1024}
+                        {"board": 1, "channel": 0, "color": "red", "identifier": "d0", "bins_min": 0, "bins_max": 7000,
+                         "bins_width": 1024},
+                        {"board": 1, "channel": 1, "color": "blue", "identifier": "d1", "bins_min": 0, "bins_max": 7000,
+                         "bins_width": 1024}
                     ],
                 "recipes":
                     [
@@ -155,8 +157,6 @@ class StatusModel(str, Enum):
     Parking = "Parking"
 
 
-
-
 empty_rqm = RbsModel.parse_raw('''{
 "exp_type":"rbs",
 "phi_start":0,
@@ -166,7 +166,7 @@ empty_rqm = RbsModel.parse_raw('''{
 "rqm_number":"string",
 "starting_position":  {"x":0 , "y":0, "theta":0, "zeta":0, "phi":0, "det":0},
 "storage":{"local":"string","remote": "string"},
-"detectors": [{"board": 0, "channel":0, "bins_min":0, "bins_max":0, "bins_width":0}],
+"detectors": [{"board": 0, "channel":0, "identifier":"d", "color":"red", "bins_min":0, "bins_max":0, "bins_width":0}],
 "recipes": [{"mtype":"string", "ftitle":"string" , "x":0 , "y":0  , "file":"string" }],
 "parking_position":  {"x":0 , "y":0, "theta":0, "zeta":0, "phi":0, "det":0}}''')
 
@@ -192,35 +192,37 @@ class RbsRqm(BaseModel):
     class Config:
         schema_extra = {
             'example':
-            {
-                "rqm_number": "rqm_test",
-                "detectors": [
-                    {"board": 1, "channel": 0, "bins_min": 0, "bins_max": 1024, "bins_width": 1024},
-                    {"board": 1, "channel": 1, "bins_min": 0, "bins_max": 1024, "bins_width": 1024}
-                ],
-                "recipes": [
-                    {
-                        "type": "pre_channeling", "title": "RBS_071A", "file_stem": "RBS_071A_out",
-                        "total_charge": 60000,
-                        "start_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0},
-                        "vary_coordinate": {"name": "theta", "start": 0, "end": 2, "increment": 1},
-                        "integration_window": {"start": 0, "end": 24},
-                        "optimize_detector_index": 0,
-                        "detector_indices": [0,1]
-                    },
-                    {
-                        "type": "random", "title": "RBS_071B", "file_stem": "RBS_071B_out", "total_charge": 60000,
-                        "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 1},
-                        "detector_indices": [0, 1]
-                    },
-                    {
-                        "type": "channeling", "title": "RBS_071B", "file_stem": "RBS_071B_out", "total_charge": 60000,
-                        "detector_indices": [0, 1]
-                    }
-                ],
-                "parking_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0}
-            }
+                {
+                    "rqm_number": "rqm_test",
+                    "detectors": [
+                        {"board": 1, "channel": 0, "bins_min": 0, "bins_max": 1024, "bins_width": 1024},
+                        {"board": 1, "channel": 1, "bins_min": 0, "bins_max": 1024, "bins_width": 1024}
+                    ],
+                    "recipes": [
+                        {
+                            "type": "pre_channeling", "title": "RBS_071A", "file_stem": "RBS_071A_out",
+                            "total_charge": 60000,
+                            "start_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0},
+                            "vary_coordinate": {"name": "theta", "start": 0, "end": 2, "increment": 1},
+                            "integration_window": {"start": 0, "end": 24},
+                            "optimize_detector_index": 0,
+                            "detector_indices": [0, 1]
+                        },
+                        {
+                            "type": "random", "title": "RBS_071B", "file_stem": "RBS_071B_out", "total_charge": 60000,
+                            "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 1},
+                            "detector_indices": [0, 1]
+                        },
+                        {
+                            "type": "channeling", "title": "RBS_071B", "file_stem": "RBS_071B_out",
+                            "total_charge": 60000,
+                            "detector_indices": [0, 1]
+                        }
+                    ],
+                    "parking_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0}
+                }
         }
+
 
 class RbsRqmStatus(BaseModel):
     run_status: StatusModel

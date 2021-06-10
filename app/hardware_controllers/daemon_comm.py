@@ -36,6 +36,7 @@ async def post_request(url, request):
 async def get_json_status(url):
     logging.info("getting status from: " + url)
     print("getting status from: " + url)
+    await asyncio.sleep(0.2)
     get_session = await session.get(url)
     response = await get_session.json()
     return response

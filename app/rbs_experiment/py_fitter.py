@@ -12,12 +12,11 @@ def plot_data(x, y, smooth_x, smooth_y, minimum_line, filename, axis):
     ax.legend(loc=0)
     plt.xlabel(axis).set_fontsize(15)
     plt.ylabel("yield").set_fontsize(15)
+    plt.savefig(filename)
+    plt.clf()
 
-    plt.savefig("/tmp/" + filename)
-    plt.savefig("/tmp/" + filename)
 
-
-def fit_smooth_and_minimize(angles, yields, save_plot=False, plot_file_name="plot.png", plot_x_label="axis"):
+def fit_and_smooth(angles, yields):
     """Will fit a curve using x and y. When the fit is found, recalculate the y values with a more finely
     distributed x (smooth) (interpolated). Then the minimum y is found and the corresponding x value i returned"""
     p_start = np.amax(yields)
@@ -28,15 +27,12 @@ def fit_smooth_and_minimize(angles, yields, save_plot=False, plot_file_name="plo
     smooth_yields = [fit(x, p, q, r, s, t, u) for x in smooth_angles]
     smooth_angle_for_minimum_yield = round(smooth_angles[np.argmin(smooth_yields)], 2)
 
-    if save_plot:
-        plot_data(angles, yields, smooth_angles, smooth_yields, np.amin(yields), plot_file_name, plot_x_label)
-
     log_line = "Minimum yield found at: [angle: yield] = [{angle}: {energy_yield}]"\
         .format(angle=smooth_angle_for_minimum_yield, energy_yield=round(np.amin(smooth_yields), 2))
 
     print(log_line)
     logging.info(log_line)
-    return smooth_angle_for_minimum_yield
+    return smooth_angles, smooth_yields
 
 
 def fit(x, p, q, r, s, t, u):

@@ -93,6 +93,7 @@ def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
 
 
 def try_copy(source, destination):
+    logging.info("coppying {source} to {destination}".format(source=source, destination=destination))
     try:
         Path.mkdir(destination.parent, exist_ok=True)
         copy2(source, destination)
@@ -161,9 +162,21 @@ def format_caen_histogram(data: List[int]):
     index = 0
     data_string = ""
     for energy_level in data:
-        data_string += " " + str(index) + ", " + str(energy_level) + "\n"
+        data_string += str(index) + ", " + str(energy_level) + "\n"
         index += 1
     return data_string
+
+
+def store_yields(sub_folder, file_stem, angle_values, energy_yields):
+    yields_file = file_stem + "_yields.txt"
+    yields_path = output_dir.data / sub_folder / yields_file
+
+    with open(yields_path, 'w+') as f:
+        for index, angle in enumerate(angle_values):
+            f.write("{angle}, {energy_yield}\n".format(angle=angle, energy_yield=energy_yields[index]))
+
+    remote_yields_path = output_dir_remote.data / sub_folder / yields_file
+    try_copy(yields_path, remote_yields_path)
 
 
 async def store_histogram(sub_folder, file_stem, detector_id, measuring_time_msec, sample_id, data: List[int]):
@@ -174,7 +187,7 @@ async def store_histogram(sub_folder, file_stem, detector_id, measuring_time_mse
     histogram_file = file_stem + "_" + detector_id + ".txt"
     histogram_path = output_dir.data / sub_folder / histogram_file
     Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
-    logging.info("writing to path: " + str(histogram_path))
+    logging.info("Storing histogram data to path: " + str(histogram_path))
     with open(histogram_path, 'w+') as f:
         f.write(full_data)
 
@@ -182,51 +195,47 @@ async def store_histogram(sub_folder, file_stem, detector_id, measuring_time_mse
     try_copy(histogram_path, remote_histogram_path)
 
 
-def plot():
-    y = np.array([3,8,1,10])
-    y_2 = np.array([4,9,2,8])
-    plt.plot(y)
-    plt.plot(y_2)
-    plt.xlabel("what")
-    plt.ylabel("dat")
+def plot_energy_yields_and_clear(sub_folder, file_stem, angles, yields, smooth_angles, smooth_yields, angle_name):
+    fig, ax = plt.subplots()
+    ax.scatter(angles, yields, marker="+", color="red", label="Data Points")
+    ax.axhline(np.amin(yields), label="Minimum", linestyle=":")
+    ax.plot(smooth_angles, smooth_yields, color="green", label="Fit")
+    ax.legend(loc=0)
+    plt.xlabel(angle_name).set_fontsize(15)
+    plt.ylabel("yield").set_fontsize(15)
+    plt.title(file_stem)
+
+    yield_plot_file = file_stem + ".png"
+    yield_plot_path = output_dir.data / sub_folder / yield_plot_file
+    Path.mkdir(yield_plot_path.parent, parents=True, exist_ok=True)
+    logging.info("Storing yield plot to path: " + str(yield_plot_path))
+    plt.savefig(yield_plot_path)
+    plt.clf()
+
+    remote_yield_plot_path = output_dir_remote.data / sub_folder / yield_plot_file
+    try_copy(yield_plot_path, remote_yield_plot_path)
+
+
+def append_histogram_plot(detector: CaenDetectorModel, data: List[int]):
+    plt.plot(data, label=detector.identifier, color=detector.color)
+
+
+def store_histogram_plot_and_clear(sub_folder, file_stem):
+    histogram_file = file_stem + ".png"
+    histogram_path = output_dir.data / sub_folder / histogram_file
+    Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
+    logging.info("Storing histogram plot to path: " + str(histogram_path))
+    plt.ylabel("yield")
+    plt.xlabel("energy level")
     plt.grid()
-    plt.savefig("/home/mic/plot.png")
-    plt.savefig("/home/mic/plot_1.png")
+    plt.legend()
+    plt.savefig(histogram_path)
+    remote_histogram_path = output_dir_remote.data / sub_folder / histogram_file
+    try_copy(histogram_path, remote_histogram_path)
+    plt.clf()
 
 
-    yvals1 = [i**2 for i in range(0, 10)]
-    yvals2 = [i**3 for i in range(0, 10)]
-
-    f, ax = plt.subplots()
-    plt.savefig("/home/mic/plot_2.png")
-    ax.plot(yvals1)
-    ax.plot(yvals2)
-    plt.savefig("/home/mic/plot_3.png")
-
-
-async def run_recipe(self, recipe: rbs.RbsRqmRecipe, rqm_number):
-    recipe.execution_state = "Executing"
-    start = time.time()
-    await comm.move_aml_both(recipe.ftitle, daemons.aml_x_y.url, [recipe.x, recipe.y])
-    await comm.clear_and_arm_caen_acquisition(recipe.ftitle, daemons.caen_charles_evans.url)
-
-    recipe.phi_progress = "0"
-    for phi in phi_range:
-        title = recipe.ftitle + "_phi_" + str(phi)
-        await comm.move_aml_first(title, daemons.aml_phi_zeta.url, phi)
-        await comm.clear_start_motrona_count(title, daemons.motrona_rbs.url)
-        await comm.motrona_counting_done(daemons.motrona_rbs.url)
-        # scene.phi_progress = round(phi/phi_range[-1] * 100,2)
-
-    end = time.time()
-    time_delta = (end - start)
-    recipe.measuring_time_sec = str(round(time_delta, 3))
-    # store_plot_histogram is slow and CPU bound -> run in background thread
-    await asyncio.get_event_loop().run_in_executor(None, store_and_plot_histograms, rqm_number, recipe, detectors)
-    recipe.execution_state = "Done"
-
-
-async def run_pre_channeling(storage_folder, recipe: rbs.RbsRqmRecipe, detectors: List[CaenDetectorModel]):
+async def run_pre_channeling(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[CaenDetectorModel]):
     await move_to_position(recipe.title, recipe.start_position)
     angle_values = make_coordinate_range(recipe.vary_coordinate)
     angle_to_vary = recipe.vary_coordinate.name
@@ -245,14 +254,20 @@ async def run_pre_channeling(storage_folder, recipe: rbs.RbsRqmRecipe, detectors
         energy_yields.append(integrated_energy_yield)
         end = time.time()
         measuring_time_msec = end - start
+        file_stem = recipe.file_stem + "_" + angle_to_vary + "_" + str(angle)
 
         for detector in active_detectors:
             data = await get_packed_histogram(detector)
-            file_stem = recipe.file_stem + "_" + angle_to_vary + "_" + str(angle)
-            await store_histogram(storage_folder, file_stem, detector.to_string(), measuring_time_msec, recipe.title, data)
+            await store_histogram(sub_folder, file_stem, detector.identifier, measuring_time_msec, recipe.title, data)
+            append_histogram_plot(detector, data)
+        store_histogram_plot_and_clear(sub_folder, file_stem)
 
-    min_angle = fit.fit_smooth_and_minimize(angle_values, energy_yields, save_plot=True, plot_x_label=angle_to_vary,
-                                            plot_file_name="test.png")
+    store_yields(sub_folder, file_stem, angle_values, energy_yields)
+
+    smooth_angles, smooth_yields = fit.fit_and_smooth(angle_values, energy_yields)
+    plot_energy_yields_and_clear(sub_folder, file_stem, angle_values, energy_yields, smooth_angles, smooth_yields, angle_to_vary)
+    index_for_minimum_yield = np.argmin(smooth_yields)
+    min_angle = round(smooth_angles[index_for_minimum_yield], 2)
 
     await move_to_angle(recipe.title + "_move_to_min_angle", angle_to_vary, min_angle)
 
@@ -274,19 +289,22 @@ async def run_random(storage_folder, recipe: rbs.RbsRqmRecipe, detectors: List[C
     active_detectors = [detectors[index] for index in recipe.detector_indices]
     for detector in active_detectors:
         data = await get_packed_histogram(detector)
-        await store_histogram(storage_folder, recipe.file_stem, detector.to_string(), measuring_time_msec, recipe.title, data)
+        await store_histogram(storage_folder, recipe.file_stem, detector.identifier, measuring_time_msec, recipe.title, data)
+        append_histogram_plot(detector, data)
+    store_histogram_plot_and_clear(storage_folder, recipe.file_stem)
 
 
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm,  rbs_rqm_status: rbs.RbsRqmStatus):
-    storage_folder = rbs_rqm.rqm_number
+    sub_folder = rbs_rqm.rqm_number
 
     rbs_rqm_status.run_status = rbs.StatusModel.Running
+    rbs_rqm_status.recipe_list = rbs_rqm
 
     for recipe in rbs_rqm.recipes:
         if recipe.type == rbs.RecipeType.pre_channeling:
-            await run_pre_channeling(storage_folder, recipe, rbs_rqm.detectors)
+            await run_pre_channeling(sub_folder, recipe, rbs_rqm.detectors)
         if recipe.type == rbs.RecipeType.random:
-            await run_random(storage_folder, recipe, rbs_rqm.detectors)
+            await run_random(sub_folder, recipe, rbs_rqm.detectors)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Parking
     await move_to_position(rbs_rqm.rqm_number + "_parking" , rbs_rqm.parking_position)

@@ -5,8 +5,7 @@ import asyncio
 import app.rbs_experiment.rbs_runner as rbs_runner
 import app.rbs_experiment.entities as rbs
 from app.setup import config
-from app.rbs_experiment.entities import RbsModel, PauseModel
-import app.rbs_experiment.rbs_channeling as channeling
+from app.rbs_experiment.entities import PauseModel
 
 templates = Jinja2Templates(directory="templates")
 
@@ -41,20 +40,8 @@ async def post_rbs_experiment(rbs_experiment: rbs.RbsRqm):
 
 
 @router.post("/api/rbs_channeling/run", tags=["RBS API"], summary="Verify an RBS experiment")
-async def post_rbs_experiment(task_list: channeling.ChannelingModel):
-    await channeling.run_experiment(task_list)
+async def post_rbs_experiment(task_list: rbs.RbsRqm):
     return {"Verification": "Passed"}
-
-
-@router.post("/api/rbs_channeling/go", tags=["RBS API"], summary="Verify an RBS experiment")
-async def post_test():
-   await runner.run_main()
-
-
-@router.get("/api/rbs_channeling/get", tags=["RBS API"], summary="Verify an RBS experiment")
-async def get_test():
-    return runner.get_state()
-
 
 
 @router.post("/api/rbs/pause_dir_scan", tags=["RBS API"],
