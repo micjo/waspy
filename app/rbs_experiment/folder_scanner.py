@@ -1,18 +1,12 @@
-from app.setup.config import daemons, input_dir, output_dir, output_dir_remote
-from app.hardware_controllers.data_dump import store_and_plot_histograms
-from app.rbs_experiment.entities import RbsModel, Recipe, CaenDetectorModel, StatusModel, empty_rqm, PositionModel
 from pathlib import Path
 from shutil import copy2
-from typing import List
-import app.hardware_controllers.daemon_comm as comm
-import app.rbs_experiment.entities as entities
 import asyncio
 import logging
-import time
 import traceback
-import app.rbs_experiment.rbs_daemon_control as control
-import app.rbs_experiment.entities as rbs
 
+from app.setup.config import input_dir, output_dir, output_dir_remote
+import app.rbs_experiment.entities as rbs
+import app.rbs_experiment.rbs_run as rbs_run
 
 
 def _pick_first_file_from_path(path):
@@ -31,7 +25,7 @@ def _make_folders():
     Path.mkdir(output_dir.data, parents=True, exist_ok=True)
 
 
-def _move_and_try_copy(file, move_folder, copy_folder):
+def move_and_try_copy(file, move_folder, copy_folder):
     file.rename(move_folder / file.name)
     file = move_folder / file.name
     try:
@@ -41,11 +35,12 @@ def _move_and_try_copy(file, move_folder, copy_folder):
         logging.error(traceback.format_exc())
     return file
 
-class RbsRunner:
+
+class FolderScanner:
     def __init__(self):
         self.dir_scan_paused = False
         self.experiment_routine = None
-        self.rbs_status = entities.RbsRqmStatus(run_status=StatusModel.Idle, recipe_list=entities.empty_rbs_rqm)
+        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, recipe_list=rbs.empty_rbs_rqm)
         _make_folders()
 
     def get_state(self):
@@ -55,7 +50,7 @@ class RbsRunner:
 
     def abort(self):
         self.experiment_routine.cancel()
-        self.rbs_status = entities.RbsRqmStatus(run_status=StatusModel.Idle, recipe_list=entities.empty_rbs_rqm)
+        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, recipe_list=rbs.empty_rbs_rqm)
 
     async def run_main(self):
         while True:
@@ -66,13 +61,13 @@ class RbsRunner:
             f = _pick_first_file_from_path(input_dir.watch)
             if f:
                 try:
-                    f = _move_and_try_copy(f, output_dir.ongoing, output_dir_remote.ongoing)
+                    f = move_and_try_copy(f, output_dir.ongoing, output_dir_remote.ongoing)
                     experiment = rbs.RbsRqm.parse_file(f)
-                    self.experiment_routine = asyncio.create_task(control.run_recipe_list(experiment, self.rbs_status))
+                    self.experiment_routine = asyncio.create_task(rbs_run.run_recipe_list(experiment, self.rbs_status))
                     await self.experiment_routine
-                    _move_and_try_copy(f, output_dir.done, output_dir_remote.done)
+                    move_and_try_copy(f, output_dir.done, output_dir_remote.done)
                 except:
-                    _move_and_try_copy(f, output_dir.failed, output_dir_remote.failed)
+                    move_and_try_copy(f, output_dir.failed, output_dir_remote.failed)
                     print(traceback.format_exc())
                     logging.error(traceback.format_exc())
 
