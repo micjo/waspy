@@ -30,50 +30,46 @@ async function resume() {
 
 function updateUi(hwData) {
 
-    con.getEl("rbs_status").innerHTML = "";
+    con.getEl("rqm_status").innerHTML = "";
     con.setElementText("rbs_brief_status", hwData["status"]);
     if (hwData["status"] == "Idle") {
         return;
     }
 
-    for (const scene of hwData["experiment"]["scenario"]) {
+    console.log(hwData);
+
+    for (const recipe of hwData["rqm"]["recipes"]) {
         let sceneRow = document.createElement("tr");
 
         let sceneTitle = document.createElement("td");
-        sceneTitle.innerText = scene["ftitle"]
+        sceneTitle.innerText = recipe["title"]
 
-        let xPos = document.createElement("td");
-        xPos.innerText = scene["x"]
+        let recipe_type = document.createElement("td");
+        recipe_type.innerText = recipe["type"]
 
-        let yPos = document.createElement("td");
-        yPos.innerText = scene["y"]
+        let recipe_file_stem = document.createElement("td");
+        recipe_file_stem.innerText = recipe["file_stem"]
 
-        let sceneStatus = document.createElement("td");
-        sceneStatus.innerText = scene["execution_state"]
+        sceneRow.appendChild(sceneTitle);
+        sceneRow.appendChild(recipe_type);
+        sceneRow.appendChild(recipe_file_stem);
+        con.getEl("rqm_status").appendChild(sceneRow);
+    }
 
-        let sceneProgress = document.createElement("td");
-        let ratio = scene["phi_progress"]
+    con.getEl("rqm_active_recipe").innerText= "Active: " + hwData["active_recipe"] + ", progress: "
+
+        let ratio = hwData["recipe_progress_percentage"]
         if (ratio != undefined) {
             let progress = document.createElement("div");
             progress.setAttribute("class", "progress");
             let progressBar = document.createElement("div");
-            progressBar.setAttribute("class", "progress-bar");
+            progressBar.setAttribute("class", "progress-bar" );
             progressBar.setAttribute("style", "width: "+ ratio+ "%;");
             progressBar.innerText = ratio + "%";
             progress.appendChild(progressBar);
-            sceneProgress.appendChild(progress);
+            con.getEl("rqm_progress").innerHTML ="";
+            con.getEl("rqm_progress").appendChild(progress);
         }
-
-        sceneRow.appendChild(sceneTitle);
-        sceneRow.appendChild(xPos);
-        sceneRow.appendChild(yPos);
-        sceneRow.appendChild(sceneStatus);
-        sceneRow.appendChild(sceneProgress);
-
-        con.getEl("rbs_status").appendChild(sceneRow);
-
-    }
-
 }
 
 function refreshGraph() {

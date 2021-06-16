@@ -130,26 +130,28 @@ class RbsRqm(BaseModel):
                 {
                     "rqm_number": "rqm_test",
                     "detectors": [
-                        {"board": 1, "channel": 0, "bins_min": 0, "bins_max": 1024, "bins_width": 1024},
-                        {"board": 1, "channel": 1, "bins_min": 0, "bins_max": 1024, "bins_width": 1024}
+                        {"board": 1, "channel": 0, "color": "blue", "identifier": "d0",
+                         "bins_min": 0, "bins_max": 1024, "bins_width": 1024},
+                        {"board": 1, "channel": 1, "color": "red", "identifier": "d1",
+                         "bins_min": 0, "bins_max": 1024, "bins_width": 1024}
                     ],
                     "recipes": [
                         {
                             "type": "pre_channeling", "title": "RBS_071A", "file_stem": "RBS_071A_out",
                             "total_charge": 60000,
                             "start_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0},
-                            "vary_coordinate": {"name": "theta", "start": 0, "end": 2, "increment": 1},
+                            "vary_coordinate": {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
                             "integration_window": {"start": 0, "end": 24},
                             "optimize_detector_index": 0,
                             "detector_indices": [0, 1]
                         },
                         {
                             "type": "random", "title": "RBS_071B", "file_stem": "RBS_071B_out", "total_charge": 60000,
-                            "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 1},
+                            "vary_coordinate": {"name": "phi", "start": 0, "end": 10, "increment": 1},
                             "detector_indices": [0, 1]
                         },
                         {
-                            "type": "channeling", "title": "RBS_071B", "file_stem": "RBS_071B_out",
+                            "type": "channeling", "title": "RBS_071C", "file_stem": "RBS_071C_out",
                             "total_charge": 60000,
                             "detector_indices": [0, 1]
                         }
@@ -161,7 +163,9 @@ class RbsRqm(BaseModel):
 
 class RbsRqmStatus(BaseModel):
     run_status: StatusModel
-    recipe_list: RbsRqm
+    rqm: RbsRqm
+    active_recipe: str
+    recipe_progress_percentage: float
 
 
 empty_rbs_rqm = RbsRqm.parse_raw('''{

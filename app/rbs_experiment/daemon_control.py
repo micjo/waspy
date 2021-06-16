@@ -42,7 +42,7 @@ async def move_to_angle_then_acquire_till_target(identifier: str, coordinate: rb
     logging.info("moving then acquiring till target")
     print("moving then acquiring till target")
     await move_to_angle(identifier, coordinate, value)
-    await comm.clear_and_arm_caen_acquisition(identifier, daemons.caen_charles_evans.url)
+    await comm.clear_and_arm_caen_acquisition(identifier, daemons.caen_rbs.url)
     await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
     await comm.motrona_counting_done(daemons.motrona_rbs.url)
 
@@ -64,7 +64,7 @@ async def get_packed_histogram(detector: rbs.CaenDetectorModel) -> List[int]:
     print("zzzz - waiting for some caen data")
     logging.info("zzz - waiting for some caen data")
     await asyncio.sleep(2)
-    data = await comm.get_caen_histogram(daemons.caen_charles_evans.url, detector.board, detector.channel)
+    data = await comm.get_caen_histogram(daemons.caen_rbs.url, detector.board, detector.channel)
     packed = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
     return packed
 

@@ -24,8 +24,7 @@ async def get_file_header(file_stem,  sample_id, detector_id, measuring_time_mse
     aml_phi_zeta_response = await comm.get_json_status(daemons.aml_phi_zeta.url)
     aml_det_theta_response = await comm.get_json_status(daemons.aml_det_theta.url)
     motrona_response = await comm.get_json_status(daemons.motrona_rbs.url)
-    header = """
- % Comments
+    header = """ % Comments
  % Title                 := {title}
  % Section := <raw_data>
  *
@@ -55,8 +54,7 @@ async def get_file_header(file_stem,  sample_id, detector_id, measuring_time_mse
  * Detector FWHM[keV]    := 18.0
  *
  % Section :=  </raw_data>
- % End comments
-""".format(
+ % End comments""".format(
         title=file_stem + "_" + detector_id,
         filename=file_stem,
         date=datetime.datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],

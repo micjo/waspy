@@ -40,7 +40,8 @@ class FolderScanner:
     def __init__(self):
         self.dir_scan_paused = False
         self.experiment_routine = None
-        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, recipe_list=rbs.empty_rbs_rqm)
+        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, rqm=rbs.empty_rbs_rqm,
+                                           active_recipe="", recipe_progress_percentage=0)
         _make_folders()
 
     def get_state(self):
@@ -50,7 +51,8 @@ class FolderScanner:
 
     def abort(self):
         self.experiment_routine.cancel()
-        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, recipe_list=rbs.empty_rbs_rqm)
+        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, rqm=rbs.empty_rbs_rqm,
+                                           active_recipe="", recipe_progress_percentage=0)
 
     async def run_main(self):
         while True:
