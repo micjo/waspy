@@ -14,7 +14,7 @@ aml_config = [
 ]
 
 caen_config = [
-    {"id":"caen_charles_evans", "title":"CAEN Charles Evans" }
+    {"id":"caen_rbs", "title":"CAEN Charles Evans" }
 ]
 
 motrona_config = [

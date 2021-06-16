@@ -18,7 +18,7 @@ class MotronaSchema(GenericModel):
 class CaenSchema(GenericModel):
     __root__: Dict
     class Config:
-        try: schema_extra = requests.get(daemons.caen_charles_evans.url + "/caps").json()
+        try: schema_extra = requests.get(daemons.caen_rbs.url + "/caps").json()
         except: pass
 
 class AmlSchema(GenericModel):
