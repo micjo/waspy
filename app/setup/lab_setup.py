@@ -21,10 +21,10 @@ output_dir = OutputDirConfig.parse_raw('''{
 }''')
 
 output_dir_remote = OutputDirConfig.parse_raw('''{
-    "ongoing": "W:/transfer_RBS/ACQ/2_ongoing",
-    "done": "W:/transfer_RBS/ACQ/3_done",
-    "failed": "W:/transfer_RBS/ACQ/4_failed",
-    "data": "W:transfer_RBS/ACQ/5_data"
+    "ongoing": "W:/transfer_RBS/ACQ/_02_ongoing",
+    "done": "W:/transfer_RBS/ACQ/_03_done",
+    "failed": "W:/transfer_RBS/ACQ/_04_failed",
+    "data": "W:transfer_RBS/ACQ/_05_data"
 }''')
 
 

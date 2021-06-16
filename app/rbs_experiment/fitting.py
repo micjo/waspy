@@ -21,13 +21,17 @@ def fit_and_smooth(angles, yields):
     distributed x (smooth) (interpolated). Then the minimum y is found and the corresponding x value i returned"""
     p_start = np.amax(yields)
     r_start = angles[np.argmin(yields)]
-    [p, q, r, s, t, u], covariance = opt.curve_fit(fit, angles, yields, p0=[p_start, 100.0, r_start, 0.3, -1.0, -1.0])
+
+    arg_bounds = (
+        (-np.inf, 0, -np.inf, -np.inf, 0, -np.inf), (np.inf, np.inf, np.inf, np.inf, np.inf, np.inf))
+    [p, q, r, s, t, u], covariance = opt.curve_fit(fit, angles, yields, p0=[p_start, 100.0, r_start, 0.5, 50, -1.0],
+                                                   bounds=arg_bounds)
 
     smooth_angles = [x for x in np.arange(angles[0], angles[-1], 0.001)]
     smooth_yields = [fit(x, p, q, r, s, t, u) for x in smooth_angles]
     smooth_angle_for_minimum_yield = round(smooth_angles[np.argmin(smooth_yields)], 2)
 
-    log_line = "Minimum yield found at: [angle: yield] = [{angle}: {energy_yield}]"\
+    log_line = "Minimum yield found at: [angle: yield] = [{angle}: {energy_yield}]" \
         .format(angle=smooth_angle_for_minimum_yield, energy_yield=round(np.amin(smooth_yields), 2))
 
     print(log_line)
@@ -36,4 +40,5 @@ def fit_and_smooth(angles, yields):
 
 
 def fit(x, p, q, r, s, t, u):
-    return p - q * np.exp(-np.power(x - r, 2) / (2 * np.power(s, 2))) + t * np.power(x, 2) + u * x
+    return p + t * np.exp(-np.power(x - r, 2) / (2 * np.power(4 * s, 2))) - q * np.exp(
+        -np.power(x - r, 2) / (2 * np.power(s, 2))) + u * x

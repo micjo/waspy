@@ -103,7 +103,7 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
         if recipe.type == rbs.RecipeType.pre_channeling:
             await run_pre_channeling(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
         if recipe.type == rbs.RecipeType.random:
-            await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
+            await run_random(sub_folder, recipe, rbs_rqm.detectors)
         if recipe.type == rbs.RecipeType.channeling:
             await run_channeling(sub_folder, recipe, rbs_rqm.detectors)
 
