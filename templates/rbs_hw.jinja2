@@ -52,7 +52,8 @@
                 <div class="clearfix"><div class="btn-group float-end">
                         {% if value["type"] == "aml" %}
                         {{ ui_elements.buttonSpinnerWithCall("Move Both", "max_aml.submit", url, key, 'submit') }}
-                        {{ ui_elements.buttonWithCall("Load", ui_elements.func3("max_aml.load", key, first_load, second_load ))}}
+                        {{ ui_elements.buttonWithCall("Load", ui_elements.func3("max_aml.load", key, value["first_load"], value["second_load"] ))}}
+
                         {{ ui_elements.buttonSpinnerWithRequest("hide", "max_aml.sendARequest", url, key, 'hide', '{"hide":true}') }}
                         {{ ui_elements.buttonSpinnerWithRequest("show", "max_aml.sendARequest", url, key, 'show', '{"hide":false}') }}
                         {% elif value["type"] == "motrona" %}
