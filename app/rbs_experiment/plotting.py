@@ -18,6 +18,7 @@ def plot_energy_yields_and_clear(sub_folder, file_stem, angles, yields, smooth_a
     plt.xlabel(angle_name).set_fontsize(15)
     plt.ylabel("yield").set_fontsize(15)
     plt.title(file_stem)
+    plt.grid()
 
     yield_plot_file = file_stem + "_yields.png"
     yield_plot_path = output_dir.data / sub_folder / yield_plot_file

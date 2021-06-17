@@ -26,6 +26,7 @@ async def run_pre_channeling(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: Li
 
         rbs_rqm_status.recipe_progress_percentage = round(index / len(angle_values) * 100, 2)
         start = time.time()
+        await control.stop_clear_and_arm_caen_acquisition(recipe.title)
         await control.move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
         data = await control.get_packed_histogram(detector_optimize)
         integrated_energy_yield = control.get_sum(data, recipe.integration_window)
@@ -60,6 +61,7 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.C
 
     charge_limit_per_step = recipe.total_charge / len(angle_values)
     await control.counting_pause_and_set_target(recipe.title, charge_limit_per_step)
+    await control.stop_clear_and_arm_caen_acquisition(recipe.title)
 
     for angle in angle_values:
         await control.move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
@@ -77,8 +79,11 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.C
 
 async def run_channeling(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel]):
     start = time.time()
+
     await control.move_to_position(recipe.title, recipe.start_position)
     await control.counting_pause_and_set_target(recipe.title, recipe.total_charge)
+    await control.stop_clear_and_arm_caen_acquisition(recipe.title)
+
     end = time.time()
     measuring_time_msec = end - start
 
