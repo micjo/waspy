@@ -88,11 +88,10 @@ async def motrona_counting_done(url):
             break
 
 
-async def clear_and_arm_caen_acquisition(request_id, url):
-    request = {'request_id': request_id, 'clear': True, 'start_acquisition': True}
+async def stop_clear_and_arm_caen_acquisition(request_id, url):
+    request = {'request_id': request_id, 'stop_acquisition': True, 'clear': True, 'start_acquisition': True}
     await session.post(url, json=request)
     await wait_for_request_done(url, request)
-    # await post_request(url, request)
 
 
 async def stop_caen_acquisition(request_id, url):

@@ -42,9 +42,12 @@ async def move_to_angle_then_acquire_till_target(identifier: str, coordinate: rb
     logging.info("moving then acquiring till target")
     print("moving then acquiring till target")
     await move_to_angle(identifier, coordinate, value)
-    await comm.clear_and_arm_caen_acquisition(identifier, daemons.caen_rbs.url)
     await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
     await comm.motrona_counting_done(daemons.motrona_rbs.url)
+
+
+async def stop_clear_and_arm_caen_acquisition(identifier: str):
+    await comm.stop_clear_and_arm_caen_acquisition(identifier, daemons.caen_rbs.url)
 
 
 async def counting_pause_and_set_target(identifier: str, target):
