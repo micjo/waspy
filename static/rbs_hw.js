@@ -36,8 +36,6 @@ function updateUi(hwData) {
         return;
     }
 
-    console.log(hwData);
-
     for (const recipe of hwData["rqm"]["recipes"]) {
         let sceneRow = document.createElement("tr");
 
