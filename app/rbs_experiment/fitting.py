@@ -3,13 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as opt
 
-
 def plot_data(x, y, smooth_x, smooth_y, minimum_line, filename, axis):
     fig, ax = plt.subplots()
     ax.scatter(x, y, marker="+", color="red", label="Data Points")
     ax.axhline(minimum_line, label="Minimum", linestyle=":")
     ax.plot(smooth_x, smooth_y, color="green", label="Fit")
     ax.legend(loc=0)
+    ax.minorticks_on()
+    ax.grid(which='major')
+    ax.grid(which='minor', linestyle=":")
+
     plt.xlabel(axis).set_fontsize(15)
     plt.ylabel("yield").set_fontsize(15)
     plt.savefig(filename)
@@ -24,7 +27,7 @@ def fit_and_smooth(angles, yields):
 
     arg_bounds = (
         (-np.inf, 0, -np.inf, -np.inf, 0, -np.inf), (np.inf, np.inf, np.inf, np.inf, np.inf, np.inf))
-    [p, q, r, s, t, u], covariance = opt.curve_fit(fit, angles, yields, p0=[p_start, 100.0, r_start, 0.5, 50, -1.0],
+    [p, q, r, s, t, u], covariance = opt.curve_fit(fit, angles, yields, p0=[p_start, 100.0, r_start, 0.3, 50, -1.0],
                                                    bounds=arg_bounds)
 
     smooth_angles = [x for x in np.arange(angles[0], angles[-1], 0.001)]
