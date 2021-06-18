@@ -1,7 +1,8 @@
 from enum import Enum
+from typing import List, Optional
+
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
-from typing import List, Optional
 
 
 class Window(BaseModel):
@@ -45,9 +46,10 @@ class CoordinateEnum(str, Enum):
 
 
 class RecipeType(str, Enum):
-    pre_channeling = "pre_channeling"
     channeling = "channeling"
     random = "random"
+    minimize_yield = "minimize_yield"
+    fixed_random_compare = "fixed_random_compare"
 
 
 class VaryCoordinate(BaseModel):
@@ -77,8 +79,6 @@ class VaryCoordinate(BaseModel):
 class CaenDetectorModel(BaseModel):
     board: int
     channel: int
-    color: str = Field(
-        description="This is a matplotlib color, please refer to the docs to see which strings are valid")
     identifier: str = Field(
         description="This will be used in the filenames for storage and in the plots for titles")
     bins_min: int
@@ -108,13 +108,12 @@ class StatusModel(str, Enum):
 
 class RbsRqmRecipe(BaseModel):
     type: RecipeType
-    title: str
+    sample_id: str
     start_position: Optional[PositionCoordinates]
     file_stem: str
     total_charge: int
     vary_coordinate: Optional[VaryCoordinate]
     integration_window: Optional[Window]
-    detector_indices: List[int]
     optimize_detector_index: Optional[int]
 
 

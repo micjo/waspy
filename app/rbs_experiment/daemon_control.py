@@ -7,6 +7,9 @@ import numpy as np
 from app.setup.config import daemons
 import app.hardware_controllers.daemon_comm as comm
 import app.rbs_experiment.entities as rbs
+import app.rbs_experiment.storing as store
+import app.rbs_experiment.plotting as plot
+import app.rbs_experiment.fitting as fit
 
 
 async def move_to_position(identifier: str, position: rbs.PositionCoordinates):
@@ -29,28 +32,61 @@ async def move_to_position(identifier: str, position: rbs.PositionCoordinates):
         await comm.move_aml_second(identifier + "_second", daemons.aml_det_theta.url, position.theta)
 
 
-async def move_to_angle(identifier: str, coordinate: rbs.CoordinateEnum, value):
-    if coordinate == rbs.CoordinateEnum.phi:
-        await move_to_position(identifier, rbs.PositionCoordinates(phi=value))
-    if coordinate == rbs.CoordinateEnum.zeta:
-        await move_to_position(identifier, rbs.PositionCoordinates(zeta=value))
-    if coordinate == rbs.CoordinateEnum.theta:
-        await move_to_position(identifier, rbs.PositionCoordinates(theta=value))
+async def get_and_save_histograms(sub_folder, file_stem, sample_id, measuring_time_msec,
+                                  detectors: List[rbs.CaenDetectorModel]):
+    plot.set_plot_title(file_stem)
+    histogram_data = []
+    for index, detector in enumerate(detectors):
+        data = await get_packed_histogram(detector)
+        await store.store_histogram(sub_folder, file_stem, sample_id, detector.identifier, measuring_time_msec, data)
+        histogram_data.append(data)
+    plot.plot_histograms_and_clear(sub_folder, file_stem, detectors, histogram_data)
+    return histogram_data
 
 
-async def move_to_angle_then_acquire_till_target(identifier: str, coordinate: rbs.CoordinateEnum, value):
+def single_coordinate_to_string(position: rbs.PositionCoordinates, coordinate: rbs.VaryCoordinate) -> str:
+    position_value = position.dict()[coordinate.name]
+    return coordinate.name[0] + str(position_value)
+
+
+def positions_to_floats(coordinate: rbs.CoordinateEnum, positions: List[rbs.PositionCoordinates]) -> list[float]:
+    position_values = [position.dict()[coordinate] for position in positions]
+    return position_values
+
+
+async def get_minimum_yield_position(sub_folder, recipe: rbs.RbsRqmRecipe, positions: List[rbs.PositionCoordinates],
+                                     energy_yields):
+
+    angles = positions_to_floats(recipe.vary_coordinate.name, positions)
+    store.store_yields(sub_folder, recipe.file_stem, angles, energy_yields)
+    smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
+    plot.plot_energy_yields(sub_folder, recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
+
+    index_for_minimum_yield = np.argmin(smooth_yields)
+    min_angle = round(smooth_angles[index_for_minimum_yield], 2)
+    min_position = rbs.PositionCoordinates.parse_obj({recipe.vary_coordinate.name: min_angle})
+    return min_position
+
+
+async def get_position_range(recipe: rbs.RbsRqmRecipe) -> List[rbs.PositionCoordinates]:
+    angles = make_coordinate_range(recipe.vary_coordinate)
+    positions = [rbs.PositionCoordinates.parse_obj({recipe.vary_coordinate.name: angle}) for angle in angles]
+    return positions
+
+
+async def move_position_and_count(identifier: str, position: rbs.PositionCoordinates):
     logging.info("moving then acquiring till target")
     print("moving then acquiring till target")
-    await move_to_angle(identifier, coordinate, value)
+    await move_to_position(identifier, position)
     await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
     await comm.motrona_counting_done(daemons.motrona_rbs.url)
 
 
-async def stop_clear_and_arm_caen_acquisition(identifier: str):
+async def prepare_data_acquisition(identifier: str):
     await comm.stop_clear_and_arm_caen_acquisition(identifier, daemons.caen_rbs.url)
 
 
-async def counting_pause_and_set_target(identifier: str, target):
+async def prepare_counting(identifier: str, target):
     logging.info("pause counting and set target")
     print("pause counting and set target")
     await comm.pause_motrona_count(identifier + "_pause", daemons.motrona_rbs.url)
@@ -64,9 +100,6 @@ def make_coordinate_range(vary_coordinate: rbs.VaryCoordinate) -> List[float]:
 
 
 async def get_packed_histogram(detector: rbs.CaenDetectorModel) -> List[int]:
-    print("zzzz - waiting for some caen data")
-    logging.info("zzz - waiting for some caen data")
-    await asyncio.sleep(2)
     data = await comm.get_caen_histogram(daemons.caen_rbs.url, detector.board, detector.channel)
     packed = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
     return packed

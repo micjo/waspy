@@ -79,7 +79,7 @@ async def test_move_to_angle_theta_4_5():
 async def test_move_to_angle_and_acquire():
     control.comm = AsyncMock()
     control.move_to_angle = AsyncMock()
-    await control.move_to_angle_then_acquire_till_target("step_1", rbs.CoordinateEnum.theta, 2.0)
+    await control.move_angle_and_count("step_1", rbs.CoordinateEnum.theta, 2.0)
     control.move_to_angle.assert_called_with("step_1", rbs.CoordinateEnum.theta, 2.0)
     control.comm.clear_and_arm_caen_acquisition.assert_called_with("step_1", "url_caen_rbs")
     control.comm.clear_start_motrona_count.assert_called_with("step_1", "url_motrona_rbs")

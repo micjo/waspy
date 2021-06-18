@@ -1,99 +1,90 @@
 import time
 from typing import List
 
-import numpy as np
-
 import app.rbs_experiment.entities as rbs
-import app.rbs_experiment.fitting as fit
 import app.rbs_experiment.daemon_control as control
 import app.rbs_experiment.plotting as plot
-import app.rbs_experiment.storing as store
 
 
-async def run_pre_channeling(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
                              rbs_rqm_status: rbs.RbsRqmStatus):
-    await control.move_to_position(recipe.title, recipe.start_position)
-    angle_values = control.make_coordinate_range(recipe.vary_coordinate)
-    angle_to_vary = recipe.vary_coordinate.name
+    await control.move_to_position(recipe.sample_id, recipe.start_position)
+    positions = await control.get_position_range(recipe)
+    await control.prepare_counting(recipe.sample_id, recipe.total_charge / len(positions))
 
-    charge_limit_per_step = recipe.total_charge / len(angle_values)
-    await control.counting_pause_and_set_target(recipe.title, charge_limit_per_step)
     detector_optimize = detectors[recipe.optimize_detector_index]
-    active_detectors = [detectors[index] for index in recipe.detector_indices]
-
     energy_yields = []
-    for index, angle in enumerate(angle_values):
 
-        rbs_rqm_status.recipe_progress_percentage = round(index / len(angle_values) * 100, 2)
-        start = time.time()
-        await control.stop_clear_and_arm_caen_acquisition(recipe.title)
-        await control.move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
-        data = await control.get_packed_histogram(detector_optimize)
-        integrated_energy_yield = control.get_sum(data, recipe.integration_window)
-        energy_yields.append(integrated_energy_yield)
-        end = time.time()
-        measuring_time_msec = end - start
-        file_stem = recipe.file_stem + "_" + angle_to_vary + "_" + str(angle)
+    for position in positions:
+        run_time = await run_minimize_yield_step(position, detector_optimize, energy_yields, recipe)
+        file_stem = recipe.file_stem + "_" + control.single_coordinate_to_string(position, recipe.vary_coordinate)
+        await control.get_and_save_histograms(sub_folder, file_stem, recipe.sample_id, run_time, detectors)
 
-        for detector in active_detectors:
-            data = await control.get_packed_histogram(detector)
-            await store.store_histogram(sub_folder, file_stem, detector.identifier, measuring_time_msec, recipe.title,
-                                        data)
-            plot.append_histogram_plot(detector, data)
-        plot.store_histogram_plot_and_clear(sub_folder, file_stem)
-
-    store.store_yields(sub_folder, recipe.file_stem, angle_values, energy_yields)
-
-    smooth_angles, smooth_yields = fit.fit_and_smooth(angle_values, energy_yields)
-    plot.plot_energy_yields_and_clear(sub_folder, recipe.file_stem, angle_values, energy_yields, smooth_angles,
-                                      smooth_yields, angle_to_vary)
-    index_for_minimum_yield = np.argmin(smooth_yields)
-    min_angle = round(smooth_angles[index_for_minimum_yield], 2)
-
-    await control.move_to_angle(recipe.title + "_move_to_min_angle", angle_to_vary, min_angle)
+    min_position = await control.get_minimum_yield_position(sub_folder, recipe, positions, energy_yields)
+    await control.move_to_position(recipe.sample_id + "_move_to_min_position", min_position)
 
 
-async def run_random(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel]):
+async def run_minimize_yield_step(position: rbs.PositionCoordinates, detector_optimize, energy_yields, recipe):
     start = time.time()
-    await control.move_to_position(recipe.title, recipe.start_position)
-    angle_values = control.make_coordinate_range(recipe.vary_coordinate)
-    angle_to_vary = recipe.vary_coordinate.name
 
-    charge_limit_per_step = recipe.total_charge / len(angle_values)
-    await control.counting_pause_and_set_target(recipe.title, charge_limit_per_step)
-    await control.stop_clear_and_arm_caen_acquisition(recipe.title)
+    recipe_id = recipe.sample_id + "_" + control.single_coordinate_to_string(position, recipe.vary_coordinate)
 
-    for angle in angle_values:
-        await control.move_to_angle_then_acquire_till_target(recipe.title + "_" + str(angle), angle_to_vary, angle)
+    await control.prepare_data_acquisition(recipe_id)
+    await control.move_position_and_count(recipe_id, position)
+    data = await control.get_packed_histogram(detector_optimize)
+    integrated_energy_yield = control.get_sum(data, recipe.integration_window)
+    energy_yields.append(integrated_energy_yield)
+
+    end = time.time()
+    return end - start
+
+
+async def run_random(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+                     rbs_rqm_status: rbs.RbsRqmStatus):
+    await control.move_to_position(recipe.sample_id, recipe.start_position)
+    positions = await control.get_position_range(recipe)
+    await control.prepare_counting(recipe.sample_id, recipe.total_charge / len(positions))
+    await control.prepare_data_acquisition(recipe.sample_id)
+
+    start = time.time()
+    for position in positions:
+        await control.move_position_and_count(recipe.sample_id + "_" + str(position), position)
+    end = time.time()
+    run_time_msec = end - start
+    random_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
+                                                              run_time_msec, detectors)
+    return random_histograms
+
+
+async def run_fixed(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+                    rbs_rqm_status: rbs.RbsRqmStatus):
+    start = time.time()
+    await control.prepare_counting(recipe.sample_id + "pause_set", recipe.total_charge)
+    await control.prepare_data_acquisition(recipe.sample_id)
+    await control.move_position_and_count(recipe.sample_id + "move_acquire", recipe.start_position)
     end = time.time()
     measuring_time_msec = end - start
 
-    active_detectors = [detectors[index] for index in recipe.detector_indices]
-    for detector in active_detectors:
-        data = await control.get_packed_histogram(detector)
-        await store.store_histogram(sub_folder, recipe.file_stem, detector.identifier, measuring_time_msec,
-                                    recipe.title, data)
-        plot.append_histogram_plot(detector, data)
-    plot.store_histogram_plot_and_clear(sub_folder, recipe.file_stem)
+    fixed_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
+                                                             measuring_time_msec, detectors)
+    return fixed_histograms
 
 
-async def run_channeling(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel]):
-    start = time.time()
+async def run_fixed_random_compare(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+                                   rbs_rqm_status: rbs.RbsRqmStatus):
+    original_stem = recipe.file_stem
 
-    await control.move_to_position(recipe.title, recipe.start_position)
-    await control.counting_pause_and_set_target(recipe.title, recipe.total_charge)
-    await control.stop_clear_and_arm_caen_acquisition(recipe.title)
+    recipe.file_stem += original_stem + "_fixed"
+    fixed_histograms = await run_fixed(sub_folder, recipe, detectors, rbs_rqm_status)
 
-    end = time.time()
-    measuring_time_msec = end - start
+    recipe.file_stem += original_stem + "_random"
+    random_histograms = await run_random(sub_folder, recipe, detectors, rbs_rqm_status)
 
-    active_detectors = [detectors[index] for index in recipe.detector_indices]
-    for detector in active_detectors:
-        data = await control.get_packed_histogram(detector)
-        await store.store_histogram(sub_folder, recipe.file_stem, detector.identifier, measuring_time_msec,
-                                    recipe.title, data)
-        plot.append_histogram_plot(detector, data)
-    plot.store_histogram_plot_and_clear(sub_folder, recipe.file_stem)
+    total_histograms = len(fixed_histograms)
+
+    for i in range(0, total_histograms):
+        plot.append_histogram_plot("fixed_" + detectors[i].identifier, fixed_histograms[i], total_histograms, i)
+        plot.append_histogram_plot("random_" + detectors[i].identifier, random_histograms[i], total_histograms, i)
 
 
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus):
@@ -103,14 +94,15 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
     rbs_rqm_status.rqm = rbs_rqm
 
     for recipe in rbs_rqm.recipes:
-        rbs_rqm_status.active_recipe = recipe.title
+        rbs_rqm_status.active_recipe = recipe.sample_id
         rbs_rqm_status.recipe_progress_percentage = 0
-        if recipe.type == rbs.RecipeType.pre_channeling:
-            await run_pre_channeling(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
+
+        if recipe.type == rbs.RecipeType.minimize_yield:
+            await run_minimize_yield(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
         if recipe.type == rbs.RecipeType.random:
-            await run_random(sub_folder, recipe, rbs_rqm.detectors)
-        if recipe.type == rbs.RecipeType.channeling:
-            await run_channeling(sub_folder, recipe, rbs_rqm.detectors)
+            await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
+        if recipe.type == rbs.RecipeType.fixed_random_compare:
+            await run_fixed_random_compare(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Parking
     await control.move_to_position(rbs_rqm.rqm_number + "_parking", rbs_rqm.parking_position)
