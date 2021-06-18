@@ -6,12 +6,13 @@ import logging
 
 session = aiohttp.ClientSession()
 logging.basicConfig(level=logging.INFO, filename="debug.log")
-faker = False
+faker = True
+faker_time = 0.2
 
 
 async def wait_for_request_done(url, request):
     if faker:
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(faker_time)
         return
     while True:
         await asyncio.sleep(0.2)
@@ -29,7 +30,7 @@ async def post_request(url, request):
     logging.info("post to: " + url + ", content: " + str(request))
     print("post to: " + url + ", content: " + str(request))
     if faker:
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(faker_time)
         return
     await session.post(url, json=request)
     await wait_for_request_done(url, request)
@@ -78,7 +79,7 @@ async def pause_motrona_count(request_id, url):
 
 async def motrona_counting_done(url):
     if faker:
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(faker_time)
         return
     while True:
         await asyncio.sleep(1)
@@ -100,6 +101,8 @@ async def stop_caen_acquisition(request_id, url):
 
 
 async def get_caen_histogram(base_url, board: int, channel: int) -> List[int]:
+    if faker:
+        await asyncio.sleep(faker_time)
     url = base_url + "/histogram/" + str(board) + "-" + str(channel)
     get_session = await session.get(url)
     raw_data = await get_session.text()

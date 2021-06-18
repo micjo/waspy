@@ -94,7 +94,7 @@ def store_yields(sub_folder, file_stem, angle_values, energy_yields):
     try_copy(yields_path, remote_yields_path)
 
 
-async def store_histogram(sub_folder, file_stem, detector_id, measuring_time_msec, sample_id, data: List[int]):
+async def store_histogram(sub_folder, file_stem, sample_id, detector_id, measuring_time_msec, data: List[int]):
     header = await get_file_header(file_stem, sample_id, detector_id, measuring_time_msec)
     formatted_data = format_caen_histogram(data)
     full_data = header + "\n" + formatted_data

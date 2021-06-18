@@ -9,13 +9,13 @@ from app.rbs_experiment.storing import try_copy
 from app.setup.config import output_dir, output_dir_remote
 
 
-def plot_energy_yields_and_clear(sub_folder, file_stem, angles, yields, smooth_angles, smooth_yields, angle_name):
+def plot_energy_yields(sub_folder, file_stem, angles, yields, smooth_angles, smooth_yields):
     fig, ax = plt.subplots()
     ax.scatter(angles, yields, marker="+", color="red", label="Data Points")
     ax.axhline(np.amin(yields), label="Minimum", linestyle=":")
     ax.plot(smooth_angles, smooth_yields, color="green", label="Fit")
     ax.legend(loc=0)
-    plt.xlabel(angle_name).set_fontsize(15)
+    plt.xlabel("degrees").set_fontsize(15)
     plt.ylabel("yield").set_fontsize(15)
     plt.title(file_stem)
     plt.grid()
@@ -31,21 +31,31 @@ def plot_energy_yields_and_clear(sub_folder, file_stem, angles, yields, smooth_a
     try_copy(yield_plot_path, remote_yield_plot_path)
 
 
-def append_histogram_plot(detector: rbs.CaenDetectorModel, data: List[int]):
-    plt.plot(data, label=detector.identifier, color=detector.color)
+def set_plot_title(title: str):
+    plt.title(title)
 
 
-def store_histogram_plot_and_clear(sub_folder, file_stem):
+def plot_histograms_and_clear(sub_folder, file_stem, detectors: List[rbs.CaenDetectorModel], data:List[List[int]]):
+
+    fig, axs = plt.subplots(len(data))
+    fig.suptitle(file_stem)
+
+    for index, ax in enumerate(axs):
+        ax.plot(data[index], label=detectors[index].identifier)
+        ax.grid(which='major')
+        ax.grid(which='minor', linestyle=":")
+        ax.minorticks_on()
+        ax.legend()
+        ax.set_xlabel("energy level")
+        ax.set_ylabel("yield")
+
+    plt.subplots_adjust(hspace=0.5)
+
     histogram_file = file_stem + ".png"
     histogram_path = output_dir.data / sub_folder / histogram_file
     Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
     logging.info("Storing histogram plot to path: " + str(histogram_path))
-    plt.ylabel("yield")
-    plt.xlabel("energy level")
-    plt.grid()
-    plt.legend()
-    plt.title(file_stem)
     plt.savefig(histogram_path)
     remote_histogram_path = output_dir_remote.data / sub_folder / histogram_file
     try_copy(histogram_path, remote_histogram_path)
-    plt.clf()
+    plt.close(fig)
