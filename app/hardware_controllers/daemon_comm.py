@@ -37,8 +37,6 @@ async def post_request(url, request):
 
 
 async def get_json_status(url):
-    logging.info("getting status from: " + url)
-    print("getting status from: " + url)
     get_session = await session.get(url)
     response = await get_session.json()
     return response

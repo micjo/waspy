@@ -54,9 +54,9 @@ def positions_to_floats(coordinate: rbs.CoordinateEnum, positions: List[rbs.Posi
     return position_values
 
 
-async def get_minimum_yield_position(sub_folder, recipe: rbs.RbsRqmRecipe, positions: List[rbs.PositionCoordinates],
+async def get_minimum_yield_position(sub_folder, recipe: rbs.RbsRqmMinimizeYield,
+                                     positions: List[rbs.PositionCoordinates],
                                      energy_yields):
-
     angles = positions_to_floats(recipe.vary_coordinate.name, positions)
     store.store_yields(sub_folder, recipe.file_stem, angles, energy_yields)
     smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
@@ -68,9 +68,9 @@ async def get_minimum_yield_position(sub_folder, recipe: rbs.RbsRqmRecipe, posit
     return min_position
 
 
-async def get_position_range(recipe: rbs.RbsRqmRecipe) -> List[rbs.PositionCoordinates]:
-    angles = make_coordinate_range(recipe.vary_coordinate)
-    positions = [rbs.PositionCoordinates.parse_obj({recipe.vary_coordinate.name: angle}) for angle in angles]
+async def get_position_range(vary_coordinate: rbs.VaryCoordinate) -> List[rbs.PositionCoordinates]:
+    angles = make_coordinate_range(vary_coordinate)
+    positions = [rbs.PositionCoordinates.parse_obj({vary_coordinate.name: angle}) for angle in angles]
     return positions
 
 

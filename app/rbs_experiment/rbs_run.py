@@ -6,10 +6,10 @@ import app.rbs_experiment.daemon_control as control
 import app.rbs_experiment.plotting as plot
 
 
-async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmMinimizeYield, detectors: List[rbs.CaenDetectorModel],
                              rbs_rqm_status: rbs.RbsRqmStatus):
     await control.move_to_position(recipe.sample_id, recipe.start_position)
-    positions = await control.get_position_range(recipe)
+    positions = await control.get_position_range(recipe.vary_coordinate)
     await control.prepare_counting(recipe.sample_id, recipe.total_charge / len(positions))
 
     detector_optimize = detectors[recipe.optimize_detector_index]
@@ -24,7 +24,8 @@ async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: Li
     await control.move_to_position(recipe.sample_id + "_move_to_min_position", min_position)
 
 
-async def run_minimize_yield_step(position: rbs.PositionCoordinates, detector_optimize, energy_yields, recipe):
+async def run_minimize_yield_step(position: rbs.PositionCoordinates, detector_optimize, energy_yields,
+                                  recipe: rbs.RbsRqmMinimizeYield):
     start = time.time()
 
     recipe_id = recipe.sample_id + "_" + control.single_coordinate_to_string(position, recipe.vary_coordinate)
@@ -39,11 +40,11 @@ async def run_minimize_yield_step(position: rbs.PositionCoordinates, detector_op
     return end - start
 
 
-async def run_random(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+async def run_random(sub_folder, recipe: rbs.RbsRqmRandom, detectors: List[rbs.CaenDetectorModel],
                      rbs_rqm_status: rbs.RbsRqmStatus):
     await control.move_to_position(recipe.sample_id, recipe.start_position)
-    positions = await control.get_position_range(recipe)
-    await control.prepare_counting(recipe.sample_id, recipe.total_charge / len(positions))
+    positions = await control.get_position_range(recipe.vary_coordinate)
+    await control.prepare_counting(recipe.sample_id, recipe.charge_total / len(positions))
     await control.prepare_data_acquisition(recipe.sample_id)
 
     start = time.time()
@@ -56,10 +57,10 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.C
     return random_histograms
 
 
-async def run_fixed(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
+async def run_fixed(sub_folder, recipe: rbs.RbsRqmFixed, detectors: List[rbs.CaenDetectorModel],
                     rbs_rqm_status: rbs.RbsRqmStatus):
     start = time.time()
-    await control.prepare_counting(recipe.sample_id + "pause_set", recipe.total_charge)
+    await control.prepare_counting(recipe.sample_id + "pause_set", recipe.charge_total)
     await control.prepare_data_acquisition(recipe.sample_id)
     await control.move_position_and_count(recipe.sample_id + "move_acquire", recipe.start_position)
     end = time.time()
@@ -70,21 +71,31 @@ async def run_fixed(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.Ca
     return fixed_histograms
 
 
-async def run_fixed_random_compare(sub_folder, recipe: rbs.RbsRqmRecipe, detectors: List[rbs.CaenDetectorModel],
-                                   rbs_rqm_status: rbs.RbsRqmStatus):
-    original_stem = recipe.file_stem
+async def run_channeling(sub_folder, recipe: rbs.RbsRqmChanneling, detectors: List[rbs.CaenDetectorModel],
+                         rbs_rqm_status: rbs.RbsRqmStatus):
 
-    recipe.file_stem += original_stem + "_fixed"
-    fixed_histograms = await run_fixed(sub_folder, recipe, detectors, rbs_rqm_status)
+    for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
+        yield_recipe = rbs.RbsRqmMinimizeYield(type=rbs.RecipeType.minimize_yield, sample_id=recipe.sample_id,
+                                               file_stem=recipe.file_stem + str(index),
+                                               total_charge=recipe.yield_charge_total,
+                                               vary_coordinate=vary_coordinate, integration_window=
+                                               recipe.yield_integration_window,
+                                               optimize_detector_index=recipe.yield_optimize_detector_index)
+        await run_minimize_yield(sub_folder, yield_recipe, detectors, rbs_rqm_status)
 
-    recipe.file_stem += original_stem + "_random"
-    random_histograms = await run_random(sub_folder, recipe, detectors, rbs_rqm_status)
+    fixed_recipe = rbs.RbsRqmFixed(type=rbs.RecipeType.fixed, sample_id=recipe.sample_id,
+                                   file_stem=recipe.file_stem + "_fixed", charge_total=recipe.random_fixed_charge_total)
+    fixed_histograms = await run_fixed(sub_folder, fixed_recipe, detectors, rbs_rqm_status)
+    fixed_labels = [detector.identifier + "_fixed" for detector in detectors]
 
-    total_histograms = len(fixed_histograms)
+    random_recipe = rbs.RbsRqmRandom(type=rbs.RecipeType.random, sample_id=recipe.sample_id,
+                                     file_stem=recipe.file_stem + "_random",
+                                     charge_total=recipe.random_fixed_charge_total,
+                                     start_position={"theta": -2}, vary_coordinate=recipe.random_vary_coordinate)
+    random_histograms = await run_random(sub_folder, random_recipe, detectors, rbs_rqm_status)
+    random_labels = [detector.identifier + "_random" for detector in detectors]
 
-    for i in range(0, total_histograms):
-        plot.append_histogram_plot("fixed_" + detectors[i].identifier, fixed_histograms[i], total_histograms, i)
-        plot.append_histogram_plot("random_" + detectors[i].identifier, random_histograms[i], total_histograms, i)
+    plot.plot_compare(sub_folder, recipe.file_stem, fixed_histograms, fixed_labels, random_histograms, random_labels)
 
 
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus):
@@ -97,12 +108,10 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
         rbs_rqm_status.active_recipe = recipe.sample_id
         rbs_rqm_status.recipe_progress_percentage = 0
 
-        if recipe.type == rbs.RecipeType.minimize_yield:
-            await run_minimize_yield(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
+        if recipe.type == rbs.RecipeType.channeling:
+            await run_channeling(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
         if recipe.type == rbs.RecipeType.random:
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
-        if recipe.type == rbs.RecipeType.fixed_random_compare:
-            await run_fixed_random_compare(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Parking
     await control.move_to_position(rbs_rqm.rqm_number + "_parking", rbs_rqm.parking_position)

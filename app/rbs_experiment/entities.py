@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union, Literal, Annotated, Dict
 
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
@@ -49,7 +49,7 @@ class RecipeType(str, Enum):
     channeling = "channeling"
     random = "random"
     minimize_yield = "minimize_yield"
-    fixed_random_compare = "fixed_random_compare"
+    fixed = "fixed"
 
 
 class VaryCoordinate(BaseModel):
@@ -106,21 +106,64 @@ class StatusModel(str, Enum):
     Parking = "Parking"
 
 
-class RbsRqmRecipe(BaseModel):
-    type: RecipeType
+class RbsRqmChanneling(BaseModel):
+    """
+    The model for a channeling measurement. This is a combination of recipes. A number of yield optimizations will
+    happen. Next, a random measurement and a fixed measurement are performed.
+    The outputs of the configured detectors are then compared in a plot.
+    """
+    type: Literal[RecipeType.channeling]
+    sample_id: str
+    file_stem: str
+    start_position: Optional[PositionCoordinates]
+    yield_charge_total: int
+    yield_vary_coordinates: List[VaryCoordinate]
+    yield_integration_window: Window
+    yield_optimize_detector_index: int
+    random_fixed_charge_total: int
+    random_vary_coordinate: VaryCoordinate
+
+    class Config:
+        extra = 'forbid'
+
+
+class RbsRqmMinimizeYield(BaseModel):
+    """ The model for a yield minimization run. The sample will be moved along the vary_coordinate axis. For each step,
+    the energy yield is calculated by integrating the histogram. Then the yields are fitted and the sample will be moved
+    to the position with minimum yield """
+    type: Literal[RecipeType.minimize_yield]
     sample_id: str
     start_position: Optional[PositionCoordinates]
     file_stem: str
     total_charge: int
-    vary_coordinate: Optional[VaryCoordinate]
-    integration_window: Optional[Window]
-    optimize_detector_index: Optional[int]
+    vary_coordinate: VaryCoordinate
+    integration_window: Window
+    optimize_detector_index: int
+
+
+class RbsRqmRandom(BaseModel):
+    """ The model for a random measurement - the vary_coordinate will be changed"""
+    type: Literal[RecipeType.random]
+    sample_id: str
+    file_stem: str
+    start_position: Optional[PositionCoordinates]
+    charge_total: int
+    vary_coordinate: VaryCoordinate
+
+
+class RbsRqmFixed(BaseModel):
+    """ The model for a fixed measurement - all coordinates are kept the same"""
+    type: Literal[RecipeType.fixed]
+    sample_id: str
+    file_stem: str
+    start_position: Optional[PositionCoordinates]
+    charge_total: int
 
 
 class RbsRqm(BaseModel):
     rqm_number: str
     detectors: List[CaenDetectorModel]
-    recipes: List[RbsRqmRecipe]
+    recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
     parking_position: PositionCoordinates
 
     class Config:
@@ -136,24 +179,14 @@ class RbsRqm(BaseModel):
                     ],
                     "recipes": [
                         {
-                            "type": "pre_channeling", "title": "RBS_071A", "file_stem": "RBS_071A_out",
-                            "total_charge": 60000,
-                            "start_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0},
-                            "vary_coordinate": {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
+                            "type": "random", "sample_id": "RBS_071A", "file_stem": "RBS_071A_out",
+                            "start_position": {"x": 0},
+                            "charge_total": 60000,
+                            "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2},
                             "integration_window": {"start": 0, "end": 24},
                             "optimize_detector_index": 0,
                             "detector_indices": [0, 1]
                         },
-                        {
-                            "type": "random", "title": "RBS_071B", "file_stem": "RBS_071B_out", "total_charge": 60000,
-                            "vary_coordinate": {"name": "phi", "start": 0, "end": 10, "increment": 1},
-                            "detector_indices": [0, 1]
-                        },
-                        {
-                            "type": "channeling", "title": "RBS_071C", "file_stem": "RBS_071C_out",
-                            "total_charge": 60000,
-                            "detector_indices": [0, 1]
-                        }
                     ],
                     "parking_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0}
                 }
