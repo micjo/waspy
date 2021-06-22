@@ -100,7 +100,7 @@ async def stop_caen_acquisition(request_id, url):
 
 async def get_caen_histogram(base_url, board: int, channel: int) -> List[int]:
     if faker:
-        await asyncio.sleep(faker_time)
+        await asyncio.sleep(2)
     url = base_url + "/histogram/" + str(board) + "-" + str(channel)
     get_session = await session.get(url)
     raw_data = await get_session.text()
