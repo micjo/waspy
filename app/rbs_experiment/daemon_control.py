@@ -93,7 +93,7 @@ async def prepare_counting(identifier: str, target):
     await comm.set_motrona_target_charge(identifier + "_set_target_charge", daemons.motrona_rbs.url, target)
 
 
-def make_coordinate_range(vary_coordinate: rbs.VaryCoordinate) -> List[float]:
+def make_coordinate_range(vary_coordinate: rbs.VaryCoordinate) -> np.ndarray:
     coordinate_range = np.arange(vary_coordinate.start, vary_coordinate.end + vary_coordinate.increment,
                                  vary_coordinate.increment)
     return np.around(coordinate_range, decimals=2)

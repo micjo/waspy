@@ -6,8 +6,8 @@
   ],
   "recipes": [
     { "type": "random", "sample_id": "AE007607_D02_A", "file_stem": "RBS21_071_01B_A",
-      "start_position": { "x": 10, "y": 22, "phi": 0 }, "yield_charge_total": 8400,
-      "charge_total": 45000, "vary_coordinate": { "name": "phi", "start": 0, "end": 30, "increment": 2 }
+      "start_position": { "x": 10, "y": 22, "phi": 0 }, "charge_total": 45000,
+      "vary_coordinate": { "name": "phi", "start": 0, "end": 30, "increment": 2 }
     }
   ],
   "parking_position": {"x": 130, "y": 130 }

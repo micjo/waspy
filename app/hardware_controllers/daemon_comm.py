@@ -1,12 +1,11 @@
 from typing import List
 
-import aiohttp
 import asyncio
 import logging
+import app.hardware_controllers.http_helper as http
 
-session = aiohttp.ClientSession()
 logging.basicConfig(level=logging.INFO, filename="debug.log")
-faker = True
+faker = False
 faker_time = 0.2
 
 
@@ -16,11 +15,10 @@ async def wait_for_request_done(url, request):
         return
     while True:
         await asyncio.sleep(0.2)
-        get_session = await session.get(url)
-        response = await get_session.json()
+        response = await http.get_json(url)
         error_message = response["error"]
         if error_message == "Success" or error_message == "No error":
-            if response['request_finished'] and response["request_id"] == request["request_id"]:
+            if response['request_finished'] and response["request_id"] == str(request["request_id"]):
                 break
         else:
             raise Exception(url + ": " + error_message)
@@ -32,14 +30,9 @@ async def post_request(url, request):
     if faker:
         await asyncio.sleep(faker_time)
         return
-    await session.post(url, json=request)
+
+    await http.post_dictionary(url, request)
     await wait_for_request_done(url, request)
-
-
-async def get_json_status(url):
-    get_session = await session.get(url)
-    response = await get_session.json()
-    return response
 
 
 async def set_motrona_target_charge(request_id, url, target_charge):
@@ -81,7 +74,7 @@ async def motrona_counting_done(url):
         return
     while True:
         await asyncio.sleep(1)
-        response = await get_json_status(url)
+        response = await http.get_json(url)
         if response["status"] == "Done":
             logging.info("motrona counting done")
             break
@@ -89,7 +82,7 @@ async def motrona_counting_done(url):
 
 async def stop_clear_and_arm_caen_acquisition(request_id, url):
     request = {'request_id': request_id, 'stop_acquisition': True, 'clear': True, 'start_acquisition': True}
-    await session.post(url, json=request)
+    await http.post_dictionary(url, request)
     await wait_for_request_done(url, request)
 
 
@@ -102,8 +95,7 @@ async def get_caen_histogram(base_url, board: int, channel: int) -> List[int]:
     if faker:
         await asyncio.sleep(2)
     url = base_url + "/histogram/" + str(board) + "-" + str(channel)
-    get_session = await session.get(url)
-    raw_data = await get_session.text()
+    raw_data = await http.get_text(url)
     raw_data = raw_data.split(";")
     raw_data.pop()
     data = [int(x) for x in raw_data]

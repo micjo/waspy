@@ -5,12 +5,12 @@ from pathlib import Path
 from shutil import copy2
 from typing import List
 
-from app.hardware_controllers import daemon_comm as comm
+from app.hardware_controllers import http_helper as http
 from app.setup.config import daemons, output_dir, output_dir_remote
 
 
 def try_copy(source, destination):
-    logging.info("coppying {source} to {destination}".format(source=source, destination=destination))
+    logging.info("copying {source} to {destination}".format(source=source, destination=destination))
     try:
         Path.mkdir(destination.parent, exist_ok=True)
         copy2(source, destination)
@@ -20,10 +20,10 @@ def try_copy(source, destination):
 
 
 async def get_file_header(file_stem,  sample_id, detector_id, measuring_time_msec):
-    aml_x_y_response = await comm.get_json_status(daemons.aml_x_y.url)
-    aml_phi_zeta_response = await comm.get_json_status(daemons.aml_phi_zeta.url)
-    aml_det_theta_response = await comm.get_json_status(daemons.aml_det_theta.url)
-    motrona_response = await comm.get_json_status(daemons.motrona_rbs.url)
+    aml_x_y_response = await http.get_json(daemons.aml_x_y.url)
+    aml_phi_zeta_response = await http.get_json(daemons.aml_phi_zeta.url)
+    aml_det_theta_response = await http.get_json(daemons.aml_det_theta.url)
+    motrona_response = await http.get_json(daemons.motrona_rbs.url)
     header = """ % Comments
  % Title                 := {title}
  % Section := <raw_data>
