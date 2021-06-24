@@ -5,11 +5,13 @@ from typing import Tuple
 import time
 from datetime import datetime
 
-url = "http://localhost:8000/api/aml_x_y"
+url = "http://localhost:5000/api/aml_x_y"
+
 
 def get_timestamp():
     my_date = datetime.now()
     return my_date.strftime('%Y.%m.%d__%H:%M__%S.%f')
+
 
 async def set_speed_and_print(x: Tuple[int, int, int], h: Tuple[int, int], m: Tuple[int, int, int], t: int):
     x_command = "X{},{},{}".format(x[0], x[1], x[2])
@@ -25,37 +27,40 @@ async def set_speed_and_print(x: Tuple[int, int, int], h: Tuple[int, int], m: Tu
     print(status["speed"])
 
 
-async def move_motor_1(position, debug_print=True):
+async def move_to_x_mm(position, debug_print=True):
     status = await http.get_json(url)
     start_position = status["motor_1_position"]
     start = time.time()
-    await comm.post_request(url, {"request_id" : get_timestamp(), "set_m1_target_position": position});
+    await comm.post_request(url, {"request_id": get_timestamp(), "set_m1_target_position": position});
     end = time.time()
     if debug_print:
-        print("Moving motor 1 from {} to {}, took {} msec".format(start_position, position, end-start))
+        print("Moving motor 1 from {} to {}, took {} msec".format(start_position, position, end - start))
 
-async def move_motor_2(position, debug_print=True):
+
+async def move_to_y_mm(position, debug_print=True):
     status = await http.get_json(url)
     start_position = status["motor_2_position"]
     start = time.time()
-    await comm.post_request(url, {"request_id" : get_timestamp(), "set_m2_target_position": position});
+    await comm.post_request(url, {"request_id": get_timestamp(), "set_m2_target_position": position});
     end = time.time()
     if debug_print:
-        print("Moving motor 2 from {} to {}, took {} msec".format(start_position, position, end-start))
+        print("Moving motor 2 from {} to {}, took {} msec".format(start_position, position, end - start))
 
 
-async def run_test():
-    await set_speed_and_print((300, 3000, 20), (99, 0), (100, 200, 500), 3000)
-    await move_motor_1(50)
-    await move_motor_2(50)
-    await move_motor_1(0)
-    await move_motor_2(0)
+async def move_to_xy_mm(x_position, y_position, debug_print=True):
+    await move_to_x_mm(x_position, debug_print)
+    await move_to_y_mm(y_position, debug_print)
 
-    await set_speed_and_print((300, 1000, 20), (99, 0), (100, 200, 500), 1000)
-    await move_motor_1(10)
-    await move_motor_2(10)
-    await move_motor_1(0)
-    await move_motor_2(0)
+
+async def main():
+    status = await http.get_json(url)
+    print(status["speed"])
+    await set_speed_and_print((75, 500, 1200), (49, 0), (160, 320, 600), 500)
+    for i in range(0,5):
+        await move_to_xy_mm(70, 55)
+        await move_to_xy_mm(80, 60)
+
 
 if __name__ == "__main__":
-    asyncio.run(run_test())
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(main())
