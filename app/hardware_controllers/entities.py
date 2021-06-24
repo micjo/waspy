@@ -46,12 +46,12 @@ class NoSchema(GenericModel):
 
 
 def get_schema_type(hardware_type):
-    Schema = NoSchema
+    schema = NoSchema
     if hardware_type == "aml":
-        Schema = AmlSchema
+        schema = AmlSchema
     if hardware_type == "motrona":
-        Schema = MotronaSchema
+        schema = MotronaSchema
     if hardware_type == "caen":
-        Schema = CaenSchema
+        schema = CaenSchema
 
-    return Schema
+    return schema
