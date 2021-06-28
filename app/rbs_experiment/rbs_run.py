@@ -112,8 +112,7 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             await run_channeling(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
         if recipe.type == rbs.RecipeType.random:
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
-
-    rbs_rqm_status.run_status = rbs.StatusModel.Parking
-    await control.move_to_position(rbs_rqm.rqm_number + "_parking", rbs_rqm.parking_position)
+        if recipe.type == rbs.RecipeType.move:
+            await control.move_to_position(rbs_rqm.rqm_number + "_move", recipe.position)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Idle

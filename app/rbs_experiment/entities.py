@@ -50,6 +50,7 @@ class RecipeType(str, Enum):
     random = "random"
     minimize_yield = "minimize_yield"
     fixed = "fixed"
+    move = "move"
 
 
 class VaryCoordinate(BaseModel):
@@ -103,7 +104,6 @@ class PauseModel(BaseModel):
 class StatusModel(str, Enum):
     Idle = "Idle"
     Running = "Running"
-    Parking = "Parking"
 
 
 class RbsRqmChanneling(BaseModel):
@@ -156,15 +156,43 @@ class RbsRqmFixed(BaseModel):
     type: Literal[RecipeType.fixed]
     sample_id: str
     file_stem: str
-    start_position: Optional[PositionCoordinates]
     charge_total: int
+
+
+class Move(BaseModel):
+    type: Literal[RecipeType.move]
+    position: PositionCoordinates
 
 
 class RbsRqm(BaseModel):
     rqm_number: str
     detectors: List[CaenDetectorModel]
-    recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
-    parking_position: PositionCoordinates
+    recipes: List[Union[RbsRqmChanneling, RbsRqmRandom, Move]]
+
+    @classmethod
+    def validate_recipes(cls, rbs_rqm):
+        '''
+        As of yet (2021 06), pydantic doesnt provide nice errors when using a Union. A PR is ongoing
+        (https://github.com/samuelcolvin/pydantic/pull/2336) to make this better in the union definition itself.
+        Consider switching to this approach when it gets released. As a temporary measure, validation of recipes now
+        happens separately before creating the RbsRqm instance
+        '''
+
+        if "recipes" not in rbs_rqm:
+            raise AttributeError("type object 'RbsRqm', has no attribute 'recipes'")
+
+        for recipe in rbs_rqm["recipes"]:
+            if "type" not in recipe:
+                raise AttributeError("type object 'Recipes', has no attribute 'type'")
+            if recipe["type"] == "random":
+                RbsRqmRandom.parse_obj(recipe)
+            if recipe["type"] == "channeling":
+                RbsRqmChanneling.parse_obj(recipe)
+            if recipe["type"] == "move":
+                Move.parse_obj(recipe)
+
+
+
 
     class Config:
         schema_extra = {
@@ -203,8 +231,7 @@ class RbsRqmStatus(BaseModel):
 empty_rbs_rqm = RbsRqm.parse_raw('''{
 "rqm_number":"rqm_test",
 "detectors": [],
-"recipes": [],
-"parking_position": {}
+"recipes": []
 }''')
 
 
