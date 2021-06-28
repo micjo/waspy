@@ -5,7 +5,7 @@ import logging
 import app.hardware_controllers.http_helper as http
 
 logging.basicConfig(level=logging.INFO, filename="debug.log")
-faker = False
+faker = True
 faker_time = 0.2
 
 
