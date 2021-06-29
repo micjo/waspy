@@ -1,10 +1,10 @@
 import * as con from './daemon_connection.js'
 
-export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume};
+export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume, upload_csv};
 
 function refreshDataRepeatedly(timeout) {
     refreshData("/api/rbs/state");
-    window.setInterval(function() {
+    window.setInterval(function () {
         refreshData("/api/rbs/state");
     }, timeout);
 }
@@ -19,13 +19,29 @@ async function abort() {
 }
 
 async function pause() {
-    let request = { "pause_dir_scan": true};
+    let request = {"pause_dir_scan": true};
     await con.postData("/api/rbs/pause_dir_scan", JSON.stringify(request));
 }
 
 async function resume() {
-    let request = { "pause_dir_scan": false };
+    let request = {"pause_dir_scan": false};
     await con.postData("/api/rbs/pause_dir_scan", JSON.stringify(request));
+}
+
+async function upload_csv(input) {
+    let data = new FormData()
+    data.append('file', input.files[0]);
+    console.log(input.files[0]);
+    let response = await fetch('http://localhost:8000/api/rbs/rqm_csv', {method: 'POST', body: data});
+    let response_data = await response.json();
+
+    let form_data = new FormData();
+    let blob = new Blob([JSON.stringify(response_data, null, 2)], {type: "application/json"});
+    let file_name = input.files[0].name;
+    file_name = file_name.substr(0, file_name.lastIndexOf(".")) + ".json";
+    let json_file = new File([blob], file_name);
+    form_data.append('file', json_file);
+    await fetch('http://localhost:8000/api/rbs/run', {method: 'POST', body: form_data});
 }
 
 function updateUi(hwData) {
@@ -40,7 +56,7 @@ function updateUi(hwData) {
         let sceneRow = document.createElement("tr");
 
         let sceneTitle = document.createElement("td");
-        sceneTitle.innerText = recipe["title"]
+        sceneTitle.innerText = recipe["sample_id"]
 
         let recipe_type = document.createElement("td");
         recipe_type.innerText = recipe["type"]
@@ -54,20 +70,20 @@ function updateUi(hwData) {
         con.getEl("rqm_status").appendChild(sceneRow);
     }
 
-    con.getEl("rqm_active_recipe").innerText= "Active: " + hwData["active_recipe"] + ", progress: "
+    con.getEl("rqm_active_recipe").innerText = "Active: " + hwData["active_recipe"] + ", progress: "
 
-        let ratio = hwData["recipe_progress_percentage"]
-        if (ratio != undefined) {
-            let progress = document.createElement("div");
-            progress.setAttribute("class", "progress");
-            let progressBar = document.createElement("div");
-            progressBar.setAttribute("class", "progress-bar" );
-            progressBar.setAttribute("style", "width: "+ ratio+ "%;");
-            progressBar.innerText = ratio + "%";
-            progress.appendChild(progressBar);
-            con.getEl("rqm_progress").innerHTML ="";
-            con.getEl("rqm_progress").appendChild(progress);
-        }
+    let ratio = hwData["recipe_progress_percentage"]
+    if (ratio != undefined) {
+        let progress = document.createElement("div");
+        progress.setAttribute("class", "progress");
+        let progressBar = document.createElement("div");
+        progressBar.setAttribute("class", "progress-bar");
+        progressBar.setAttribute("style", "width: " + ratio + "%;");
+        progressBar.innerText = ratio + "%";
+        progress.appendChild(progressBar);
+        con.getEl("rqm_progress").innerHTML = "";
+        con.getEl("rqm_progress").appendChild(progress);
+    }
 }
 
 function refreshGraph() {
@@ -93,14 +109,14 @@ function refreshGraph() {
             }];
 
             const layout = {
-              title: 'Motrona RBS current',
-              uirevision: 'test',
-              autosize:'true',
-              height:300
+                title: 'Motrona RBS current',
+                uirevision: 'test',
+                autosize: 'true',
+                height: 300
             };
 
             Plotly.newPlot('rbs_current', plotdata, layout);
-            });
+        });
 
     fetch("http://localhost:5000/trends/aml_positions")
         .then(response => response.json())
@@ -120,12 +136,12 @@ function refreshGraph() {
             }];
 
             const layout = {
-              title: 'AML X position',
-              uirevision: 'test',
-              autosize:'true',
-              height:300
+                title: 'AML X position',
+                uirevision: 'test',
+                autosize: 'true',
+                height: 300
             };
 
             Plotly.newPlot('motor_pos_graph', plotdata, layout);
-            });
+        });
 }
