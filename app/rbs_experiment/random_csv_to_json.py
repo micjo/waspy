@@ -29,7 +29,10 @@ def drop_nan(data: Dict) -> List[Dict]:
 
 def parse_top_settings(top_section: str) -> Dict:
     df = pd.read_csv(StringIO(top_section))
-    top_settings = drop_nan(df.to_dict('records'))[0]
+    rqm_number = str(df["rqm_number"][0])
+    if not rqm_number.isalpha():
+        raise AttributeError("type object 'rqm_number', is not a valid filename")
+    top_settings = {"rqm_number": rqm_number}
     return top_settings
 
 
@@ -53,10 +56,14 @@ def parse_recipes(recipe_section: str) -> [Dict]:
     recipe_settings = parse_list_settings(recipe_section)
 
     for setting in recipe_settings:
-        if setting["type"] == rbs.RecipeType.move:
+        if "type" not in setting:
+            raise AttributeError("type object 'recipe', has no attribute 'type'")
+        elif setting["type"] == rbs.RecipeType.move:
             convert_coordinates_to_position("position", setting)
-        if setting["type"] == rbs.RecipeType.random:
+        elif setting["type"] == rbs.RecipeType.random:
             convert_coordinates_to_position("start_position", setting)
             setting["vary_coordinate"] = rbs.VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
+        else:
+            raise AttributeError("type object 'type' is incorrect")
 
     return recipe_settings
