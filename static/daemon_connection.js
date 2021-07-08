@@ -19,7 +19,7 @@ async function postData(host, textBody) {
     fetch(host, {
         method: 'POST',
         headers: {
-            'Content-Type': 'text/plain',
+            'Content-Type': 'application/json',
         },
         body: textBody
     });

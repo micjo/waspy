@@ -32,6 +32,7 @@
 {{ ui_elements.buttonSpinnerWithRequest("stop acquisition", "max_caen.sendARequest", url, prefix, 'acquire_stop', '{"stop_acquisition":true}') }}
 {{ ui_elements.buttonSpinnerWithRequest("store registers", "max_caen.sendARequest", url, prefix, 'store_reg', '{"store_registers":true}') }}
 {{ ui_elements.buttonSpinnerWithRequest("open connection", "max_caen.sendARequest", url, prefix, 'open', '{"open_connection":true}') }}
+{{ ui_elements.buttonSpinnerWithRequest("debug", "max_caen.sendARequest", url, prefix, 'debug', '{"debug_":true}') }}
 {{ ui_elements.buttonSpinnerWithRequest("reset", "max_caen.sendARequest", url, prefix, 'reset', '{"reset":true}') }}
 {{ ui_elements.buttonSpinnerWithRequest("clear", "max_caen.sendARequest", url, prefix, 'clear', '{"clear":true}') }}
 {{ ui_elements.buttonSpinnerWithRequest("continue", "max_caen.sendARequest", url, prefix, 'continue', '{"continue":true}') }}

@@ -11,10 +11,17 @@ from app.setup import config
 
 from app.rbs_experiment.router import router as rbs_router
 from app.hardware_controllers.router import router as hw_router
-# from app.trends.router import app_dash
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(docs_url=None, redoc_url=None)
+origins = [
+    'http://localhost',
+    'http://localhost:3000'
+]
+app.add_middleware(CORSMiddleware, allow_origins= origins, allow_credentials=True,
+                   allow_methods=['*'], allow_headers=['*'])
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 

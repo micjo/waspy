@@ -40,6 +40,8 @@ class AmlSchema(GenericModel):
         except:
             pass
 
+        orm_mode = True
+
 
 class NoSchema(GenericModel):
     __root__: Dict
