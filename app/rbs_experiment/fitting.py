@@ -37,7 +37,6 @@ def fit_and_smooth(angles, yields):
     log_line = "Minimum yield found at: [angle: yield] = [{angle}: {energy_yield}]" \
         .format(angle=smooth_angle_for_minimum_yield, energy_yield=round(np.amin(smooth_yields), 2))
 
-    print(log_line)
     logging.info(log_line)
     return smooth_angles, smooth_yields
 

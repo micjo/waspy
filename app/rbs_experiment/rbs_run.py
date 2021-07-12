@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import List
 from pathlib import Path
@@ -47,8 +48,11 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRandom, detectors: List[rbs.C
     await control.prepare_data_acquisition(recipe.sample_id)
 
     start = time.time()
-    for position in positions:
+    total_steps = len(positions)
+
+    for index, position in enumerate(positions):
         await control.move_position_and_count(recipe.sample_id + "_" + str(position), position)
+        rbs_rqm_status.recipe_progress_percentage = round((index / total_steps) * 100, 2)
     end = time.time()
     run_time_msec = end - start
     random_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
@@ -101,10 +105,17 @@ async def run_channeling(sub_folder, recipe: rbs.RbsRqmChanneling, detectors: Li
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus):
     sub_folder = rbs_rqm.rqm_number
 
+    print("setting status")
     rbs_rqm_status.run_status = rbs.StatusModel.Running
     rbs_rqm_status.rqm = rbs_rqm
+    print("status set")
+
 
     for recipe in rbs_rqm.recipes:
+        if recipe.type == rbs.RecipeType.move:
+            await control.move_to_position(rbs_rqm.rqm_number + "_move", recipe.position)
+            continue
+
         rbs_rqm_status.active_recipe = recipe.sample_id
         rbs_rqm_status.recipe_progress_percentage = 0
 
@@ -112,7 +123,6 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             await run_channeling(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
         if recipe.type == rbs.RecipeType.random:
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
-        if recipe.type == rbs.RecipeType.move:
-            await control.move_to_position(rbs_rqm.rqm_number + "_move", recipe.position)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Idle
+    rbs_rqm_status.rqm = rbs.empty_rbs_rqm

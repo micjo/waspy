@@ -14,8 +14,8 @@ class AmlConfig(BaseModel):
     title: str
     first_name: str
     second_name: str
-    first_load: int
-    second_load: int
+    first_load: float
+    second_load: float
     url: str
 
     class Config:

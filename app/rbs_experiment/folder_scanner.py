@@ -26,12 +26,11 @@ def _make_folders():
 
 
 def move_and_try_copy(file, move_folder, copy_folder):
-    file.rename(move_folder / file.name)
+    file.replace(move_folder / file.name)
     file = move_folder / file.name
     try:
         copy2(file, copy_folder)
     except:
-        print(traceback.format_exc())
         logging.error(traceback.format_exc())
     return file
 
@@ -70,7 +69,6 @@ class FolderScanner:
                     move_and_try_copy(f, output_dir.done, output_dir_remote.done)
                 except:
                     move_and_try_copy(f, output_dir.failed, output_dir_remote.failed)
-                    print(traceback.format_exc())
                     logging.error(traceback.format_exc())
 
     def pause_dir_scan(self, pause):

@@ -14,7 +14,6 @@ import app.rbs_experiment.fitting as fit
 
 async def move_to_position(identifier: str, position: rbs.PositionCoordinates):
     logging.info("Moving rbs system to '" + str(position) + "'")
-    print("Moving rbs system to '" + str(position) + "'")
 
     if position is None:
         return
@@ -76,7 +75,6 @@ async def get_position_range(vary_coordinate: rbs.VaryCoordinate) -> List[rbs.Po
 
 async def move_position_and_count(identifier: str, position: rbs.PositionCoordinates):
     logging.info("moving then acquiring till target")
-    print("moving then acquiring till target")
     await move_to_position(identifier, position)
     await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
     await comm.motrona_counting_done(daemons.motrona_rbs.url)
@@ -88,7 +86,6 @@ async def prepare_data_acquisition(identifier: str):
 
 async def prepare_counting(identifier: str, target):
     logging.info("pause counting and set target")
-    print("pause counting and set target")
     await comm.pause_motrona_count(identifier + "_pause", daemons.motrona_rbs.url)
     await comm.set_motrona_target_charge(identifier + "_set_target_charge", daemons.motrona_rbs.url, target)
 

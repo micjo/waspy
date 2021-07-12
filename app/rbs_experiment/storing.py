@@ -15,7 +15,6 @@ def try_copy(source, destination):
         Path.mkdir(destination.parent, exist_ok=True)
         copy2(source, destination)
     except:
-        print(traceback.format_exc())
         logging.error(traceback.format_exc())
 
 
