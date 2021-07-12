@@ -76,6 +76,5 @@ async def parse_rqm_csv(response: Response, file: UploadFile = File(...)):
         return rbs_rqm
     except Exception as e:
         logging.error(traceback.format_exc())
-        print(traceback.format_exc())
         response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return str(e)

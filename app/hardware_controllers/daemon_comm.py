@@ -26,7 +26,6 @@ async def wait_for_request_done(url, request):
 
 async def post_request(url, request):
     logging.info("post to: " + url + ", content: " + str(request))
-    print("post to: " + url + ", content: " + str(request))
     if faker:
         await asyncio.sleep(faker_time)
         return

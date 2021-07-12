@@ -99,6 +99,7 @@ function submit(url, prefix, id) {
 }
 
 function load(prefix, firstPos, secondPos){
+    console.log(firstPos);
     con.getEl(prefix + "_first_request").value = firstPos;
     con.getEl(prefix + "_second_request").value = secondPos;
 }

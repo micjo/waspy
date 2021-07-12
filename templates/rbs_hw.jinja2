@@ -121,8 +121,10 @@
                         {{ ui_elements.buttonSpinner("Pause dir scan", 'abort_spinner', "rbs_hw.pause()") }}
                         {{ ui_elements.buttonSpinner("Resume dir scan", 'abort_spinner', "rbs_hw.resume()") }}
                         <label class="btn btn-outline-primary">
-                            Upload CSV <input type="file" onchange="rbs_hw.upload_csv(this)" hidden>
+                            Upload CSV <input type="file" id="csv_input" hidden>
                         </label>
+                        {{ ui_elements.buttonWithCall("Run", "rbs_hw.run()") }}
+
                     </div>
                 </div>
             </div>

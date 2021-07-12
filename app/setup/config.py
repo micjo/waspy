@@ -9,7 +9,7 @@ logging.basicConfig(
     filename="debug_log.txt")
 
 
-setup = home_setup
+setup = lab_setup
 
 daemons: DaemonConfig = setup.daemons
 input_dir: InputDirConfig = setup.input_dir

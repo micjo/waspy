@@ -40,7 +40,6 @@ def plot_compare(sub_folder, file_stem, lhs_histograms: List[List[int]], lhs_lab
                  rhs_histograms: List[List[int]], rhs_labels: List[str]):
     nr_of_histograms = len(lhs_histograms)
     fig, axs = plt.subplots(nr_of_histograms)
-    print("plot_compare")
 
     for index, ax in enumerate(axs):
         ax.plot(lhs_histograms[index], label=lhs_labels[index])

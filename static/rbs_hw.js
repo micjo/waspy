@@ -1,6 +1,7 @@
 import * as con from './daemon_connection.js'
 
-export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume, upload_csv};
+
+export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume, run};
 
 function refreshDataRepeatedly(timeout) {
     refreshData("/api/rbs/state");
@@ -28,20 +29,27 @@ async function resume() {
     await con.postData("/api/rbs/pause_dir_scan", JSON.stringify(request));
 }
 
-async function upload_csv(input) {
+
+async function run() {
+    let el = con.getEl("csv_input")
+    console.log("uploading csv");
     let data = new FormData()
-    data.append('file', input.files[0]);
-    console.log(input.files[0]);
-    let response = await fetch('http://localhost:8000/api/rbs/rqm_csv', {method: 'POST', body: data});
-    let response_data = await response.json();
+    data.append('file', el.files[0]);
+    let response = await fetch('http://localhost:5000/api/rbs/rqm_csv', {method: 'POST', body: data});
+    let json_job = await response.json();
+
+    if (response.status !== 200) {
+        let message = "Failed to parse csv. Error message:\n" + json_job;
+        con.showFailureModal(message);
+    }
 
     let form_data = new FormData();
-    let blob = new Blob([JSON.stringify(response_data, null, 2)], {type: "application/json"});
-    let file_name = input.files[0].name;
+    let blob = new Blob([JSON.stringify(json_job, null, 2)], {type: "application/json"});
+    let file_name = el.files[0].name;
     file_name = file_name.substr(0, file_name.lastIndexOf(".")) + ".json";
     let json_file = new File([blob], file_name);
     form_data.append('file', json_file);
-    await fetch('http://localhost:8000/api/rbs/run', {method: 'POST', body: form_data});
+    fetch('http://localhost:5000/api/rbs/run', {method: 'POST', body: form_data});
 }
 
 function updateUi(hwData) {
