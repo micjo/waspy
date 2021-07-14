@@ -1,7 +1,7 @@
 import * as con from './daemon_connection.js'
 
 
-export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume, run};
+export {refreshGraph, refreshData, refreshDataRepeatedly, abort, pause, resume, schedule};
 
 function refreshDataRepeatedly(timeout) {
     refreshData("/api/rbs/state");
@@ -30,7 +30,7 @@ async function resume() {
 }
 
 
-async function run() {
+async function schedule() {
     let el = con.getEl("csv_input")
     console.log("uploading csv");
     let data = new FormData()

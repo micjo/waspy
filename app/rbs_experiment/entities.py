@@ -230,7 +230,7 @@ class RbsRqmStatus(BaseModel):
 
 
 empty_rbs_rqm = RbsRqm.parse_raw('''{
-"rqm_number":"rqm_test",
+"rqm_number":"empty",
 "detectors": [],
 "recipes": []
 }''')

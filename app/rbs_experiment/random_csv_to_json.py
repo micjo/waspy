@@ -4,6 +4,7 @@ from io import StringIO
 from typing import Dict, List
 import app.rbs_experiment.entities as rbs
 from math import isnan
+import logging
 
 
 def get_sections(csv_text: str):
@@ -30,8 +31,7 @@ def drop_nan(data: Dict) -> List[Dict]:
 def parse_top_settings(top_section: str) -> Dict:
     df = pd.read_csv(StringIO(top_section))
     rqm_number = str(df["rqm_number"][0])
-    if not rqm_number.isalpha():
-        raise AttributeError("type object 'rqm_number', is not a valid filename")
+    #TODO: better filename checkking (underscores are allowed , ...)
     top_settings = {"rqm_number": rqm_number}
     return top_settings
 

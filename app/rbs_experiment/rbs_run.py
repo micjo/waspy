@@ -105,11 +105,8 @@ async def run_channeling(sub_folder, recipe: rbs.RbsRqmChanneling, detectors: Li
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus):
     sub_folder = rbs_rqm.rqm_number
 
-    print("setting status")
     rbs_rqm_status.run_status = rbs.StatusModel.Running
     rbs_rqm_status.rqm = rbs_rqm
-    print("status set")
-
 
     for recipe in rbs_rqm.recipes:
         if recipe.type == rbs.RecipeType.move:
@@ -126,3 +123,5 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Idle
     rbs_rqm_status.rqm = rbs.empty_rbs_rqm
+    rbs_rqm_status.active_recipe = ""
+    rbs_rqm_status.recipe_progress_percentage = 0
