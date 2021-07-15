@@ -1,7 +1,5 @@
 from typing import List
-import asyncio
 import logging
-import math
 import numpy as np
 
 from app.setup.config import daemons
@@ -97,8 +95,8 @@ def make_coordinate_range(vary_coordinate: rbs.VaryCoordinate) -> np.ndarray:
 
 
 async def get_packed_histogram(detector: rbs.CaenDetectorModel) -> List[int]:
-    data = await comm.get_caen_histogram(daemons.caen_rbs.url, detector.board, detector.channel)
-    packed = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
+    resp_code, data = await comm.get_caen_histogram(daemons.caen_rbs.url, detector.board, detector.channel)
+    packed = comm.pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
     return packed
 
 
@@ -106,11 +104,3 @@ def get_sum(data: List[int], window: rbs.Window) -> int:
     return sum(data[window.start:window.end])
 
 
-def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
-    subset = data[channel_min:channel_max]
-    samples_to_group_in_bin = math.floor(len(subset) / channel_width)
-    packed_data = []
-    for index in range(0, samples_to_group_in_bin * channel_width, samples_to_group_in_bin):
-        bin_sum = sum(subset[index:index + samples_to_group_in_bin])
-        packed_data.append(bin_sum)
-    return packed_data
