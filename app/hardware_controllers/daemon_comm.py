@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 import asyncio
@@ -5,7 +6,7 @@ import logging
 import app.hardware_controllers.http_helper as http
 
 logging.basicConfig(level=logging.INFO, filename="debug.log")
-faker = False
+faker = True
 faker_time = 0.2
 
 
@@ -91,11 +92,21 @@ async def stop_caen_acquisition(request_id, url):
 
 
 async def get_caen_histogram(base_url, board: int, channel: int) -> List[int]:
-    if faker:
-        await asyncio.sleep(2)
+    # if faker:
+    #     await asyncio.sleep(2)
     url = base_url + "/histogram/" + str(board) + "-" + str(channel)
-    raw_data = await http.get_text(url)
+    resp_code, raw_data = await http.get_text_with_response_code(url)
     raw_data = raw_data.split(";")
     raw_data.pop()
     data = [int(x) for x in raw_data]
-    return data
+    return resp_code, data
+
+
+def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
+    subset = data[channel_min:channel_max]
+    samples_to_group_in_bin = math.floor(len(subset) / channel_width)
+    packed_data = []
+    for index in range(0, samples_to_group_in_bin * channel_width, samples_to_group_in_bin):
+        bin_sum = sum(subset[index:index + samples_to_group_in_bin])
+        packed_data.append(bin_sum)
+    return packed_data

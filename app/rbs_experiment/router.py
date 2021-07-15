@@ -52,12 +52,11 @@ async def pause_rbs_dir_scan(request: PauseModel):
 
 
 @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
-async def run_rbs(response: Response, file: UploadFile = File(...)):
+async def run_rbs(response: Response, job: rbs.RbsRqm):
     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=True))
-    file_path = config.input_dir.watch / file.filename
-    file_bytes = await file.read()
+    file_path = config.input_dir.watch / job.rqm_number
     with open(file_path, "w") as f:
-        f.write(file_bytes.decode("utf-8"))
+        f.write(job.json())
         f.flush()
     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=False))
 

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, Response, status
 from app.setup import config
 from app.hardware_controllers.entities import get_schema_type, get_page_type
 from app.hardware_controllers import http_helper as http
+import app.hardware_controllers.daemon_comm as comm
 
 templates = Jinja2Templates(directory="templates")
 
@@ -30,6 +31,18 @@ def build_histogram_api(key, daemon):
         return resp
 
 
+def build_packed_histogram_api(key, daemon):
+    @router.get("/api/" + key + "/histogram/{board}-{channel}/pack-{start}-{end}-{width}", tags=["Daemon API"])
+    async def histogram(response: Response, board: int, channel: int, start: int, end: int, width: int):
+        if width > 2048:
+            response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+            return {}
+        resp_code, data = await comm.get_caen_histogram(daemon.url, board, channel)
+        packed_data = comm.pack(data, start, end, width)
+        response.status_code = resp_code
+        return packed_data
+
+
 def build_post_api(key, daemon):
     hardware_schema = get_schema_type(daemon.type)
 
@@ -52,6 +65,7 @@ def build_webui(key, daemon):
 for any_key, any_daemon in config.daemons:
     if any_daemon.type == "caen":
         build_histogram_api(any_key, any_daemon)
+        build_packed_histogram_api(any_key, any_daemon)
     build_get_api(any_key, any_daemon)
     build_post_api(any_key, any_daemon)
     build_webui(any_key, any_daemon)
