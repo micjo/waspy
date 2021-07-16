@@ -24,9 +24,9 @@ async def router_startup():
     asyncio.create_task(scanner.run_main())
 
 
-@router.get("/rbs_hw", response_class=HTMLResponse, tags=["WebUI"])
-async def rbs_hw(request: Request):
-    return templates.TemplateResponse("rbs_hw.jinja2", {"request": request, "config": config.daemons.dict()})
+# @router.get("/rbs_hw", response_class=HTMLResponse, tags=["WebUI"])
+# async def rbs_hw(request: Request):
+#     return templates.TemplateResponse("rbs_hw.jinja2", {"request": request, "config": config.daemons.dict()})
 
 
 @router.get("/api/rbs/state", tags=["RBS API"])

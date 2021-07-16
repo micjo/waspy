@@ -122,6 +122,5 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Idle
-    rbs_rqm_status.rqm = rbs.empty_rbs_rqm
+    rbs_rqm_status.recipe_progress_percentage = 100
     rbs_rqm_status.active_recipe = ""
-    rbs_rqm_status.recipe_progress_percentage = 0

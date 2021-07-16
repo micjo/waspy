@@ -16,8 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(docs_url=None, redoc_url=None)
 origins = [
-    'http://localhost',
-    'http://localhost:3000'
+    'http://localhost:3000',
 ]
 app.add_middleware(CORSMiddleware, allow_origins= origins, allow_credentials=True,
                    allow_methods=['*'], allow_headers=['*'])
@@ -31,9 +30,9 @@ app.include_router(rbs_router)
 app.include_router(hw_router)
 
 
-@app.get("/", response_class=HTMLResponse, tags=["WebUI"])
-async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.jinja2", {"request": request, "config": config.daemons.dict()})
+# @app.get("/", response_class=HTMLResponse, tags=["WebUI"])
+# async def dashboard(request: Request):
+#     return templates.TemplateResponse("dashboard.jinja2", {"request": request, "config": config.daemons.dict()})
 
 
 @app.get("/favicon.ico")

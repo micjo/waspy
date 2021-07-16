@@ -68,4 +68,4 @@ for any_key, any_daemon in config.daemons:
         build_packed_histogram_api(any_key, any_daemon)
     build_get_api(any_key, any_daemon)
     build_post_api(any_key, any_daemon)
-    build_webui(any_key, any_daemon)
+    # build_webui(any_key, any_daemon)
