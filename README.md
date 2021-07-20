@@ -14,11 +14,11 @@ python -m venv pyvenv
 Load the virtual environment by sourcing the activate script on linux, or running the activate.bat script in windows. These are located in `pyvenv/bin`
 On linux (Unix):
 ```
-source bin/activate
+source pyvenv/bin/activate
 ```
 on Windows:
 ```
-bin/activate.bat
+pyvenv/bin/activate.bat
 ```
 
 Install the dependencies. Pip will search for a setup.py in the mentioned folder (`dot` is the current folder), and install the required packages
