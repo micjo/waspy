@@ -4,13 +4,6 @@ from typing import Dict
 from app.setup.config import daemons
 
 
-def get_page_type(hardware_type):
-    if (hardware_type == "aml"): return "max_aml.jinja2"
-    if (hardware_type == "caen"): return "max_caen.jinja2"
-    if (hardware_type == "motrona"): return "max_motrona.jinja2"
-    return ""
-
-
 class MotronaSchema(GenericModel):
     __root__: Dict
 
