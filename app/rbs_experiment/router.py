@@ -3,15 +3,13 @@ import traceback
 
 from app.rbs_experiment.entities import PauseModel
 from app.setup import config
-from fastapi import APIRouter, Request, Response, status
+from fastapi import APIRouter, Response, status
 from fastapi import File, UploadFile
-from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 import app.rbs_experiment.entities as rbs
 import app.rbs_experiment.random_csv_to_json as csv_convert
 import app.rbs_experiment.folder_scanner as folder_scanner
 import logging
-import json
 
 templates = Jinja2Templates(directory="templates")
 
@@ -22,11 +20,6 @@ router = APIRouter()
 @router.on_event('startup')
 async def router_startup():
     asyncio.create_task(scanner.run_main())
-
-
-# @router.get("/rbs_hw", response_class=HTMLResponse, tags=["WebUI"])
-# async def rbs_hw(request: Request):
-#     return templates.TemplateResponse("rbs_hw.jinja2", {"request": request, "config": config.daemons.dict()})
 
 
 @router.get("/api/rbs/state", tags=["RBS API"])

@@ -1,15 +1,16 @@
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from fastapi import APIRouter, Request, Response, status
+from fastapi import APIRouter, Response, status
 
 from app.setup import config
-from app.hardware_controllers.entities import get_schema_type, get_page_type
+from app.hardware_controllers.entities import get_schema_type
 from app.hardware_controllers import http_helper as http
 import app.hardware_controllers.daemon_comm as comm
 
-templates = Jinja2Templates(directory="templates")
-
 router = APIRouter()
+
+
+@router.on_event("shutdown")
+async def shutdown_event():
+    await http.session.close()
 
 
 def build_get_api(key, daemon):
@@ -53,19 +54,9 @@ def build_post_api(key, daemon):
         return body
 
 
-def build_webui(key, daemon):
-    @router.get("/hw/" + key, response_class=HTMLResponse, summary="WebUI for hardware", description="WebUI",
-                tags=["WebUI"])
-    async def hw(request: Request):
-        page_type = get_page_type(daemon.type)
-        return templates.TemplateResponse(page_type,
-                                          {"request": request, "config": config.daemons.dict(), "prefix": key})
-
-
 for any_key, any_daemon in config.daemons:
     if any_daemon.type == "caen":
         build_histogram_api(any_key, any_daemon)
         build_packed_histogram_api(any_key, any_daemon)
     build_get_api(any_key, any_daemon)
     build_post_api(any_key, any_daemon)
-    # build_webui(any_key, any_daemon)

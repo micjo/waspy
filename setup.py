@@ -21,6 +21,7 @@ setup(name='Hive',
                         'fastapi==0.66.0',
                         'pytest==6.2.4',
                         'aiofiles==0.7.0',
-                        'python-multipart==0.0.5'
+                        'python-multipart==0.0.5',
+                        'aiohttp==3.7.4'
                         ]
       )

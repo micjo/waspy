@@ -1,41 +1,38 @@
-import tornado.httpclient
-import tornado.escape
-import json
+import aiohttp
 
-session = tornado.httpclient.AsyncHTTPClient()
+session = aiohttp.ClientSession()
 
 
 async def get_text_with_response_code(url):
-    http_request = tornado.httpclient.HTTPRequest(url=url, connect_timeout=2.0, request_timeout=5.0)
-    http_response = await session.fetch(http_request, raise_error=False)
-    text = tornado.escape.to_unicode(http_response.body)
-    return http_response.code, text
+    get_session = await session.get(url)
+    text = await get_session.text()
+    response = get_session.status
+    return response, text
 
 
 async def get_json_with_response_code(url):
-    http_request = tornado.httpclient.HTTPRequest(url=url, connect_timeout=2.0, request_timeout=5.0)
-    http_response = await session.fetch(http_request, raise_error=False)
-    json_data = tornado.escape.json_decode(http_response.body)
-    return http_response.code, json_data
+    get_session = await session.get(url)
+    json = await get_session.json()
+    response = get_session.status
+    return response, json
 
 
 async def get_text(url):
-    http_request = tornado.httpclient.HTTPRequest(url=url, connect_timeout=2.0, request_timeout=5.0)
-    http_response = await session.fetch(http_request)
-    text = tornado.escape.to_unicode(http_response.body)
+    get_session = await session.get(url)
+    text = await get_session.text()
     return text
 
 
 async def get_json(url):
-    http_request = tornado.httpclient.HTTPRequest(url=url, connect_timeout=2.0, request_timeout=5.0)
-    http_response = await session.fetch(http_request)
-    json_data = tornado.escape.json_decode(http_response.body)
+    get_session = await session.get(url)
+    json_data = await get_session.json()
     return json_data
 
 
 async def post_dictionary(url, data):
-    body = json.dumps(data)
-    http_request = tornado.httpclient.HTTPRequest(url=url, connect_timeout=2.0, request_timeout=5.0, method='POST',
-                                                  body=body)
-    http_response = await session.fetch(http_request, raise_error=False)
-    return http_response.code, http_response.body
+    post_session = await session.post(url, json=data)
+    text = await post_session.text()
+    response = post_session.status
+    return response, text
+
+
