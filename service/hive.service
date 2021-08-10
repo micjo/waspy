@@ -1,0 +1,15 @@
+[Unit]
+Description=Hive middle layer - python abstractions
+Requires=systemd-networkd-wait-eth1.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/wasp-hive
+ExecStart=/root/wasp-hive/run.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+
