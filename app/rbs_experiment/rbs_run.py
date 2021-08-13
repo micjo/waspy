@@ -65,7 +65,7 @@ async def run_fixed(sub_folder, recipe: rbs.RbsRqmFixed, detectors: List[rbs.Cae
     start = time.time()
     await control.prepare_counting(recipe.sample_id + "pause_set", recipe.charge_total)
     await control.prepare_data_acquisition(recipe.sample_id)
-    await control.move_position_and_count(recipe.sample_id + "move_acquire", recipe.start_position)
+    await control.count(recipe.sample_id + "count")
     end = time.time()
     measuring_time_msec = end - start
 
@@ -76,7 +76,7 @@ async def run_fixed(sub_folder, recipe: rbs.RbsRqmFixed, detectors: List[rbs.Cae
 
 async def run_channeling(sub_folder, recipe: rbs.RbsRqmChanneling, detectors: List[rbs.CaenDetectorModel],
                          rbs_rqm_status: rbs.RbsRqmStatus):
-
+    await control.move_to_position(recipe.sample_id, recipe.start_position)
     for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
         yield_recipe = rbs.RbsRqmMinimizeYield(type=rbs.RecipeType.minimize_yield, sample_id=recipe.sample_id,
                                                file_stem=recipe.file_stem + str(index),
