@@ -70,6 +70,10 @@ async def get_position_range(vary_coordinate: rbs.VaryCoordinate) -> List[rbs.Po
     positions = [rbs.PositionCoordinates.parse_obj({vary_coordinate.name: angle}) for angle in angles]
     return positions
 
+async def count(identifier: str):
+    logging.info("moving then acquiring till target")
+    await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
+    await comm.motrona_counting_done(daemons.motrona_rbs.url)
 
 async def move_position_and_count(identifier: str, position: rbs.PositionCoordinates):
     logging.info("moving then acquiring till target")

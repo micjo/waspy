@@ -1,5 +1,6 @@
 import app.setup.home_setup as home_setup
 import app.setup.lab_setup as lab_setup
+import app.setup.container_setup as container_setup
 from app.setup.entities import DaemonConfig, OutputDirConfig, InputDirConfig
 import logging
 logging.basicConfig(
@@ -9,7 +10,7 @@ logging.basicConfig(
     filename="debug_log.txt")
 
 
-setup = home_setup
+setup = container_setup
 
 daemons: DaemonConfig = setup.daemons
 input_dir: InputDirConfig = setup.input_dir
