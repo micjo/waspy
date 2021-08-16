@@ -6,7 +6,7 @@ import logging
 import app.hardware_controllers.http_helper as http
 
 logging.basicConfig(level=logging.INFO, filename="debug.log")
-faker = False
+faker = True
 faker_time = 0.2
 
 
@@ -68,13 +68,15 @@ async def pause_motrona_count(request_id, url):
     await post_request(url, motrona_request)
 
 
-async def motrona_counting_done(url):
+async def motrona_counting_done(url, callback=None):
     if faker:
         await asyncio.sleep(faker_time)
         return
     while True:
         await asyncio.sleep(1)
         response = await http.get_json(url)
+        if callback:
+            callback(response)
         if response["status"] == "Done":
             logging.info("motrona counting done")
             break

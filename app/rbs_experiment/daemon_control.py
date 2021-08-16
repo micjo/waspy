@@ -70,16 +70,18 @@ async def get_position_range(vary_coordinate: rbs.VaryCoordinate) -> List[rbs.Po
     positions = [rbs.PositionCoordinates.parse_obj({vary_coordinate.name: angle}) for angle in angles]
     return positions
 
-async def count(identifier: str):
+
+async def count(identifier: str, count_wait_callback):
     logging.info("moving then acquiring till target")
     await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
-    await comm.motrona_counting_done(daemons.motrona_rbs.url)
+    await comm.motrona_counting_done(daemons.motrona_rbs.url, count_wait_callback)
 
-async def move_position_and_count(identifier: str, position: rbs.PositionCoordinates):
+
+async def move_position_and_count(identifier: str, position: rbs.PositionCoordinates, count_wait_callback):
     logging.info("moving then acquiring till target")
     await move_to_position(identifier, position)
     await comm.clear_start_motrona_count(identifier, daemons.motrona_rbs.url)
-    await comm.motrona_counting_done(daemons.motrona_rbs.url)
+    await comm.motrona_counting_done(daemons.motrona_rbs.url, count_wait_callback)
 
 
 async def prepare_data_acquisition(identifier: str):
@@ -106,5 +108,3 @@ async def get_packed_histogram(detector: rbs.CaenDetectorModel) -> List[int]:
 
 def get_sum(data: List[int], window: rbs.Window) -> int:
     return sum(data[window.start:window.end])
-
-

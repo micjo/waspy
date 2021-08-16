@@ -10,7 +10,7 @@ import app.rbs_experiment.rbs_run as rbs_run
 
 
 def _pick_first_file_from_path(path):
-    files = [file for file in path.iterdir() if file.is_file()]
+    files = [file for file in sorted(path.iterdir()) if file.is_file()]
     try:
         return files[0]
     except:
@@ -40,7 +40,8 @@ class FolderScanner:
         self.dir_scan_paused = False
         self.experiment_routine = None
         self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, rqm=rbs.empty_rbs_rqm,
-                                           active_recipe="", recipe_progress_percentage=0)
+                                           active_recipe="", recipe_progress_percentage=0, accumulated_charge=0,
+                                           accumulated_charge_target=0)
         _make_folders()
 
     def get_state(self):
@@ -51,7 +52,8 @@ class FolderScanner:
     def abort(self):
         self.experiment_routine.cancel()
         self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, rqm=rbs.empty_rbs_rqm,
-                                           active_recipe="", recipe_progress_percentage=0)
+                                           active_recipe="", recipe_progress_percentage=0, accumulated_charge=0,
+                                           accumulated_charge_target=0)
 
     async def run_main(self):
         while True:
