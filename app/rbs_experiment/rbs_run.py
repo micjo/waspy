@@ -69,7 +69,6 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRandom, detectors: List[rbs.C
     for index, position in enumerate(positions):
         await control.move_position_and_count(recipe.sample_id + "_" + str(position), position,
                                               make_count_callback(rbs_rqm_status))
-        rbs_rqm_status.recipe_progress_percentage = round((index / total_steps) * 100, 2)
     end = time.time()
     run_time_msec = end - start
     random_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
@@ -142,7 +141,6 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             continue
 
         rbs_rqm_status.active_recipe = recipe.sample_id
-        rbs_rqm_status.recipe_progress_percentage = 0
 
         if recipe.type == rbs.RecipeType.channeling:
             rbs_rqm_status.accumulated_charge_target = get_total_counts_channeling(recipe)
@@ -152,7 +150,6 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Idle
-    rbs_rqm_status.recipe_progress_percentage = 100
     rbs_rqm_status.accumulated_charge = 0
     rbs_rqm_status.accumulated_charge_target = 0
     rbs_rqm_status.active_recipe = ""
