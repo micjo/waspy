@@ -39,8 +39,8 @@ async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmMinimizeYield, detect
         file_stem = recipe.file_stem + "_" + control.single_coordinate_to_string(position, recipe.vary_coordinate)
         await control.get_and_save_histograms(sub_folder, file_stem, recipe.sample_id, run_time, detectors)
 
-    # min_position = await control.get_minimum_yield_position(sub_folder, recipe, positions, energy_yields)
-    # await control.move_to_position(recipe.sample_id + "_move_to_min_position", min_position)
+    min_position = await control.get_minimum_yield_position(sub_folder, recipe, positions, energy_yields)
+    await control.move_to_position(recipe.sample_id + "_move_to_min_position", min_position)
 
 
 async def run_yield_integration(position: rbs.PositionCoordinates, detector_optimize,
