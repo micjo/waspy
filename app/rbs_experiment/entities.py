@@ -230,7 +230,6 @@ class RbsRqmStatus(BaseModel):
     run_status: StatusModel
     rqm: RbsRqm
     active_recipe: str
-    recipe_progress_percentage: float
     accumulated_charge: float
     accumulated_charge_target: float
 
