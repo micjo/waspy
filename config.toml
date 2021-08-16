@@ -1,0 +1,47 @@
+[hw_control]
+    [hw_control.aml_x_y]
+    type = "aml"
+    url = "http://localhost:22100/api/latest"
+    names = ["X", "Y"]
+    loads = [110, 20]
+    title = "AML X Y"
+
+    [hw_control.aml_phi_zeta]
+    type = "aml"
+    url = "http://localhost:22100/api/latest"
+    names = ["Phi", "Zeta"]
+    loads = [0, -1]
+    title = "AML Phi Zeta"
+
+    [hw_control.aml_det_theta]
+    type = "aml"
+    url = "http://localhost:22100/api/latest"
+    names = ["Detector", "Theta"]
+    loads = [170, 10]
+    title = "AML Detector Theta"
+
+    [hw_control.motrona_rbs]
+    type = "motrona"
+    url = "http://localhost:22300/api/latest"
+    title = "Motrona RBS"
+
+    [hw_control.caen_rbs]
+    type = "caen"
+    url = "http://localhost:22200/api/latest"
+    title = "Caen RBS"
+
+[rbs]
+    [rbs.input_dir]
+    watch = "/tmp/ACQ/1_watch"
+
+    [rbs.output_dir]
+    ongoing = "/tmp/ACQ/2_ongoing"
+    done = "/tmp/ACQ/3_done"
+    failed = "/tmp/ACQ/4_failed"
+    data = "/tmp/ACQ/5_data"
+
+    [rbs.remote_output_dir]
+    ongoing = "/tmp/ACQ/REM/2_ongoing"
+    done = "/tmp/ACQ/REM/3_done"
+    failed = "/tmp/ACQ/REM/4_failed"
+    data = "/tmp/ACQ/REM/5_data"

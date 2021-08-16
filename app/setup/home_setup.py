@@ -20,8 +20,8 @@ output_dir = OutputDirConfig.parse_raw('''{
 }''')
 
 output_dir_remote = OutputDirConfig.parse_raw('''{
-    "ongoing": "/tmp/REM/ACQ/2_ongoing",
-    "done": "/tmp/REM/ACQ/3_done",
-    "failed": "/tmp/REM/ACQ/4_failed",
-    "data": "/tmp/REM/ACQ/5_data"
+    "ongoing": "/tmp/ACQ/REM/2_ongoing",
+    "done": "/tmp/ACQ/REM/3_done",
+    "failed": "/tmp/ACQ/REM/4_failed",
+    "data": "/tmp/ACQ/REM/5_data"
 }''')

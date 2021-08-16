@@ -12,10 +12,6 @@ class DaemonType(str, Enum):
 class AmlConfig(BaseModel):
     type: DaemonType
     title: str
-    first_name: str
-    second_name: str
-    first_load: float
-    second_load: float
     url: str
 
     class Config:

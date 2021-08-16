@@ -1,5 +1,7 @@
 import asyncio
+import os
 import traceback
+from typing import List
 
 from app.rbs_experiment.entities import PauseModel
 from app.setup import config
@@ -10,6 +12,8 @@ import app.rbs_experiment.entities as rbs
 import app.rbs_experiment.random_csv_to_json as csv_convert
 import app.rbs_experiment.folder_scanner as folder_scanner
 import logging
+import tomli
+import app.hardware_controllers.http_helper as http
 
 templates = Jinja2Templates(directory="templates")
 
@@ -22,9 +26,23 @@ async def router_startup():
     asyncio.create_task(scanner.run_main())
 
 
+@router.get("/api/rbs/hw_config", tags=["RBS API"])
+async def get_hw_config():
+    with open("./config.toml", "rb") as f:
+        return tomli.load(f)
+
+
+@router.get("/api/rbs/schedule", tags=["RBS API"])
+async def get_schedule():
+    path = config.input_dir.watch
+    files = [file.name for file in sorted(path.iterdir()) if file.is_file()]
+    return files
+
+
 @router.get("/api/rbs/state", tags=["RBS API"])
 async def get_rbs_experiment():
-    return scanner.get_state()
+    rbs_state = scanner.get_state()
+    return rbs_state
 
 
 @router.post("/api/rbs/abort", tags=["RBS API"])
@@ -54,6 +72,15 @@ async def run_rbs(response: Response, job: rbs.RbsRqm):
     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=False))
 
 
+async def verify_caen_boards(detectors: List[rbs.CaenDetectorModel]):
+    for detector in detectors:
+        caen_data = await http.get_json(config.daemons.caen_rbs.url)
+        if "board_" + str(detector['board']) not in caen_data:
+            raise Exception("The specified board in the detector list does not exist")
+
+
+
+
 @router.post("/api/rbs/rqm_csv", tags=["RBS API"])
 async def parse_rqm_csv(response: Response, file: UploadFile = File(...)):
     try:
@@ -65,6 +92,7 @@ async def parse_rqm_csv(response: Response, file: UploadFile = File(...)):
         settings["recipes"] = csv_convert.parse_recipes(recipes_section)
         rbs.RbsRqm.validate_recipes(settings)
         rbs_rqm = rbs.RbsRqm.parse_obj(settings)
+        await verify_caen_boards(settings["detectors"])
         return rbs_rqm
     except Exception as e:
         logging.error(traceback.format_exc())

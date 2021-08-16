@@ -231,6 +231,8 @@ class RbsRqmStatus(BaseModel):
     rqm: RbsRqm
     active_recipe: str
     recipe_progress_percentage: float
+    accumulated_charge: float
+    accumulated_charge_target: float
 
 
 empty_rbs_rqm = RbsRqm.parse_raw('''{
