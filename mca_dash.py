@@ -7,8 +7,9 @@ from app.hardware_controllers.router import router as hw_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(docs_url=None, redoc_url=None, servers=[
-    {"url": "http://localhost/hive", "description": "Proxy environment"},
-    {"url": "http://localhost:8000/", "description": "Direct environment"},
+    {"url": "http://169.254.150.200/hive", "description": "Remote Proxy environment"},
+    {"url": "http://localhost/hive", "description": "Local Proxy environment"},
+    {"url": "http://localhost:8000/", "description": "Local Direct environment"},
 ],
               )
 
@@ -17,10 +18,9 @@ app.mount("/site", StaticFiles(directory="static", html=True), name="site")
 app.include_router(rbs_router)
 app.include_router(hw_router)
 origins = [
-    'http://localhost:3000',
-    'http://localhost:8080',
     'http://localhost',
-    'http://169.254.150.200:3000',
+    'http://localhost:8000',
+    'http://169.254.150.200',
 ]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
                    allow_methods=['*'], allow_headers=['*'])
