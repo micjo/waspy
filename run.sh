@@ -1,4 +1,4 @@
 #!/bin/bash
+export config_file="./home_config.toml"
 source venv/bin/activate
-#uvicorn mca_dash:app --reload --log-level=warning
-uvicorn mca_dash:app --host=127.0.0.1 --log-level=warning
+uvicorn --reload --factory hive:create_app

@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 from unittest.mock import call
 
 import app.rbs_experiment.entities as rbs
-import app.rbs_experiment.daemon_control as control
+import app.rbs_experiment.hw_procedures as control
 
 control.daemons.aml_x_y.url = "url_x_y"
 control.daemons.aml_phi_zeta.url = "url_phi_zeta"

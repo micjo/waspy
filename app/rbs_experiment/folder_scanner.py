@@ -4,7 +4,7 @@ import asyncio
 import logging
 import traceback
 
-from app.setup.config import input_dir, output_dir, output_dir_remote
+from app.setup.config import cfg
 import app.rbs_experiment.entities as rbs
 import app.rbs_experiment.rbs_run as rbs_run
 
@@ -18,11 +18,11 @@ def _pick_first_file_from_path(path):
 
 
 def _make_folders():
-    Path.mkdir(input_dir.watch, parents=True, exist_ok=True)
-    Path.mkdir(output_dir.ongoing, parents=True, exist_ok=True)
-    Path.mkdir(output_dir.done, parents=True, exist_ok=True)
-    Path.mkdir(output_dir.failed, parents=True, exist_ok=True)
-    Path.mkdir(output_dir.data, parents=True, exist_ok=True)
+    Path.mkdir(cfg.input_dir.watch, parents=True, exist_ok=True)
+    Path.mkdir(cfg.output_dir.ongoing, parents=True, exist_ok=True)
+    Path.mkdir(cfg.output_dir.done, parents=True, exist_ok=True)
+    Path.mkdir(cfg.output_dir.failed, parents=True, exist_ok=True)
+    Path.mkdir(cfg.output_dir.data, parents=True, exist_ok=True)
 
 
 def move_and_try_copy(file, move_folder, copy_folder):
@@ -61,17 +61,20 @@ class FolderScanner:
             if self.dir_scan_paused:
                 continue
 
-            f = _pick_first_file_from_path(input_dir.watch)
+            f = _pick_first_file_from_path(cfg.input_dir.watch)
             if f:
                 try:
-                    f = move_and_try_copy(f, output_dir.ongoing, output_dir_remote.ongoing)
+                    f = move_and_try_copy(f, cfg.output_dir.ongoing, cfg.output_dir_remote.ongoing)
                     experiment = rbs.RbsRqm.parse_file(f)
                     self.experiment_routine = asyncio.create_task(rbs_run.run_recipe_list(experiment, self.rbs_status))
                     await self.experiment_routine
-                    move_and_try_copy(f, output_dir.done, output_dir_remote.done)
+                    move_and_try_copy(f, cfg.output_dir.done, cfg.output_dir_remote.done)
                 except:
-                    move_and_try_copy(f, output_dir.failed, output_dir_remote.failed)
+                    move_and_try_copy(f, cfg.output_dir.failed, cfg.output_dir_remote.failed)
                     logging.error(traceback.format_exc())
 
     def pause_dir_scan(self, pause):
         self.dir_scan_paused = pause
+
+
+scanner = FolderScanner()

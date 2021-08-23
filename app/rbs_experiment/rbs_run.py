@@ -1,11 +1,9 @@
-import logging
 import time
 from typing import List
-from pathlib import Path
 
 import app.rbs_experiment.entities as rbs
-import app.rbs_experiment.daemon_control as control
-import app.rbs_experiment.plotting as plot
+import app.rbs_experiment.hw_procedures as control
+import app.rbs_experiment.yield_plot as plot
 
 
 def make_count_callback(rbs_rqm_status: rbs.RbsRqmStatus):
@@ -64,7 +62,6 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRandom, detectors: List[rbs.C
     await control.prepare_data_acquisition(recipe.sample_id)
 
     start = time.time()
-    total_steps = len(positions)
 
     for index, position in enumerate(positions):
         await control.move_position_and_count(recipe.sample_id + "_" + str(position), position,
