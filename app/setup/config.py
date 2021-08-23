@@ -1,28 +1,45 @@
-import app.setup.home_setup as home_setup
-import app.setup.lab_setup as lab_setup
-import app.setup.container_setup as container_setup
-from app.setup.entities import DaemonConfig, OutputDirConfig, InputDirConfig
+import os
+from typing import Optional
+
+from pydantic import BaseSettings
+
+from app.setup.entities import DaemonConfig, OutputDirConfig, InputDirConfig, EMPTY_DAEMON_CONFIG, \
+    HiveConfig, EMPTY_INPUT_DIR, EMPTY_OUTPUT_DIR
 import logging
 import tomli
+
 logging.basicConfig(
     format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
     level=logging.INFO,
-    datefmt='%Y.%m.%d__%H:%M__%S',
-    filename="debug_log.txt")
+    datefmt='%Y.%m.%d__%H:%M__%S')
 
 
-with open("./config.toml", "rb") as f:
-    hw_config = tomli.load(f)
+class GlobalConfig(BaseSettings):
+    CONFIG_FILE: Optional[str]
+    FAKER = False
 
 
-daemons = DaemonConfig.parse_obj(hw_config['hw_control'])
-input_dir = InputDirConfig.parse_obj(hw_config['rbs']['input_dir'])
-output_dir = OutputDirConfig.parse_obj(hw_config['rbs']['output_dir'])
-output_dir_remote = OutputDirConfig.parse_obj(hw_config['rbs']['remote_output_dir'])
+class MakeHiveConfig:
+    def __init__(self, config_file: Optional[str]):
+        self.config_file = config_file
 
-"""
-daemons: DaemonConfig = lab_setup.daemons
-input_dir: InputDirConfig = lab_setup.input_dir
-output_dir: OutputDirConfig = lab_setup.output_dir
-output_dir_remote: OutputDirConfig = lab_setup.output_dir_remote
-"""
+    def __call__(self):
+        if self.config_file:
+            with open(self.config_file, "rb") as f:
+                conf_from_file = tomli.load(f)
+                daemons = DaemonConfig.parse_obj(conf_from_file["hw_control"])
+                input_dir = InputDirConfig.parse_obj(conf_from_file['rbs']['input_dir'])
+                output_dir = OutputDirConfig.parse_obj(conf_from_file['rbs']['output_dir'])
+                output_dir_remote = OutputDirConfig.parse_obj(conf_from_file['rbs']['remote_output_dir'])
+                return HiveConfig(daemons=daemons, input_dir=input_dir, output_dir=output_dir,
+                                  output_dir_remote=output_dir_remote)
+
+        else:
+            return HiveConfig(daemons=EMPTY_DAEMON_CONFIG, input_dir=EMPTY_INPUT_DIR, output_dir=EMPTY_OUTPUT_DIR,
+                              output_dir_remote=EMPTY_OUTPUT_DIR)
+
+
+env_conf = GlobalConfig()
+logging.info("Loaded config: " + str(env_conf))
+cfg = MakeHiveConfig(env_conf.CONFIG_FILE)()
+logging.info("Parsed config: " + str(cfg))

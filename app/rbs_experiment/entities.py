@@ -110,6 +110,20 @@ class StatusModel(str, Enum):
     Running = "Running"
 
 
+class HistogramMetaData(BaseModel):
+    file_stem: str
+    sample_id: str
+    detector_id: str
+    measuring_time_msec: str
+    charge: str
+    x: float
+    y: float
+    phi: float
+    zeta: float
+    det: float
+    theta: float
+
+
 class RbsRqmChanneling(BaseModel):
     """
     The model for a channeling measurement. This is a combination of recipes. A number of yield optimizations will
@@ -194,7 +208,6 @@ class RbsRqm(BaseModel):
                 RbsRqmChanneling.parse_obj(recipe)
             if recipe["type"] == "move":
                 Move.parse_obj(recipe)
-
 
     class Config:
         class Config:

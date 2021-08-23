@@ -1,4 +1,4 @@
-import app.rbs_experiment.plotting as plot
+import app.rbs_experiment.yield_plot as plot
 
 
 def test_plot():
