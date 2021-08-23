@@ -18,7 +18,6 @@ async def get_text_with_response_code(url):
 
 
 async def get_json_with_response_code(url):
-    print(url)
     get_session = await session.get(url)
     json = await get_session.json()
     response = get_session.status
@@ -42,5 +41,3 @@ async def post_dictionary(url, data):
     text = await post_session.text()
     response = post_session.status
     return response, text
-
-

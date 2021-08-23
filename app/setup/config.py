@@ -17,6 +17,7 @@ logging.basicConfig(
 class GlobalConfig(BaseSettings):
     CONFIG_FILE: Optional[str]
     FAKER = False
+    ENV_STATE: str
 
 
 class MakeHiveConfig:

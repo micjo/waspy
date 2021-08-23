@@ -14,42 +14,46 @@ scanner = folder_scanner.FolderScanner()
 router = APIRouter()
 
 
-@router.get("/new/api/rbs/hw_config", tags=["RBS API"])
+@router.get("/api/rbs/hw_config", tags=["RBS API"])
 async def get_hw_config():
-    return cfg.daemons.dict()
+    hw_conf = cfg.daemons.dict()
+    for key in hw_conf.keys():
+        hw_conf[key]["proxy"] = "/api/" + key
+    hw_conf["rbs"] = {"proxy": "/api/rbs/"}
+    return hw_conf
 
 
-@router.get("/new/api/rbs/schedule", tags=["RBS API"])
+@router.get("/api/rbs/schedule", tags=["RBS API"])
 async def get_schedule():
     path = cfg.input_dir.watch
     files = [file.name for file in sorted(path.iterdir()) if file.is_file()]
     return files
 
 
-@router.get("/new/api/rbs/state", tags=["RBS API"])
+@router.get("/api/rbs/state", tags=["RBS API"])
 async def get_rbs_experiment():
     rbs_state = scanner.get_state()
     return rbs_state
 
 
-@router.post("/new/api/rbs/abort", tags=["RBS API"])
+@router.post("/api/rbs/abort", tags=["RBS API"])
 async def rbs_experiment_abort():
     scanner.abort()
     return ""
 
 
-@router.post("/new/api/rbs/dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
+@router.post("/api/rbs/dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
 async def dry_run_rbs(rbs_experiment: RbsRqm):
     return {"Verification": "Passed"}
 
 
-@router.post("/new/api/rbs/pause_dir_scan", tags=["RBS API"],
+@router.post("/api/rbs/pause_dir_scan", tags=["RBS API"],
              summary="Start/stop scanning the configured directory for experiments to execute")
 async def pause_rbs_dir_scan(request: PauseModel):
     scanner.pause_dir_scan(request.pause_dir_scan)
 
 
-@router.post("/new/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
+@router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
 async def run_rbs(response: Response, job: RbsRqm):
     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=True))
     file_path = cfg.input_dir.watch / job.rqm_number
@@ -59,7 +63,7 @@ async def run_rbs(response: Response, job: RbsRqm):
     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=False))
 
 
-@router.post("/new/api/rbs/rqm_csv", tags=["RBS API"])
+@router.post("/api/rbs/rqm_csv", tags=["RBS API"])
 async def parse_rqm_csv(response: Response, file: UploadFile = File(...)):
     try:
         file_bytes = await file.read()

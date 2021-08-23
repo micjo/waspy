@@ -24,7 +24,6 @@ def plot_energy_yields(sub_folder, file_stem, angles, yields, smooth_angles, smo
     yield_plot_path = cfg.output_dir.data / sub_folder / yield_plot_file
     Path.mkdir(yield_plot_path.parent, parents=True, exist_ok=True)
     logging.info("Storing yield plot to path: " + str(yield_plot_path))
-    print("Storing yield plot to path: " + str(yield_plot_path))
     plt.savefig(yield_plot_path)
     plt.clf()
 
