@@ -1,6 +1,10 @@
+from typing import Dict
+
 import requests
 from fastapi import APIRouter, status, Response
-from pydantic import create_model
+from pydantic import create_model, BaseModel
+from pydantic.generics import GenericModel
+
 from app.setup.entities import DaemonConfig
 import app.http_routes.http_helper as http
 from app.hardware_controllers.hw_control import get_caen_histogram, pack
@@ -39,20 +43,28 @@ def _build_packed_histogram_api(key, daemon):
         return packed_data
 
 
+
 def _make_hw_schema(class_name, daemon):
     values = {}
 
-    class BaseConfig:
-        try:
-            schema_extra = requests.get(daemon.url + "/caps").json()
-        except:
-            pass
+    class BaseSchema(GenericModel):
+        __root__: Dict
 
-    return create_model(class_name, **values, __config__=BaseConfig)
+        class Config:
+            try:
+                schema_extra = requests.get(daemon.url + "/caps").json()
+            except:
+                pass
+
+    return create_model(class_name, **values, __base__=BaseSchema)
+
+
+def _convert_camelcase_to_snakecase(text):
+    return ''.join(word.title() for word in text.split('_'))
 
 
 def _build_post_api(key, daemon):
-    hw_schema = _make_hw_schema(key, daemon)
+    hw_schema = _make_hw_schema(_convert_camelcase_to_snakecase(key), daemon)
 
     @router.post("/api/" + key, tags=["Daemon API"])
     async def api_key_post(response: Response, hardware_command: hw_schema):  # type: ignore
@@ -65,6 +77,9 @@ def build_api_endpoints(daemons: DaemonConfig):
     for any_key, any_daemon in daemons:
         _build_get_api(any_key, any_daemon)
         _build_post_api(any_key, any_daemon)
+        if any_daemon.type == "caen":
+            _build_histogram_api(any_key, any_daemon)
+            _build_packed_histogram_api(any_key, any_daemon)
 
 
 
