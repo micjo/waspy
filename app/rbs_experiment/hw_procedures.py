@@ -29,28 +29,32 @@ async def move_to_position(identifier: str, position: rbs.PositionCoordinates):
         await hw_control.move_aml_second(identifier + "_second", cfg.daemons.aml_det_theta.url, position.theta)
 
 
-async def _make_histogram_meta_data(file_stem, sample_id, detector_id, measuring_time_msec) -> rbs.HistogramMetaData:
-    aml_x_y = await hw_control.get_json_status(cfg.daemons.aml_x_y)
-    aml_phi_zeta = await hw_control.get_json_status(cfg.daemons.aml_det_theta)
-    aml_det_theta = await hw_control.get_json_status(cfg.daemons.aml_phi_zeta)
-    motrona = await hw_control.get_json_status(cfg.daemons.motrona_rbs)
+async def _make_histogram_meta_data(file_stem, sample_id, detector_id, measuring_time_msec, total_charge) -> rbs.HistogramMetaData:
+    aml_x_y = await hw_control.get_json_status(cfg.daemons.aml_x_y.url)
+    aml_phi_zeta = await hw_control.get_json_status(cfg.daemons.aml_det_theta.url)
+    aml_det_theta = await hw_control.get_json_status(cfg.daemons.aml_phi_zeta.url)
 
     return rbs.HistogramMetaData(
         file_stem=file_stem, sample_id=sample_id, detector_id=detector_id, measuring_time_msec=measuring_time_msec,
-        charge=motrona["charge(nc)"],
+        charge=total_charge,
         x=aml_x_y["motor_1_position"], y=aml_x_y["motor_2_position"],
         phi=aml_phi_zeta["motor_1_position"], zeta=aml_phi_zeta["motor_2_position"],
         det=aml_det_theta["motor_1_position"], theta=aml_det_theta["motor_2_position"],
     )
 
 
-async def get_and_save_histograms(sub_folder, file_stem, sample_id, measuring_time_msec,
+async def get_charge() -> float:
+    motrona = await hw_control.get_json_status(cfg.daemons.motrona_rbs.url)
+    return float(motrona["charge(nC)"])
+
+
+async def get_and_save_histograms(sub_folder, file_stem, sample_id, measuring_time_msec, total_charge,
                                   detectors: List[rbs.CaenDetectorModel]):
     plot.set_plot_title(file_stem)
     histogram_data = []
     for index, detector in enumerate(detectors):
         data = await get_packed_histogram(detector)
-        histogram_meta = await _make_histogram_meta_data(file_stem, sample_id, detector.identifier, measuring_time_msec)
+        histogram_meta = await _make_histogram_meta_data(file_stem, sample_id, detector.identifier, measuring_time_msec, total_charge)
         await store.store_histogram(sub_folder, histogram_meta, data)
         histogram_data.append(data)
     plot.plot_histograms_and_clear(sub_folder, file_stem, detectors, histogram_data)
@@ -74,7 +78,6 @@ async def get_minimum_yield_position(sub_folder, recipe: rbs.RbsRqmMinimizeYield
     store.store_yields(sub_folder, recipe.file_stem, angles, energy_yields)
     smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
     plot.plot_energy_yields(sub_folder, recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
-
     min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
     min_position = rbs.PositionCoordinates.parse_obj({recipe.vary_coordinate.name: min_angle})
     return min_position

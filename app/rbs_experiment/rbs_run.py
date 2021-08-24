@@ -20,8 +20,9 @@ def make_count_callback(rbs_rqm_status: rbs.RbsRqmStatus):
     return count_callback
 
 
-async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmMinimizeYield, detectors: List[rbs.CaenDetectorModel],
-                             rbs_rqm_status: rbs.RbsRqmStatus):
+async def minimize_yield_for_positions(sub_folder, recipe: rbs.RbsRqmMinimizeYield,
+                                       detectors: List[rbs.CaenDetectorModel],
+                                       rbs_rqm_status: rbs.RbsRqmStatus):
     await control.move_to_position(recipe.sample_id, recipe.start_position)
     positions = await control.get_position_range(recipe.vary_coordinate)
     await control.prepare_counting(recipe.sample_id, recipe.total_charge / len(positions))
@@ -31,18 +32,21 @@ async def run_minimize_yield(sub_folder, recipe: rbs.RbsRqmMinimizeYield, detect
 
     for position in positions:
         start = time.time()
-        integrated_energy_yield = await run_yield_integration(position, detector_optimize, recipe, rbs_rqm_status)
+        integrated_energy_yield = await integrate_yield_for_position(position, detector_optimize, recipe,
+                                                                     rbs_rqm_status)
         energy_yields.append(integrated_energy_yield)
         run_time = time.time() - start
         file_stem = recipe.file_stem + "_" + control.single_coordinate_to_string(position, recipe.vary_coordinate)
-        await control.get_and_save_histograms(sub_folder, file_stem, recipe.sample_id, run_time, detectors)
+        total_charge = control.get_charge()
+        await control.get_and_save_histograms(sub_folder, file_stem, recipe.sample_id, run_time, total_charge,
+                                              detectors)
 
     min_position = await control.get_minimum_yield_position(sub_folder, recipe, positions, energy_yields)
     await control.move_to_position(recipe.sample_id + "_move_to_min_position", min_position)
 
 
-async def run_yield_integration(position: rbs.PositionCoordinates, detector_optimize,
-                                recipe: rbs.RbsRqmMinimizeYield, rbs_rqm_status: rbs.RbsRqmStatus):
+async def integrate_yield_for_position(position: rbs.PositionCoordinates, detector_optimize,
+                                       recipe: rbs.RbsRqmMinimizeYield, rbs_rqm_status: rbs.RbsRqmStatus):
     recipe_id = recipe.sample_id + "_" + control.single_coordinate_to_string(position, recipe.vary_coordinate)
 
     await control.prepare_data_acquisition(recipe_id)
@@ -63,13 +67,16 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRandom, detectors: List[rbs.C
 
     start = time.time()
 
+    total_charge = 0
     for index, position in enumerate(positions):
         await control.move_position_and_count(recipe.sample_id + "_" + str(position), position,
                                               make_count_callback(rbs_rqm_status))
+        total_charge += await control.get_charge()
+
     end = time.time()
     run_time_msec = end - start
     random_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
-                                                              run_time_msec, detectors)
+                                                              run_time_msec, total_charge, detectors)
     return random_histograms
 
 
@@ -83,8 +90,9 @@ async def run_fixed(sub_folder, recipe: rbs.RbsRqmFixed, detectors: List[rbs.Cae
     end = time.time()
     measuring_time_msec = end - start
 
+    total_charge = control.get_charge()
     fixed_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
-                                                             measuring_time_msec, detectors)
+                                                             measuring_time_msec, total_charge, detectors)
     return fixed_histograms
 
 
@@ -99,7 +107,7 @@ async def run_channeling(sub_folder, recipe: rbs.RbsRqmChanneling, detectors: Li
                                                recipe.yield_integration_window,
                                                optimize_detector_index=recipe.yield_optimize_detector_index)
         yield_folder = sub_folder + "/" + recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name)
-        await run_minimize_yield(yield_folder, yield_recipe, detectors, rbs_rqm_status)
+        await minimize_yield_for_positions(yield_folder, yield_recipe, detectors, rbs_rqm_status)
 
     fixed_recipe = rbs.RbsRqmFixed(type=rbs.RecipeType.fixed, sample_id=recipe.sample_id,
                                    file_stem=recipe.file_stem + "_fixed", charge_total=recipe.random_fixed_charge_total)

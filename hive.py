@@ -1,5 +1,6 @@
-from app.setup.config import cfg, env_conf
+import asyncio
 
+from app.setup.config import cfg, env_conf
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.staticfiles import StaticFiles
@@ -9,23 +10,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.rbs_experiment.folder_scanner import scanner
 
 
-
 def create_app():
     if env_conf.ENV_STATE == "dev":
         origins = ['http://localhost:3000']
         servers = None
     else:
         origins = ['http://localhost']
-        servers = [{"url": "http://localhost/hive"}]
+        servers = [{"url": "http://" + env_conf.IP + "/hive"}]
     app = FastAPI(docs_url=None, redoc_url=None, servers=servers)
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
     hw_control_routes.build_api_endpoints(cfg.daemons)
     app.include_router(hw_control_routes.router)
 
-    scanner.run_main()
+    asyncio.create_task(scanner.run_main())
     app.include_router(rbs_routes.router)
-
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
                        allow_methods=['*'], allow_headers=['*'])

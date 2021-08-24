@@ -104,8 +104,8 @@ async def get_caen_histogram(base_url, board: int, channel: int) -> tuple[Any, L
 
 
 async def get_json_status(url):
-    resp_code, data = await http.get_json(url)
-    return resp_code, data
+    data = await http.get_json(url)
+    return data
 
 
 def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
