@@ -3,14 +3,14 @@ import traceback
 from fastapi import APIRouter, UploadFile, File, Response
 from starlette import status
 
+from app.rbs_experiment.hw_procedures import verify_caen_boards
 from app.setup.config import cfg
-import app.rbs_experiment.folder_scanner as folder_scanner
+from app.rbs_experiment.folder_scanner import scanner
 from app.rbs_experiment.entities import RbsRqm, PauseModel
 import app.rbs_experiment.random_csv_to_json as csv_convert
 import logging
 
 
-scanner = folder_scanner.FolderScanner()
 router = APIRouter()
 
 
@@ -74,7 +74,7 @@ async def parse_rqm_csv(response: Response, file: UploadFile = File(...)):
         settings["recipes"] = csv_convert.parse_recipes(recipes_section)
         RbsRqm.validate_recipes(settings)
         rbs_rqm = RbsRqm.parse_obj(settings)
-        # await verify_caen_boards(settings["detectors"])
+        await verify_caen_boards(settings["detectors"])
         return rbs_rqm
     except Exception as e:
         logging.error(traceback.format_exc())
