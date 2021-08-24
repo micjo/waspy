@@ -1,7 +1,0 @@
-Plotting the results using Python 3.7, matplotlib and numpy. 
-
-File under investigation: RBS19_275_02A
-Model Function: f(x) = p - q * exp(-(x - r) ^ 2 / (2 * (s, 2) ^ 2) + t * (x, 2) ^ 2 + u * x 
-The minimum yield of the angular scan was found at angle = 0.36 degrees. 
-The minimum yield of the angular scan equals to: 117.42877396482024
-Error of the fit equals to: -30.571226035179762
