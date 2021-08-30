@@ -1,6 +1,7 @@
 [Unit]
 Description=Hive middle layer - python abstractions
-Requires=systemd-networkd-wait-eth1.service
+After=wait_eth_up.service
+Requires=wait_eth_up.service
 
 [Service]
 Type=simple
