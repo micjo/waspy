@@ -26,7 +26,7 @@ class Window(BaseModel):
         if 'start' not in values:
             return
         if not values['start'] < end:
-            raise ValueError("end must be larger than start")
+            raise ValueError("end must be larger then start")
         return end
 
 
@@ -68,16 +68,16 @@ class VaryCoordinate(BaseModel):
 
     @validator('increment')
     def increment_must_be_positive_and_non_zero(cls, increment):
-        if not increment > 0:
-            raise ValueError('increment must be positive and non-zero')
+        if not increment >= 0:
+            raise ValueError('increment must be positive')
         return increment
 
     @validator('end')
     def start_must_be_smaller_than_end(cls, end, values):
         if 'start' not in values:
             return
-        if not values['start'] < end:
-            raise ValueError('end must be larger than start')
+        if not values['start'] <= end:
+            raise ValueError('end must be larger than or equal to start')
         return end
 
 
