@@ -18,7 +18,6 @@ class GlobalConfig(BaseSettings):
     CONFIG_FILE: Optional[str]
     FAKER = False
     ENV_STATE: str
-    IP: str
 
 
 class MakeHiveConfig:

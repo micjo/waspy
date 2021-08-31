@@ -1,5 +1,7 @@
 import time
 from typing import List
+import logging
+import copy
 
 import app.rbs_experiment.entities as rbs
 import app.rbs_experiment.hw_procedures as control
@@ -135,7 +137,7 @@ def get_total_counts_channeling(recipe: rbs.RbsRqmChanneling):
 
 def make_test_recipe(recipe: rbs.RbsRqmRandom):
     """ Verify that the caen acquisition is properly cleared """
-    mini_recipe = recipe
+    mini_recipe = copy.deepcopy(recipe)
     mini_recipe.file_stem += "_TEST"
     mini_recipe.charge_total = 2000
     mini_recipe.vary_coordinate = rbs.VaryCoordinate(name="phi", start=0, end=0, increment=0)

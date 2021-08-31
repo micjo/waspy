@@ -8,16 +8,15 @@ from fastapi.responses import FileResponse
 from app.http_routes import hw_control_routes, rbs_routes
 from fastapi.middleware.cors import CORSMiddleware
 from app.rbs_experiment.folder_scanner import scanner
+import socket
 
 
 def create_app():
     if env_conf.ENV_STATE == "dev":
         origins = ['http://localhost:3000']
-        servers = None
     else:
         origins = ['http://localhost']
-        servers = [{"url": "http://" + env_conf.IP + "/hive"}]
-    app = FastAPI(docs_url=None, redoc_url=None, servers=servers)
+    app = FastAPI(docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
     hw_control_routes.build_api_endpoints(cfg.daemons)
