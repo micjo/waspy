@@ -84,12 +84,22 @@ async def motrona_counting_done(url, callback=None):
 
 
 async def stop_clear_and_arm_caen_acquisition(request_id, url):
-    request = {'request_id': request_id, 'stop_acquisition': True, 'clear': True, 'start_acquisition': True}
-    await http.post_dictionary(url, request)
-    await wait_for_request_done(url, request)
+    await _stop_caen_acquisition(request_id + "_stop", url)
+    await _clear_caen_acquisition(request_id + "_clear", url)
+    await _start_caen_acquisition(request_id + "_start", url)
 
 
-async def stop_caen_acquisition(request_id, url):
+async def _start_caen_acquisition(request_id, url):
+    request = {'request_id': request_id, 'start_acquisition': True}
+    await post_request(url, request)
+
+
+async def _clear_caen_acquisition(request_id, url):
+    request = {'request_id': request_id, 'clear': True}
+    await post_request(url, request)
+
+
+async def _stop_caen_acquisition(request_id, url):
     request = {'request_id': request_id, 'stop_acquisition': True}
     await post_request(url, request)
 

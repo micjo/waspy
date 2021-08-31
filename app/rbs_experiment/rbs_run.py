@@ -133,6 +133,14 @@ def get_total_counts_channeling(recipe: rbs.RbsRqmChanneling):
     compare_total_charge = 2 * recipe.random_fixed_charge_total
     return yield_optimize_total_charge + compare_total_charge
 
+def make_test_recipe(recipe: rbs.RbsRqmRandom):
+    """ Verify that the caen acquisition is properly cleared """
+    mini_recipe = recipe
+    mini_recipe.file_stem += "_TEST"
+    mini_recipe.charge_total = 2000
+    mini_recipe.vary_coordinate = rbs.VaryCoordinate(name="phi", start=0, end=0, increment=0)
+    return mini_recipe
+
 
 async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus):
     sub_folder = rbs_rqm.rqm_number
@@ -151,7 +159,10 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             rbs_rqm_status.accumulated_charge_target = get_total_counts_channeling(recipe)
             await run_channeling(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
         if recipe.type == rbs.RecipeType.random:
-            rbs_rqm_status.accumulated_charge_target = get_total_counts_random(recipe)
+            test_histogram_recipe = make_test_recipe(recipe)
+            rbs_rqm_status.accumulated_charge_target = get_total_counts_random(test_histogram_recipe)
+            rbs_rqm_status.accumulated_charge_target += get_total_counts_random(recipe)
+            await run_random(sub_folder, test_histogram_recipe, rbs_rqm.detectors, rbs_rqm_status)
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
 
     rbs_rqm_status.run_status = rbs.StatusModel.Idle
