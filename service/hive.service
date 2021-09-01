@@ -9,6 +9,7 @@ User=root
 WorkingDirectory=/root/wasp-hive
 ExecStart=/root/wasp-hive/run.sh
 Restart=on-failure
+SyslogIdentifier=aml_det_theta
 
 [Install]
 WantedBy=multi-user.target
