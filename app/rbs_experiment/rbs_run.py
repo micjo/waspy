@@ -139,8 +139,8 @@ def get_total_counts_channeling(recipe: rbs.RbsRqmChanneling):
 def make_test_recipe(recipe: rbs.RbsRqmRandom):
     """ Verify that the caen acquisition is properly cleared """
     mini_recipe = copy.deepcopy(recipe)
-    mini_recipe.file_stem += "_TEST"
-    mini_recipe.charge_total = 2000
+    mini_recipe.file_stem += "_charge_500_snapshot"
+    mini_recipe.charge_total = 500
     mini_recipe.vary_coordinate = rbs.VaryCoordinate(name="phi", start=0, end=0, increment=0)
     return mini_recipe
 
