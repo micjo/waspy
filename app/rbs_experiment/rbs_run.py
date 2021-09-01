@@ -79,6 +79,7 @@ async def run_random(sub_folder, recipe: rbs.RbsRqmRandom, detectors: List[rbs.C
     run_time_msec = end - start
     random_histograms = await control.get_and_save_histograms(sub_folder, recipe.file_stem, recipe.sample_id,
                                                               run_time_msec, total_charge, detectors)
+    await control.stop_data_acquisition(recipe.sample_id + "_STOP")
     return random_histograms
 
 
@@ -151,6 +152,9 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
     rbs_rqm_status.rqm = rbs_rqm
 
     for recipe in rbs_rqm.recipes:
+        rbs_rqm_status.accumulated_charge = 0
+        rbs_rqm_status.accumulated_charge_target = 0
+
         if recipe.type == rbs.RecipeType.move:
             await control.move_to_position(rbs_rqm.rqm_number + "_move", recipe.position)
             continue
@@ -167,7 +171,8 @@ async def run_recipe_list(rbs_rqm: rbs.RbsRqm, rbs_rqm_status: rbs.RbsRqmStatus)
             await run_random(sub_folder, test_histogram_recipe, rbs_rqm.detectors, rbs_rqm_status)
             await run_random(sub_folder, recipe, rbs_rqm.detectors, rbs_rqm_status)
 
+
     rbs_rqm_status.run_status = rbs.StatusModel.Idle
+    rbs_rqm_status.active_recipe = ""
     rbs_rqm_status.accumulated_charge = 0
     rbs_rqm_status.accumulated_charge_target = 0
-    rbs_rqm_status.active_recipe = ""

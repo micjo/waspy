@@ -106,6 +106,10 @@ async def prepare_data_acquisition(identifier: str):
     await hw_control.stop_clear_and_arm_caen_acquisition(identifier, cfg.daemons.caen_rbs.url)
 
 
+async def stop_data_acquisition(identifier: str):
+    await hw_control.stop_caen_acquisition(identifier, cfg.daemons.caen_rbs.url)
+
+
 async def prepare_counting(identifier: str, target):
     logging.info("pause counting and set target")
     await hw_control.pause_motrona_count(identifier + "_pause", cfg.daemons.motrona_rbs.url)
