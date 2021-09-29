@@ -31,7 +31,7 @@ def test_fit_and_smooth():
             data_set = line.split("->")
             expected_value = float(data_set[1])
             yields = [float(x) for x in data_set[0].split(" ") if x]
-            smooth_angles, smooth_yields = fitter.fit_and_smooth(float_angles, yields, 0)
+            smooth_angles, smooth_yields = fitter.fit_and_smooth(float_angles, yields)
             assert (fitter.get_angle_for_minimum_yield(smooth_angles, smooth_yields)) == pytest.approx(expected_value)
             plotting.plot_energy_yields("plots",  str(data_index), float_angles, yields, smooth_angles, smooth_yields)
             data_index += 1
