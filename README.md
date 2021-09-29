@@ -18,12 +18,14 @@ source pyvenv/bin/activate
 ```
 on Windows:
 ```
-pyvenv/bin/activate.bat
+cd pyvenv/Scripts
+activate.bat
+cd ../..
 ```
 
-Install the dependencies. Pip will search for a setup.py in the mentioned folder (`dot` is the current folder), and install the required packages
+Install the dependencies. Pip will install the packages listed in requirements.txt 
 ```
-pip install .
+pip install -r requirements.txt
 ```
 
 Start the script.
