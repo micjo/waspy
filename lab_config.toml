@@ -3,14 +3,14 @@
     type = "aml"
     url = "http://localhost:22000/api/latest"
     names = ["X", "Y"]
-    loads = [72, 61]
+    loads = [72.5, 61.7]
     title = "AML X Y"
 
     [hw_control.aml_det_theta]
     type = "aml"
     url = "http://localhost:22001/api/latest"
     names = ["Detector", "Theta"]
-    loads = [170, -180]
+    loads = [170, -180.5]
     title = "AML Detector Theta"
 
     [hw_control.aml_phi_zeta]
