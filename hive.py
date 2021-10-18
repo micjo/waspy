@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.http_routes import hw_control_routes, rbs_routes
 from fastapi.middleware.cors import CORSMiddleware
-from app.rbs_experiment.folder_scanner import scanner
+from app.rbs_experiment.task_runner import scanner
 import socket
 
 
@@ -19,7 +19,7 @@ def create_app():
     app = FastAPI(docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    hw_control_routes.build_api_endpoints(cfg.daemons)
+    hw_control_routes.build_api_endpoints(cfg.daemonConfig)
     app.include_router(hw_control_routes.router)
 
     asyncio.create_task(scanner.run_main())

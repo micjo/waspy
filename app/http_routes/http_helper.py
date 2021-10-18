@@ -1,43 +1,24 @@
-import aiohttp, atexit, asyncio
-from fastapi import APIRouter
+import requests
 
-session = aiohttp.ClientSession()
-
-
-@atexit.register
-def goodbye():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(session.close())
+def get_text_with_response_code(url):
+    response = requests.get(url)
+    return response.status_code, response.text
 
 
-async def get_text_with_response_code(url):
-    get_session = await session.get(url)
-    text = await get_session.text()
-    response = get_session.status
-    return response, text
+def get_json_with_response_code(url):
+    response = requests.get(url)
+    return response.status_code, response.json()
 
 
-async def get_json_with_response_code(url):
-    get_session = await session.get(url)
-    json = await get_session.json()
-    response = get_session.status
-    return response, json
+def get_text(url):
+    response = requests.get(url)
+    return response.text
 
 
-async def get_text(url):
-    get_session = await session.get(url)
-    text = await get_session.text()
-    return text
+def get_json(url):
+    return requests.get(url).json()
 
 
-async def get_json(url):
-    get_session = await session.get(url)
-    json_data = await get_session.json()
-    return json_data
-
-
-async def post_dictionary(url, data):
-    post_session = await session.post(url, json=data)
-    text = await post_session.text()
-    response = post_session.status
-    return response, text
+def post_dictionary(url, data):
+    response = requests.post(url, json=data)
+    return response.status_code, response.text

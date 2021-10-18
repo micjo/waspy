@@ -63,12 +63,12 @@ def plot_compare(sub_folder, file_stem, lhs_histograms: List[List[int]], lhs_lab
     plt.close(fig)
 
 
-def plot_histograms_and_clear(sub_folder, file_stem, detectors: List[rbs.CaenDetectorModel], data: List[List[int]]):
+def plot_histograms_and_clear(settings: rbs.RbsRqmSettings, file_stem, data: List[List[int]]):
     fig, axs = plt.subplots(len(data))
     fig.suptitle(file_stem)
 
     for index, ax in enumerate(axs):
-        ax.plot(data[index], label=detectors[index].identifier)
+        ax.plot(data[index], label=settings.detectors[index].identifier)
         ax.grid(which='major')
         ax.grid(which='minor', linestyle=":")
         ax.minorticks_on()
@@ -79,10 +79,10 @@ def plot_histograms_and_clear(sub_folder, file_stem, detectors: List[rbs.CaenDet
     plt.subplots_adjust(hspace=0.5)
 
     histogram_file = file_stem + ".png"
-    histogram_path = cfg.output_dir.data / sub_folder / histogram_file
+    histogram_path = cfg.output_dir.data / settings.rqm_number / histogram_file
     Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
     logging.info("Storing histogram plot to path: " + str(histogram_path))
     plt.savefig(histogram_path)
-    remote_histogram_path = cfg.output_dir_remote.data / sub_folder / histogram_file
+    remote_histogram_path = cfg.output_dir_remote.data / settings.rqm_number / histogram_file
     try_copy(histogram_path, remote_histogram_path)
     plt.close(fig)

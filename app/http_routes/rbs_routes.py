@@ -3,9 +3,9 @@ import traceback
 from fastapi import APIRouter, UploadFile, File, Response
 from starlette import status
 
-from app.rbs_experiment.hw_procedures import verify_caen_boards
+from app.rbs_experiment.rbs import verify_caen_boards
 from app.setup.config import cfg
-from app.rbs_experiment.folder_scanner import scanner
+from app.rbs_experiment.task_runner import scanner
 from app.rbs_experiment.entities import RbsRqm, PauseModel
 import app.rbs_experiment.random_csv_to_json as csv_convert
 import logging
@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.get("/api/rbs/hw_config", tags=["RBS API"])
 async def get_hw_config():
-    hw_conf = cfg.daemons.dict()
+    hw_conf = cfg.daemonConfig.dict()
     for key in hw_conf.keys():
         hw_conf[key]["proxy"] = "/api/" + key
     hw_conf["rbs"] = {"proxy": "/api/rbs/"}

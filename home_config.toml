@@ -1,3 +1,48 @@
+[[daemons]]
+type="aml"
+key = "aml_x_y"
+title="AML X Y"
+url="http://localhost:22000/api/latest"
+names = ["X", "Y"]
+laads = [110,20]
+
+[[daemons]]
+type = "aml"
+key = "aml_det_theta"
+url = "http://localhost:22001/api/latest"
+names = ["Detector", "Theta"]
+loads = [170, 10]
+title = "AML Detector Theta"
+
+[[daemons]]
+type = "aml"
+key = "aml_phi_zeta"
+url = "http://localhost:22002/api/latest"
+names = ["Phi", "Zeta"]
+loads = [0, -1]
+title = "AML Phi Zeta"
+
+[[daemons]]
+type = "motrona"
+key = "motrona_rbs"
+url = "http://localhost:22100/api/latest"
+title = "Motrona RBS"
+
+[[daemons]]
+type = "caen"
+key = "caen_rbs"
+url = "http://localhost:22200/api/latest"
+title = "Caen RBS"
+
+[[daemons]]
+type = "mdrive"
+key = "mdrive"
+url = "http://localhost:22300/api/latest"
+title = "MDrive"
+
+
+
+
 [hw_control]
     [hw_control.aml_x_y]
     type = "aml"
@@ -8,27 +53,33 @@
 
     [hw_control.aml_det_theta]
     type = "aml"
-    url = "http://localhost:22000/api/latest"
+    url = "http://localhost:22001/api/latest"
     names = ["Detector", "Theta"]
     loads = [170, 10]
     title = "AML Detector Theta"
 
     [hw_control.aml_phi_zeta]
     type = "aml"
-    url = "http://localhost:22000/api/latest"
+    url = "http://localhost:22002/api/latest"
     names = ["Phi", "Zeta"]
     loads = [0, -1]
     title = "AML Phi Zeta"
 
     [hw_control.motrona_rbs]
     type = "motrona"
-    url = "http://localhost:23000/api/latest"
+    url = "http://localhost:22100/api/latest"
     title = "Motrona RBS"
 
     [hw_control.caen_rbs]
     type = "caen"
-    url = "http://localhost:22300/api/latest"
+    url = "http://localhost:22200/api/latest"
     title = "Caen RBS"
+
+    [hw_control.mdrive]
+    type = "mdrive"
+    url = "http://localhost:22300/api/latest"
+    title = "MDrive"
+
 
 [rbs]
     [rbs.input_dir]
