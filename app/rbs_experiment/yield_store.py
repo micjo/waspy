@@ -89,7 +89,7 @@ def store_yields(sub_folder, file_stem, angle_values, energy_yields):
     try_copy(yields_path, remote_yields_path)
 
 
-async def store_histogram(sub_folder, histogram_meta: HistogramMetaData, data: List[int]):
+def store_histogram(sub_folder, histogram_meta: HistogramMetaData, data: List[int]):
     header = await deserialize_histogram_header(histogram_meta)
     formatted_data = format_caen_histogram(data)
     full_data = header + "\n" + formatted_data

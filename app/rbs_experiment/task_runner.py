@@ -6,7 +6,7 @@ import traceback
 
 from app.setup.config import cfg
 import app.rbs_experiment.entities as rbs
-import app.rbs_experiment.rbs_run as rbs_run
+import app.rbs_experiment.recipes as rbs_run
 
 
 def _pick_first_file_from_path(path):
@@ -35,7 +35,7 @@ def move_and_try_copy(file, move_folder, copy_folder):
     return file
 
 
-class FolderScanner:
+class TaskRunner:
     def __init__(self):
         self.dir_scan_paused = False
         self.experiment_routine = None
@@ -77,4 +77,4 @@ class FolderScanner:
         self.dir_scan_paused = pause
 
 
-scanner = FolderScanner()
+scanner = TaskRunner()

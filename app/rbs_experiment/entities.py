@@ -1,8 +1,18 @@
 from enum import Enum
-from typing import List, Optional, Union, Literal, Annotated, Dict
+from typing import List, Optional, Union, Literal
 
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
+
+from app.hardware_controllers.entities import AmlConfig, SimpleConfig
+
+
+class RbsConfig(BaseModel):
+    aml_x_y: AmlConfig
+    aml_phi_zeta: AmlConfig
+    aml_det_theta: AmlConfig
+    caen: SimpleConfig
+    motrona: SimpleConfig
 
 
 class Window(BaseModel):
@@ -54,7 +64,6 @@ class RecipeType(str, Enum):
     random = "random"
     minimize_yield = "minimize_yield"
     fixed = "fixed"
-    move = "move"
 
 
 class VaryCoordinate(BaseModel):
@@ -177,15 +186,22 @@ class RbsRqmFixed(BaseModel):
     charge_total: int
 
 
-class Move(BaseModel):
-    type: Literal[RecipeType.move]
-    position: PositionCoordinates
+class RbsRqmStatus(BaseModel):
+    run_status: StatusModel
+    active_recipe: str
+    accumulated_charge: float
+    accumulated_charge_target: float
+
+
+class RbsRqmSettings(BaseModel):
+    rqm_number: str
+    detectors: List[CaenDetectorModel]
 
 
 class RbsRqm(BaseModel):
-    rqm_number: str
-    detectors: List[CaenDetectorModel]
-    recipes: List[Union[RbsRqmChanneling, RbsRqmRandom, Move]]
+    recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
+    status: RbsRqmStatus
+    settings: RbsRqmSettings
 
     @classmethod
     def validate_recipes(cls, rbs_rqm):
@@ -206,8 +222,6 @@ class RbsRqm(BaseModel):
                 RbsRqmRandom.parse_obj(recipe)
             if recipe["type"] == "channeling":
                 RbsRqmChanneling.parse_obj(recipe)
-            if recipe["type"] == "move":
-                Move.parse_obj(recipe)
 
     class Config:
         class Config:
@@ -239,19 +253,9 @@ class RbsRqm(BaseModel):
         }
 
 
-class RbsRqmStatus(BaseModel):
-    run_status: StatusModel
-    rqm: RbsRqm
-    active_recipe: str
-    accumulated_charge: float
-    accumulated_charge_target: float
-
-
-empty_rbs_rqm = RbsRqm.parse_raw('''{
-"rqm_number":"empty",
-"detectors": [],
-"recipes": []
-}''')
+empty_rbs_rqm = RbsRqm(recipes=[], settings=RbsRqmSettings(rqm_number="None", detectors=[]),
+                       status=RbsRqmStatus(run_status=StatusModel.Idle, active_recipe="None", accumulated_charge=0,
+                                           accumulated_charge_target=0))
 
 
 class ExperimentStateModel(BaseModel):

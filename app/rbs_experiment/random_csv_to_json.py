@@ -55,8 +55,6 @@ def parse_recipes(recipe_section: str) -> [Dict]:
     for setting in recipe_settings:
         if "type" not in setting:
             raise AttributeError("type object 'recipe', has no attribute 'type'")
-        elif setting["type"] == rbs.RecipeType.move:
-            convert_coordinates_to_position("position", setting)
         elif setting["type"] == rbs.RecipeType.random:
             convert_coordinates_to_position("start_position", setting)
             setting["vary_coordinate"] = rbs.VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
