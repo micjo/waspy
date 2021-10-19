@@ -36,14 +36,17 @@ def set_plot_title(title: str):
     plt.title(title)
 
 
-def plot_compare(sub_folder, file_stem, lhs_histograms: List[List[int]], lhs_labels: List[str],
-                 rhs_histograms: List[List[int]], rhs_labels: List[str]):
-    nr_of_histograms = len(lhs_histograms)
+def plot_compare(settings: rbs.RbsRqmSettings, file_stem, fixed_data: List[List[int]], random_data: List[List[int]]):
+    nr_of_histograms = len(fixed_data)
+
+    fixed_labels = [detector.identifier + "_fixed" for detector in settings.detectors]
+    random_labels = [detector.identifier + "_random" for detector in settings.detectors]
+
     fig, axs = plt.subplots(nr_of_histograms)
 
     for index, ax in enumerate(axs):
-        ax.plot(lhs_histograms[index], label=lhs_labels[index])
-        ax.plot(rhs_histograms[index], label=rhs_labels[index])
+        ax.plot(fixed_data[index], label=fixed_labels[index])
+        ax.plot(random_data[index], label=random_labels[index])
         ax.grid(which='major')
         ax.grid(which='minor', linestyle=":")
         ax.minorticks_on()
@@ -54,11 +57,11 @@ def plot_compare(sub_folder, file_stem, lhs_histograms: List[List[int]], lhs_lab
     plt.subplots_adjust(hspace=0.5)
 
     histogram_file = file_stem + ".png"
-    histogram_path = cfg.output_dir.data / sub_folder / histogram_file
+    histogram_path = cfg.output_dir.data / settings.get_folder() / histogram_file
     Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
     logging.info("Storing histogram plot to path: " + str(histogram_path))
     plt.savefig(histogram_path)
-    remote_histogram_path = cfg.output_dir_remote.data / sub_folder / histogram_file
+    remote_histogram_path = cfg.output_dir_remote.data / settings.get_folder() / histogram_file
     try_copy(histogram_path, remote_histogram_path)
     plt.close(fig)
 
