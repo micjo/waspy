@@ -3,10 +3,9 @@ from shutil import copy2
 import asyncio
 import logging
 import traceback
-
+from app.rbs_experiment.recipes import RecipeListRunner
 from app.setup.config import cfg
-import app.rbs_experiment.entities as rbs
-import app.rbs_experiment.recipes as rbs_run
+
 
 
 def _pick_first_file_from_path(path):
@@ -36,12 +35,9 @@ def move_and_try_copy(file, move_folder, copy_folder):
 
 
 class TaskRunner:
-    def __init__(self):
+    def __init__(self, recipe_runner: RecipeListRunner):
         self.dir_scan_paused = False
-        self.experiment_routine = None
-        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, rqm=rbs.empty_rbs_rqm,
-                                           active_recipe="", recipe_progress_percentage=0, accumulated_charge=0,
-                                           accumulated_charge_target=0)
+        self.recipe_runner = recipe_runner
         _make_folders()
 
     def get_state(self):
@@ -51,9 +47,6 @@ class TaskRunner:
 
     def abort(self):
         self.experiment_routine.cancel()
-        self.rbs_status = rbs.RbsRqmStatus(run_status=rbs.StatusModel.Idle, rqm=rbs.empty_rbs_rqm,
-                                           active_recipe="", recipe_progress_percentage=0, accumulated_charge=0,
-                                           accumulated_charge_target=0)
 
     async def run_main(self):
         while True:

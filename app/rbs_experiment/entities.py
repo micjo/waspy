@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Union, Literal
 
-from pydantic import Field, validator
+from pydantic import Field, validator, root_validator
 from pydantic.generics import BaseModel
 
 from app.hardware_controllers.entities import AmlConfig, SimpleConfig
@@ -195,12 +195,21 @@ class RbsRqmStatus(BaseModel):
 
 class RbsRqmSettings(BaseModel):
     rqm_number: str
+    sub_folder: Optional[str]
     detectors: List[CaenDetectorModel]
+
+    def get_folder(self):
+        if self.sub_folder:
+            return self.rqm_number + "/" + self.sub_folder + "/"
+        else:
+            return self.rqm_number + "/"
+
+
+empty_settings = RbsRqmSettings(rqm_number="None", detectors=[])
 
 
 class RbsRqm(BaseModel):
     recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
-    status: RbsRqmStatus
     settings: RbsRqmSettings
 
     @classmethod
@@ -253,9 +262,7 @@ class RbsRqm(BaseModel):
         }
 
 
-empty_rbs_rqm = RbsRqm(recipes=[], settings=RbsRqmSettings(rqm_number="None", detectors=[]),
-                       status=RbsRqmStatus(run_status=StatusModel.Idle, active_recipe="None", accumulated_charge=0,
-                                           accumulated_charge_target=0))
+empty_rbs_rqm = RbsRqm(recipes=[], settings=empty_settings)
 
 
 class ExperimentStateModel(BaseModel):

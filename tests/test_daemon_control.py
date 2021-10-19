@@ -86,3 +86,8 @@ def test_move_and_count():
     rbs_lib.hw_action.move_aml_second.assert_called_with(ANY, "url_det_theta", 2.0)
     rbs_lib.hw_action.clear_start_motrona_count.assert_called_with(ANY, "url_motrona")
     rbs_lib.hw_action.motrona_counting_done(ANY, "url_motrona")
+
+
+def test_entities():
+    rbsSettings = entities.RbsRqmSettings(rqm_number="RBS21_232", detectors=[])
+    assert rbsSettings.rqm_number == rbsSettings.base_folder
