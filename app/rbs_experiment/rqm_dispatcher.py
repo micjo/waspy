@@ -1,10 +1,14 @@
+import sys
 from pathlib import Path
 from shutil import copy2
-import asyncio
 import logging
-import traceback
-from app.rbs_experiment.recipes import RecipeListRunner
+
+from app.rbs_experiment.entities import RbsRqm
+from app.rbs_experiment.recipe_list_runner import RecipeListRunner
 from app.setup.config import cfg
+from threading import Thread
+import traceback
+import time
 
 
 
@@ -34,8 +38,9 @@ def move_and_try_copy(file, move_folder, copy_folder):
     return file
 
 
-class TaskRunner:
+class RqmDispatcher(Thread):
     def __init__(self, recipe_runner: RecipeListRunner):
+        Thread.__init__(self)
         self.dir_scan_paused = False
         self.recipe_runner = recipe_runner
         _make_folders()
@@ -46,11 +51,13 @@ class TaskRunner:
         return rbs_state
 
     def abort(self):
-        self.experiment_routine.cancel()
+        self.recipe_runner.abort()
+        self.recipe_runner.start()
 
-    async def run_main(self):
+    def run(self):
+        self.recipe_runner.start()
         while True:
-            await asyncio.sleep(1)
+            time.sleep(1)
             if self.dir_scan_paused:
                 continue
 
@@ -58,9 +65,8 @@ class TaskRunner:
             if f:
                 try:
                     f = move_and_try_copy(f, cfg.output_dir.ongoing, cfg.output_dir_remote.ongoing)
-                    experiment = rbs.RbsRqm.parse_file(f)
-                    self.experiment_routine = asyncio.create_task(rbs_run.run_recipe_list(experiment, self.rbs_status))
-                    await self.experiment_routine
+                    experiment = RbsRqm.parse_file(f)
+                    self.recipe_runner.add_rqm_to_queue(experiment)
                     move_and_try_copy(f, cfg.output_dir.done, cfg.output_dir_remote.done)
                 except:
                     move_and_try_copy(f, cfg.output_dir.failed, cfg.output_dir_remote.failed)
@@ -70,4 +76,3 @@ class TaskRunner:
         self.dir_scan_paused = pause
 
 
-scanner = TaskRunner()

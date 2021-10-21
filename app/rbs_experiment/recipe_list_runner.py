@@ -1,0 +1,233 @@
+import sys
+import time
+from typing import List, Union
+import copy
+
+from app.rbs_experiment.data_serializer import RbsDataSerializer
+from app.rbs_experiment.entities import RbsRqmStatus, RbsRqmRandom, RbsRqmChanneling, \
+    RbsRqmMinimizeYield, RbsRqmFixed, RecipeType, StatusModel, empty_rbs_rqm, RbsRqm, RbsData, VaryCoordinate, \
+    CoordinateEnum, PositionCoordinates
+import app.rbs_experiment.rbs as rbs_lib
+from threading import Thread, Lock
+from queue import Queue
+import app.rbs_experiment.yield_angle_fit as fit
+
+
+def make_count_callback(rbs_rqm_status: RbsRqmStatus):
+    counts_at_start = rbs_rqm_status.accumulated_charge
+
+    def count_callback(counter_data):
+        charge = float(counter_data["charge(nC)"])
+        target_charge = float(counter_data["target_charge(nC)"])
+        if charge < target_charge:
+            rbs_rqm_status.accumulated_charge = counts_at_start + charge
+        else:
+            rbs_rqm_status.accumulated_charge = counts_at_start + target_charge
+
+        return False
+
+    return count_callback
+
+
+def _make_minimize_yield_recipe(index, recipe, vary_coordinate):
+    return RbsRqmMinimizeYield(type=RecipeType.minimize_yield, sample_id=recipe.sample_id,
+                               file_stem=recipe.file_stem + str(index),
+                               total_charge=recipe.yield_charge_total,
+                               vary_coordinate=vary_coordinate, integration_window=
+                               recipe.yield_integration_window,
+                               optimize_detector_index=recipe.yield_optimize_detector_index)
+
+
+def _make_fixed_recipe(recipe):
+    return RbsRqmFixed(type=RecipeType.fixed, sample_id=recipe.sample_id,
+                       file_stem=recipe.file_stem + "_fixed",
+                       charge_total=recipe.random_fixed_charge_total)
+
+
+def _make_random_recipe(recipe):
+    return RbsRqmRandom(type=RecipeType.random, sample_id=recipe.sample_id,
+                        file_stem=recipe.file_stem + "_random",
+                        charge_total=recipe.random_fixed_charge_total,
+                        start_position={"theta": -2},
+                        vary_coordinate=recipe.random_vary_coordinate)
+
+
+def _get_total_counts_random(recipe: RbsRqmRandom):
+    return recipe.charge_total
+
+
+def _get_total_counts_channeling(recipe: RbsRqmChanneling):
+    yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
+    compare_total_charge = 2 * recipe.random_fixed_charge_total
+    return yield_optimize_total_charge + compare_total_charge
+
+
+def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+    if recipe.type == RecipeType.channeling:
+        return _get_total_counts_channeling(recipe)
+    if recipe.type == RecipeType.random:
+        return _get_total_counts_random(recipe)
+
+
+def _get_minimum_yield_angle(angles: List[float], energy_yields: List[int]) -> float:
+    min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
+    return min_angle
+
+
+class RecipeListRunner(Thread):
+    _rqm_queue: Queue[RbsRqm]
+    _active_rqm: RbsRqm
+    _status: RbsRqmStatus
+    _status_lock: Lock()
+    _data_serializer: RbsDataSerializer
+    _rbs: rbs_lib.Rbs
+
+#TODO higher prio: enqueue an experiment by sending writing the file that wil be picked up here
+# this needs some redesign. not good practise to use the file system for this. Think about using queues from fastapi side
+#TODO lower prio:  make copy of rbs hw config for reporting to fastapi - doesnt change anyway
+# queue put will block on side of rqm dispatcher, to retrieve the schedule, both the active and the list must
+# be available
+    def __init__(self, setup: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
+        Thread.__init__(self)
+        self._rbs = setup
+        self._data_serializer = data_serializer
+        self._rqm_end()
+
+    def get_status(self):
+        with self._status_lock:
+            return copy.deepcopy(self._status)
+
+    def set_status_charge(self, accumulated_charge):
+        with self._status_lock:
+            self._status.accumulated_charge = accumulated_charge
+
+    def _get_count_callback(self):
+        counts_at_start = self.get_status().accumulated_charge
+
+        def count_callback(counter_data):
+            charge = float(counter_data["charge(nC)"])
+            target_charge = float(counter_data["target_charge(nC)"])
+            if charge < target_charge:
+                self.set_status_charge(counts_at_start + charge)
+            else:
+                self.set_status_charge(counts_at_start + target_charge)
+
+        return count_callback
+
+    def _minimize_yield(self, recipe: RbsRqmMinimizeYield):
+        self._rbs.move(recipe.start_position)
+        positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
+        self._rbs.prepare_counting(recipe.total_charge / len(positions))
+
+        detector_optimize = self._rbs.get_detectors()[recipe.optimize_detector_index]
+        energy_yields = []
+
+        for position in positions:
+            self._rbs.prepare_data_acquisition()
+            self._rbs.move_and_count(position, self._get_count_callback())
+            self._rbs.stop_data_acquisition()
+
+            data = self._rbs.get_packed_histogram(detector_optimize)
+            integrated_energy_yield = rbs_lib.get_sum(data, recipe.integration_window)
+            energy_yields.append(integrated_energy_yield)
+
+            file_stem = recipe.file_stem + "_" + rbs_lib.single_coordinate_to_string(position, recipe.vary_coordinate)
+            rbs_data = self._rbs.get_status(True)
+            self._data_serializer.save_histograms(rbs_data, file_stem, recipe.sample_id)
+            self._data_serializer.plot_histograms(rbs_data, file_stem)
+
+        angles = rbs_lib.get_positions_as_float(recipe.vary_coordinate)
+        smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
+        min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
+        min_position = rbs_lib.convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
+
+        self._data_serializer.store_yields(recipe.file_stem, angles, energy_yields)
+        self._data_serializer.plot_energy_yields(recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
+        self._rbs.move(min_position)
+
+    def run_random(self, recipe: RbsRqmRandom) -> RbsData:
+        self._rbs.move(recipe.start_position)
+        positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
+        self._rbs.prepare_counting(recipe.charge_total / len(positions))
+        self._rbs.prepare_data_acquisition()
+
+        for index, position in enumerate(positions):
+            self._rbs.move_and_count(position, self._get_count_callback())
+        self._rbs.stop_data_acquisition()
+
+        rbs_data = self._rbs.get_status(True)
+        self._data_serializer.save_histograms(rbs_data, recipe.file_stem, recipe.sample_id)
+        self._data_serializer.plot_histograms(rbs_data, recipe.file_stem)
+        return rbs_data
+
+    def run_fixed(self, recipe: RbsRqmFixed) -> RbsData:
+        self._rbs.prepare_counting(recipe.charge_total)
+        self._rbs.prepare_data_acquisition()
+        self._rbs.count(self._get_count_callback())
+        self._rbs.stop_data_acquisition()
+
+        rbs_data = self._rbs.get_status(True)
+        self._data_serializer.save_histograms(rbs_data, recipe.file_stem, recipe.sample_id)
+        self._data_serializer.plot_histograms(rbs_data, recipe.file_stem)
+        return rbs_data
+
+    def run_channeling(self, recipe: RbsRqmChanneling):
+        self._rbs.move(recipe.start_position)
+
+        for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
+            yield_recipe = _make_minimize_yield_recipe(index, recipe, vary_coordinate)
+            self._data_serializer.set_sub_folder(recipe.file_stem + "_" + str(index) + "_vary_" + str(
+                vary_coordinate.name))
+            self._minimize_yield(yield_recipe)
+        self._data_serializer.clear_sub_folder()
+
+        fixed_histograms = self.run_fixed(_make_fixed_recipe(recipe)).histograms
+        random_histograms = self.run_random(_make_random_recipe(recipe)).histograms
+        detectors = self._rbs.get_detectors()
+        self._data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
+
+    def add_rqm_to_queue(self, rbs_rqm: RbsRqm):
+        self._rqm_queue.put(rbs_rqm)
+
+    def abort(self):
+        sys.exit()
+
+    def _rqm_start(self, rqm: RbsRqm):
+        self._active_rqm = rqm
+        self._data_serializer.set_settings(rqm.settings)
+        self._rbs.set_active_detectors(rqm.detectors)
+        with self._status_lock:
+            self._status.run_status = StatusModel.Running
+            self._status.active_rqm = rqm
+
+    def _rqm_end(self):
+        with self._status_lock:
+            self._status.run_status = StatusModel.Idle
+            self._status.active_recipe_sample_id = ""
+            self._status.accumulated_charge = 0
+            self._status.accumulated_charge_target = 0
+            self._status.active_rqm = empty_rbs_rqm
+
+    def _recipe_start(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+        with self._status_lock:
+            self._status.accumulated_charge = 0
+            self._status.accumulated_charge_target = 0
+            self._status.active_recipe_sample_id = recipe.sample_id
+            self._status.accumulated_charge_target = _get_total_counts(recipe)
+
+    def run(self):
+        while True:
+            time.sleep(1)
+            rqm = self._rqm_queue.get(block=True)
+            self._rqm_start(rqm)
+
+            for recipe in rqm.recipes:
+                self._recipe_start(recipe)
+
+                if recipe.type == RecipeType.channeling:
+                    self.run_channeling(recipe)
+                if recipe.type == RecipeType.random:
+                    self.run_random(recipe)
+
+            self._rqm_end()
+            self._rqm_queue.task_done()

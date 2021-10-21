@@ -6,7 +6,7 @@ from pydantic import create_model
 from pydantic.generics import GenericModel
 
 from app.hardware_controllers.entities import HwControllerConfig
-import app.http_routes.http_helper as http
+import app.http_routes.async_http_helper as http
 from app.hardware_controllers.hw_action import get_caen_histogram, pack
 
 router = APIRouter()
@@ -58,12 +58,12 @@ def _make_hw_schema(class_name, url):
     return create_model(class_name, **values, __base__=BaseSchema)
 
 
-def _convert_camelcase_to_snakecase(text):
+def _convert_snakecase_to_camelcase(text):
     return ''.join(word.title() for word in text.split('_'))
 
 
 def _build_post_api(key, url):
-    hw_schema = _make_hw_schema(_convert_camelcase_to_snakecase(key), url)
+    hw_schema = _make_hw_schema(_convert_snakecase_to_camelcase(key), url)
 
     @router.post("/api/" + key, tags=["Daemon API"])
     async def api_key_post(response: Response, hardware_command: hw_schema):  # type: ignore
@@ -72,13 +72,13 @@ def _build_post_api(key, url):
         return body
 
 
-def build_api_endpoints(daemonConfig: HwControllerConfig):
-    for daemon in daemonConfig.daemons:
-        _build_get_api(daemon.key, daemon.url)
-        _build_post_api(daemon.key, daemon.url)
+def build_api_endpoints(daemon_config: HwControllerConfig):
+    for key, daemon in daemon_config.controllers.items():
+        _build_get_api(key, daemon.url)
+        _build_post_api(key, daemon.url)
         if daemon.type == "caen":
-            _build_histogram_api(daemon.key, daemon.url)
-            _build_packed_histogram_api(daemon.key, daemon.url)
+            _build_histogram_api(key, daemon.url)
+            _build_packed_histogram_api(key, daemon.url)
 
 
 

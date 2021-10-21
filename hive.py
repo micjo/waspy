@@ -1,17 +1,20 @@
 import asyncio
 
-from app.setup.config import cfg, env_conf
+from app.setup.config import GlobalConfig, make_hive_config
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.http_routes import hw_control_routes, rbs_routes
+import app.rbs_experiment.rbs as rbs_lib
 from fastapi.middleware.cors import CORSMiddleware
-from app.rbs_experiment.task_runner import scanner
-import socket
+import logging
 
 
 def create_app():
+    env_conf = GlobalConfig()
+    hive_config = make_hive_config(env_conf.CONFIG_FILE)
+
     if env_conf.ENV_STATE == "dev":
         origins = ['http://localhost:3000']
     else:
@@ -19,10 +22,10 @@ def create_app():
     app = FastAPI(docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    hw_control_routes.build_api_endpoints(cfg.daemonConfig)
+    hw_control_routes.build_api_endpoints(hive_config.hw_config)
     app.include_router(hw_control_routes.router)
 
-    asyncio.create_task(scanner.run_main())
+    logging.info("Loaded config: " + env_conf.json())
     app.include_router(rbs_routes.router)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,

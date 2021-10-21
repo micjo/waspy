@@ -4,16 +4,14 @@ from typing import List, Any
 import logging
 import time
 import app.http_routes.http_helper as http
-from app.setup.config import env_conf
 
 logging.basicConfig(level=logging.INFO, filename="debug.log")
 
 faker_time = 0.2
+faker = False
+
 
 def wait_for_request_done(url, request):
-    if env_conf.FAKER:
-        time.sleep(faker_time)
-        return
     while True:
         time.sleep(0.2)
         response = http.get_json(url)
@@ -27,7 +25,7 @@ def wait_for_request_done(url, request):
 
 def post_request(url, request):
     logging.info("post to: " + url + ", content: " + str(request))
-    if env_conf.FAKER:
+    if faker:
         time.sleep(faker_time)
         return
 
@@ -69,7 +67,7 @@ def pause_motrona_count(request_id, url):
 
 
 def motrona_counting_done(url, callback=None):
-    if env_conf.FAKER:
+    if faker:
         time.sleep(faker_time)
         return
     while True:
