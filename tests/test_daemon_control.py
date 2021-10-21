@@ -89,5 +89,5 @@ def test_move_and_count():
 
 
 def test_entities():
-    rbsSettings = entities.RbsRqmSettings(rqm_number="RBS21_232", detectors=[])
-    assert rbsSettings.rqm_number == rbsSettings.base_folder
+    rbs_settings = entities.RbsRqmSettings(rqm_number="RBS21_232", detectors=[])
+    assert rbs_settings.rqm_number == rbs_settings.base_folder

@@ -3,7 +3,7 @@ import numpy as np
 import scipy.optimize as opt
 
 
-def get_angle_for_minimum_yield(smooth_angles, smooth_yields):
+def get_angle_for_minimum_yield(smooth_angles, smooth_yields) -> float:
     smooth_angle_for_minimum_yield = round(smooth_angles[np.argmin(smooth_yields)], 2)
     log_line = "Minimum yield found at: [angle: yield] = [{angle}: {energy_yield}]" \
         .format(angle=smooth_angle_for_minimum_yield, energy_yield=round(np.amin(smooth_yields), 2))

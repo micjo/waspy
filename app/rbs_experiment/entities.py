@@ -1,5 +1,6 @@
+from pathlib import Path
 from enum import Enum
-from typing import List, Optional, Union, Literal
+from typing import List, Optional, Union, Literal, Dict
 
 from pydantic import Field, validator, root_validator
 from pydantic.generics import BaseModel
@@ -7,12 +8,44 @@ from pydantic.generics import BaseModel
 from app.hardware_controllers.entities import AmlConfig, SimpleConfig
 
 
-class RbsConfig(BaseModel):
+class InputDir(BaseModel):
+    watch: Path
+
+
+# split this up. data should be in another class
+# ongoing/done/failed is for rqm dispatcher
+# data is for recipe_list_runner
+class OutputDir(BaseModel):
+    ongoing: Path
+    done: Path
+    failed: Path
+    data: Path
+
+
+class DoublePath(BaseModel):
+    local: Path
+    remote: Path
+
+
+class DispatcherConfig(BaseModel):
+    watch: Path
+    ongoing: DoublePath
+    failed: DoublePath
+    done: DoublePath
+
+
+class RbsHardware(BaseModel):
     aml_x_y: AmlConfig
     aml_phi_zeta: AmlConfig
     aml_det_theta: AmlConfig
     caen: SimpleConfig
     motrona: SimpleConfig
+
+
+class RbsConfig(BaseModel):
+    folder_scan: DispatcherConfig
+    data_dir: DoublePath
+    hardware: RbsHardware
 
 
 class Window(BaseModel):
@@ -101,6 +134,18 @@ class CaenDetectorModel(BaseModel):
         description="The range between min and max will be rescaled to this value, The bins are combined with integer sized bin intervals. values on the maximum side are potentially discared")
 
 
+class RbsData(BaseModel):
+    aml_x_y: Dict
+    aml_phi_zeta: Dict
+    aml_det_theta: Dict
+    caen: Dict
+    motrona: Dict
+    detectors: List[CaenDetectorModel]
+    histograms: List[List[int]]
+    measuring_time_msec: str
+    accumulated_charge: str
+
+
 class PositionModel(BaseModel):
     x: int
     y: int
@@ -117,20 +162,6 @@ class PauseModel(BaseModel):
 class StatusModel(str, Enum):
     Idle = "Idle"
     Running = "Running"
-
-
-class HistogramMetaData(BaseModel):
-    file_stem: str
-    sample_id: str
-    detector_id: str
-    measuring_time_msec: str
-    charge: str
-    x: float
-    y: float
-    phi: float
-    zeta: float
-    det: float
-    theta: float
 
 
 class RbsRqmChanneling(BaseModel):
@@ -186,17 +217,9 @@ class RbsRqmFixed(BaseModel):
     charge_total: int
 
 
-class RbsRqmStatus(BaseModel):
-    run_status: StatusModel
-    active_recipe: str
-    accumulated_charge: float
-    accumulated_charge_target: float
-
-
 class RbsRqmSettings(BaseModel):
     rqm_number: str
     sub_folder: Optional[str]
-    detectors: List[CaenDetectorModel]
 
     def get_folder(self):
         if self.sub_folder:
@@ -211,6 +234,7 @@ empty_settings = RbsRqmSettings(rqm_number="None", detectors=[])
 class RbsRqm(BaseModel):
     recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
     settings: RbsRqmSettings
+    detectors: List[CaenDetectorModel]
 
     @classmethod
     def validate_recipes(cls, rbs_rqm):
@@ -262,7 +286,15 @@ class RbsRqm(BaseModel):
         }
 
 
-empty_rbs_rqm = RbsRqm(recipes=[], settings=empty_settings)
+empty_rbs_rqm = RbsRqm(recipes=[], settings=empty_settings, detectors=[])
+
+
+class RbsRqmStatus(BaseModel):
+    run_status: StatusModel
+    active_recipe_sample_id: str
+    accumulated_charge: float
+    accumulated_charge_target: float
+    active_rqm: RbsRqm
 
 
 class ExperimentStateModel(BaseModel):
