@@ -36,7 +36,7 @@ def make_hardware_config(config_dict: Dict) -> HwControllerConfig:
     return HwControllerConfig.parse_obj(hw_config)
 
 
-def make_hive_config(config_file):
+def make_hive_config(config_file) -> HiveConfig:
     with open(config_file, "rb") as f:
         conf_from_file = tomli.load(f)
         return HiveConfig(hw_config=make_hardware_config(conf_from_file), rbs_config=make_rbs_config(conf_from_file))

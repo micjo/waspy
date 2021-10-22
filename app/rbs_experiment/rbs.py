@@ -1,8 +1,10 @@
+from datetime import datetime
 from typing import List
 import logging
 import numpy as np
 import requests
 import time
+from datetime import datetime
 
 from app.rbs_experiment.entities import RbsHardware, CoordinateEnum, VaryCoordinate, Window
 import app.hardware_controllers.hw_action as hw_action
@@ -10,7 +12,26 @@ from app.rbs_experiment.entities import CaenDetectorModel, RbsData, PositionCoor
 
 
 def _generate_request_id() -> str:
-    return datetime.datetime.now().strftime("%Y.%m.%d__%H:%M__%S.%f")
+    return datetime.now().strftime("%Y.%m.%d__%H:%M__%S.%f")
+
+
+faker = True
+
+
+def fake_call(func, *args, **kw):
+    saved_args = locals()
+    time.sleep(0.2)
+    logging.info("Function '" + str(saved_args) + "' faked")
+
+
+def fakeable(func):
+    def wrap_func():
+        if faker:
+            return lambda *args, **kw: fake_call(func, args, kw)
+        else:
+            return func
+
+    return wrap_func()
 
 
 class Rbs:
@@ -23,7 +44,10 @@ class Rbs:
         self.hw = rbs_hw
         self.detectors = []
         self._start_time = time.time()
+        self._acquisition_run_time = 0
+        self._acquisition_accumulated_charge = 0
 
+    @fakeable
     def move(self, position: PositionCoordinates):
         logging.info("Moving rbs system to '" + str(position) + "'")
 
@@ -41,20 +65,6 @@ class Rbs:
             hw_action.move_aml_first(_generate_request_id(), self.hw.aml_det_theta.url, position.detector)
         if position.theta is not None:
             hw_action.move_aml_second(_generate_request_id(), self.hw.aml_det_theta.url, position.theta)
-
-    # def _make_histogram_meta_data(self, file_stem, sample_id, detector_id, measuring_time_msec,
-    #                               total_charge) -> rbs.HistogramMetaData:
-    #     aml_x_y = requests.get(self.hw.aml_x_y.url).json()
-    #     aml_phi_zeta = requests.get(self.hw.aml_det_theta.url).json()
-    #     aml_det_theta = requests.get(self.hw.aml_phi_zeta.url).json()
-    #
-    #     return HistogramMetaData(
-    #         file_stem=file_stem, sample_id=sample_id, detector_id=detector_id, measuring_time_msec=measuring_time_msec,
-    #         charge=total_charge,
-    #         x=aml_x_y["motor_1_position"], y=aml_x_y["motor_2_position"],
-    #         phi=aml_phi_zeta["motor_1_position"], zeta=aml_phi_zeta["motor_2_position"],
-    #         det=aml_det_theta["motor_1_position"], theta=aml_det_theta["motor_2_position"],
-    #     )
 
     def get_charge(self) -> float:
         motrona = requests.get(self.hw.motrona.url).json()
@@ -88,19 +98,7 @@ class Rbs:
                                   "histograms": histograms, "measuring_time_msec": self._acquisition_run_time,
                                   "accumulated_charge": self._acquisition_accumulated_charge})
 
-    # #TODO plotting should move out of here. plotting should be part of recipelistrunner or another class/module
-    # def flush_histograms(self, settings: rbs.RbsRqmSettings, sample_id, file_stem, measuring_time_msec, total_charge):
-    #     plot.set_plot_title(file_stem)
-    #     histogram_data = []
-    #     for index, detector in enumerate(settings.detectors):
-    #         data = self.get_packed_histogram(detector)
-    #         histogram_meta = self._make_histogram_meta_data(file_stem, sample_id, detector.identifier,
-    #                                                         measuring_time_msec, total_charge)
-    #         store.store_histogram(settings.rqm_number, histogram_meta, data)
-    #         histogram_data.append(data)
-    #     plot.plot_histograms(settings, file_stem, histogram_data)
-    #     return histogram_data
-
+    @fakeable
     def count(self, count_wait_callback):
         logging.info("acquiring till target")
         hw_action.clear_start_motrona_count(_generate_request_id(), self.hw.motrona.url)
@@ -109,19 +107,21 @@ class Rbs:
         self._acquisition_accumulated_charge += float(motrona["charge(nC)"])
 
     def move_and_count(self, position: PositionCoordinates, count_wait_callback):
-        logging.info("moving then acquiring till target")
         self.move(position)
         self.count(count_wait_callback)
 
+    @fakeable
     def prepare_data_acquisition(self):
         self._start_time = time.time()
         self._acquisition_accumulated_charge = 0
         hw_action.stop_clear_and_arm_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
+    @fakeable
     def stop_data_acquisition(self):
         self._acquisition_run_time = time.time() - self._start_time
         hw_action.stop_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
+    @fakeable
     def prepare_counting(self, target):
         logging.info("pause counting and set target")
         hw_action.pause_motrona_count(_generate_request_id() + "_pause", self.hw.motrona.url)
@@ -160,7 +160,7 @@ def get_positions_as_float(vary_coordinate: VaryCoordinate) -> List[float]:
     return [float(x) for x in numpy_array]
 
 
-def convert_float_to_coordinate(coordinate_name: str, position: float ) -> PositionCoordinates:
+def convert_float_to_coordinate(coordinate_name: str, position: float) -> PositionCoordinates:
     return PositionCoordinates.parse_obj({coordinate_name: position})
 
 

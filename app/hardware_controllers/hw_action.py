@@ -1,14 +1,9 @@
 import math
-from typing import List, Any
+from typing import List, Any, Dict
 
 import logging
 import time
 import app.http_routes.http_helper as http
-
-logging.basicConfig(level=logging.INFO, filename="debug.log")
-
-faker_time = 0.2
-faker = False
 
 
 def wait_for_request_done(url, request):
@@ -24,11 +19,6 @@ def wait_for_request_done(url, request):
 
 
 def post_request(url, request):
-    logging.info("post to: " + url + ", content: " + str(request))
-    if faker:
-        time.sleep(faker_time)
-        return
-
     http.post_dictionary(url, request)
     wait_for_request_done(url, request)
 
@@ -67,9 +57,6 @@ def pause_motrona_count(request_id, url):
 
 
 def motrona_counting_done(url, callback=None):
-    if faker:
-        time.sleep(faker_time)
-        return
     while True:
         time.sleep(1)
         response = http.get_json(url)
@@ -118,5 +105,3 @@ def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
         bin_sum = sum(subset[index:index + samples_to_group_in_bin])
         packed_data.append(bin_sum)
     return packed_data
-
-

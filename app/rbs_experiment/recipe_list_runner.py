@@ -75,22 +75,20 @@ def _get_minimum_yield_angle(angles: List[float], energy_yields: List[int]) -> f
 
 
 class RecipeListRunner(Thread):
-    _rqm_queue: Queue[RbsRqm]
+    rqm_queue: Queue[RbsRqm]
     _active_rqm: RbsRqm
     _status: RbsRqmStatus
     _status_lock: Lock()
     _data_serializer: RbsDataSerializer
     _rbs: rbs_lib.Rbs
 
-#TODO higher prio: enqueue an experiment by sending writing the file that wil be picked up here
-# this needs some redesign. not good practise to use the file system for this. Think about using queues from fastapi side
-#TODO lower prio:  make copy of rbs hw config for reporting to fastapi - doesnt change anyway
-# queue put will block on side of rqm dispatcher, to retrieve the schedule, both the active and the list must
-# be available
     def __init__(self, setup: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
         Thread.__init__(self)
         self._rbs = setup
         self._data_serializer = data_serializer
+        self._status_lock = Lock()
+        self.rqm_queue = Queue(1)
+        self._status = RbsRqmStatus
         self._rqm_end()
 
     def get_status(self):
@@ -186,15 +184,12 @@ class RecipeListRunner(Thread):
         detectors = self._rbs.get_detectors()
         self._data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
 
-    def add_rqm_to_queue(self, rbs_rqm: RbsRqm):
-        self._rqm_queue.put(rbs_rqm)
-
     def abort(self):
         sys.exit()
 
     def _rqm_start(self, rqm: RbsRqm):
         self._active_rqm = rqm
-        self._data_serializer.set_settings(rqm.settings)
+        self._data_serializer.set_base_folder(rqm.rqm_number)
         self._rbs.set_active_detectors(rqm.detectors)
         with self._status_lock:
             self._status.run_status = StatusModel.Running
@@ -218,16 +213,19 @@ class RecipeListRunner(Thread):
     def run(self):
         while True:
             time.sleep(1)
-            rqm = self._rqm_queue.get(block=True)
+            rqm = self.rqm_queue.get(block=True)
             self._rqm_start(rqm)
 
-            for recipe in rqm.recipes:
-                self._recipe_start(recipe)
+            try:
+                for recipe in rqm.recipes:
+                    self._recipe_start(recipe)
 
-                if recipe.type == RecipeType.channeling:
-                    self.run_channeling(recipe)
-                if recipe.type == RecipeType.random:
-                    self.run_random(recipe)
+                    if recipe.type == RecipeType.channeling:
+                        self.run_channeling(recipe)
+                    if recipe.type == RecipeType.random:
+                        self.run_random(recipe)
+            except Exception as e:
+                print(e)
 
             self._rqm_end()
-            self._rqm_queue.task_done()
+            self.rqm_queue.task_done()
