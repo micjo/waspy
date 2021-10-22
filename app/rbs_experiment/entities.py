@@ -217,23 +217,9 @@ class RbsRqmFixed(BaseModel):
     charge_total: int
 
 
-class RbsRqmSettings(BaseModel):
-    rqm_number: str
-    sub_folder: Optional[str]
-
-    def get_folder(self):
-        if self.sub_folder:
-            return self.rqm_number + "/" + self.sub_folder + "/"
-        else:
-            return self.rqm_number + "/"
-
-
-empty_settings = RbsRqmSettings(rqm_number="None", detectors=[])
-
-
 class RbsRqm(BaseModel):
     recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
-    settings: RbsRqmSettings
+    rqm_number: str
     detectors: List[CaenDetectorModel]
 
     @classmethod
@@ -265,10 +251,10 @@ class RbsRqm(BaseModel):
                 {
                     "rqm_number": "rqm_test",
                     "detectors": [
-                        {"board": 1, "channel": 0, "color": "blue", "identifier": "d0",
-                         "bins_min": 0, "bins_max": 1024, "bins_width": 1024},
-                        {"board": 1, "channel": 1, "color": "red", "identifier": "d1",
-                         "bins_min": 0, "bins_max": 1024, "bins_width": 1024}
+                        {"board": 6, "channel": 0, "color": "blue", "identifier": "d0",
+                         "bins_min": 0, "bins_max": 8192, "bins_width": 1024},
+                        {"board": 6, "channel": 1, "color": "red", "identifier": "d1",
+                         "bins_min": 0, "bins_max": 8192, "bins_width": 1024}
                     ],
                     "recipes": [
                         {
@@ -286,7 +272,7 @@ class RbsRqm(BaseModel):
         }
 
 
-empty_rbs_rqm = RbsRqm(recipes=[], settings=empty_settings, detectors=[])
+empty_rbs_rqm = RbsRqm(recipes=[], rqm_number="", detectors=[])
 
 
 class RbsRqmStatus(BaseModel):

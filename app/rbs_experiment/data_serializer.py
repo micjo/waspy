@@ -6,8 +6,10 @@ from shutil import copy2
 from typing import List, Dict
 import numpy as np
 
-from app.rbs_experiment.entities import DoublePath, RbsRqmSettings, RbsData, CaenDetectorModel
+from app.rbs_experiment.entities import DoublePath,  RbsData, CaenDetectorModel
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 
 def _try_copy(source, destination):
     logging.info("copying {source} to {destination}".format(source=source, destination=destination))
@@ -79,28 +81,38 @@ def _format_caen_histogram(data: List[int]):
 
 class RbsDataSerializer:
     data_dir: DoublePath
-    _settings: RbsRqmSettings
+    base_folder: Path
+    sub_folder: Path
 
     def __init__(self, data_dir: DoublePath):
         self.data_dir = data_dir
+        self.sub_folder = Path("")
+        self._make_folders()
 
-    def set_settings(self, settings: RbsRqmSettings):
-        self._settings = settings
-
-    def set_sub_folder(self, sub_folder):
-        self._settings.sub_folder = sub_folder
+    def _make_folders(self):
+        Path.mkdir(self.data_dir.local, parents=True, exist_ok=True)
+        Path.mkdir(self.data_dir.remote, parents=True, exist_ok=True)
 
     def clear_sub_folder(self):
-        self._settings.sub_folder = ""
+        self.sub_folder = Path("")
+
+    def set_base_folder(self, base_folder: str):
+        self.base_folder = Path(base_folder)
+
+    def set_sub_folder(self, sub_folder: str):
+        self.sub_folder = Path(sub_folder)
+
+    def _get_folder(self):
+        return self.base_folder / self.sub_folder
 
     def _flush_plot(self, fig, file_stem):
         plt.subplots_adjust(hspace=0.5)
         histogram_file = file_stem + ".png"
-        histogram_path = self.data_dir.local / self._settings.get_folder() / histogram_file
+        histogram_path = self.data_dir.local / self._get_folder() / histogram_file
         Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
         logging.info("Storing histogram plot to path: " + str(histogram_path))
         plt.savefig(histogram_path)
-        remote_histogram_path = self.data_dir.remote / self._settings.get_folder() / histogram_file
+        remote_histogram_path = self.data_dir.remote / self._get_folder() / histogram_file
         _try_copy(histogram_path, remote_histogram_path)
         plt.close(fig)
 
@@ -153,25 +165,25 @@ class RbsDataSerializer:
         plt.grid()
 
         yield_plot_file = file_stem + "_yields.png"
-        yield_plot_path = self.data_dir.local / self._settings.get_folder() / yield_plot_file
+        yield_plot_path = self.data_dir.local / self._get_folder() / yield_plot_file
         Path.mkdir(yield_plot_path.parent, parents=True, exist_ok=True)
         logging.info("Storing yield plot to path: " + str(yield_plot_path))
         plt.savefig(yield_plot_path)
         plt.clf()
 
-        remote_yield_plot_path = self.data_dir.remote / self._settings.get_folder() / yield_plot_file
+        remote_yield_plot_path = self.data_dir.remote / self._get_folder() / yield_plot_file
         _try_copy(yield_plot_path, remote_yield_plot_path)
         plt.close(fig)
 
     def store_yields(self, file_stem, angle_values, energy_yields):
         yields_file = file_stem + "_yields.txt"
-        yields_path = self.data_dir.local / self._settings.get_folder() / yields_file
+        yields_path = self.data_dir.local / self._get_folder() / yields_file
 
         with open(yields_path, 'w+') as f:
             for index, angle in enumerate(angle_values):
                 f.write("{angle}, {energy_yield}\n".format(angle=angle, energy_yield=energy_yields[index]))
 
-        remote_yields_path = self.data_dir.remote / self._settings.get_folder() / yields_file
+        remote_yields_path = self.data_dir.remote / self._get_folder() / yields_file
         _try_copy(yields_path, remote_yields_path)
 
     def save_histograms(self, rbs_data: RbsData, file_stem, sample_id):
@@ -181,11 +193,11 @@ class RbsDataSerializer:
             formatted_data = _format_caen_histogram(rbs_data.histograms[index])
             full_data = header + "\n" + formatted_data
             histogram_file = file_stem + "_" + detector.identifier + ".txt"
-            histogram_path = self.data_dir.local / self._settings.get_folder() / histogram_file
+            histogram_path = self.data_dir.local / self._get_folder() / histogram_file
             Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
             logging.info("Storing histogram data to path: " + str(histogram_path))
             with open(histogram_path, 'w+') as f:
                 f.write(full_data)
 
-            remote_histogram_path = self.data_dir.remote / self._settings.get_folder() / histogram_file
+            remote_histogram_path = self.data_dir.remote / self._get_folder() / histogram_file
             _try_copy(histogram_path, remote_histogram_path)

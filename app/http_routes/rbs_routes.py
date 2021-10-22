@@ -3,10 +3,11 @@ import traceback
 from fastapi import APIRouter, UploadFile, File, Response
 from starlette import status
 
-from app.rbs_experiment.entities import RbsRqm, PauseModel
+from app.rbs_experiment.entities import RbsRqm, PauseModel, RbsConfig
 import app.rbs_experiment.random_csv_to_json as csv_convert
 import logging
 
+from app.rbs_experiment.rqm_dispatcher import RqmDispatcher
 
 router = APIRouter()
 
@@ -52,14 +53,11 @@ async def dry_run_rbs(rbs_experiment: RbsRqm):
 #
 #
 
-# @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
-# async def run_rbs(response: Response, job: RbsRqm):
-#     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=True))
-#     file_path = cfg.input_dir.watch / job.rqm_number
-#     with open(file_path, "w") as f:
-#         f.write(job.json())
-#         f.flush()
-#     await pause_rbs_dir_scan(PauseModel(pause_dir_scan=False))
+def build_api_endpoints(rqm_dispatcher: RqmDispatcher):
+    @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
+    async def run_rbs(response: Response, job: RbsRqm):
+        rqm_dispatcher.add_rqm_to_queue(job)
+
 
 
 # @router.post("/api/rbs/rqm_csv", tags=["RBS API"])

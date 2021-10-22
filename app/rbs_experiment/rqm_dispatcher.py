@@ -1,15 +1,17 @@
+import copy
+import queue
 import sys
 from pathlib import Path
+from queue import Queue
 from shutil import copy2
 import logging
+from typing import List
 
-from app.rbs_experiment.entities import RbsRqm
+from app.rbs_experiment.entities import RbsRqm, DispatcherConfig
 from app.rbs_experiment.recipe_list_runner import RecipeListRunner
-from app.setup.config import cfg
-from threading import Thread
+from threading import Thread, Lock, Condition
 import traceback
 import time
-
 
 
 def _pick_first_file_from_path(path):
@@ -18,14 +20,6 @@ def _pick_first_file_from_path(path):
         return files[0]
     except:
         return ""
-
-
-def _make_folders():
-    Path.mkdir(cfg.input_dir.watch, parents=True, exist_ok=True)
-    Path.mkdir(cfg.output_dir.ongoing, parents=True, exist_ok=True)
-    Path.mkdir(cfg.output_dir.done, parents=True, exist_ok=True)
-    Path.mkdir(cfg.output_dir.failed, parents=True, exist_ok=True)
-    Path.mkdir(cfg.output_dir.data, parents=True, exist_ok=True)
 
 
 def move_and_try_copy(file, move_folder, copy_folder):
@@ -39,15 +33,23 @@ def move_and_try_copy(file, move_folder, copy_folder):
 
 
 class RqmDispatcher(Thread):
+    rqms: List[RbsRqm]
+
     def __init__(self, recipe_runner: RecipeListRunner):
         Thread.__init__(self)
         self.dir_scan_paused = False
         self.recipe_runner = recipe_runner
-        _make_folders()
+        self.recipe_runner.daemon = True
+        self.lock = Lock()
+        self.pause_request = Queue[str]
+        self.pause_condition = Condition()
+        self.enqueue_rqm = Condition()
+        self.rqms = []
 
     def get_state(self):
-        rbs_state = self.rbs_status.dict()
-        rbs_state["dir_scan_paused"] = self.dir_scan_paused
+        with self.enqueue_rqm:
+            rqms = copy.deepcopy(self.rqms)
+        rbs_state = {"dir_scan_paused": self.dir_scan_paused, "queue": rqms}
         return rbs_state
 
     def abort(self):
@@ -58,21 +60,22 @@ class RqmDispatcher(Thread):
         self.recipe_runner.start()
         while True:
             time.sleep(1)
-            if self.dir_scan_paused:
-                continue
+            try:
+                self.recipe_runner.rqm_queue.put_nowait(self.get_next_rqm())
+                self.clear_next_rqm()
+            except queue.Full:
+                print("Recipe runner is already busy. back off.")
+            except IndexError:
+                pass
 
-            f = _pick_first_file_from_path(cfg.input_dir.watch)
-            if f:
-                try:
-                    f = move_and_try_copy(f, cfg.output_dir.ongoing, cfg.output_dir_remote.ongoing)
-                    experiment = RbsRqm.parse_file(f)
-                    self.recipe_runner.add_rqm_to_queue(experiment)
-                    move_and_try_copy(f, cfg.output_dir.done, cfg.output_dir_remote.done)
-                except:
-                    move_and_try_copy(f, cfg.output_dir.failed, cfg.output_dir_remote.failed)
-                    logging.error(traceback.format_exc())
+    def get_next_rqm(self) -> RbsRqm:
+        with self.enqueue_rqm:
+            return copy.deepcopy(self.rqms[0])
 
-    def pause_dir_scan(self, pause):
-        self.dir_scan_paused = pause
+    def clear_next_rqm(self):
+        with self.enqueue_rqm:
+            self.rqms.pop(0)
 
-
+    def add_rqm_to_queue(self, rqm: RbsRqm):
+        with self.enqueue_rqm:
+            self.rqms.append(rqm)
