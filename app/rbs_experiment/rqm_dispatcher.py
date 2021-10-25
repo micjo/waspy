@@ -5,13 +5,16 @@ from pathlib import Path
 from queue import Queue
 from shutil import copy2
 import logging
-from typing import List
+from typing import List, Union
 
-from app.rbs_experiment.entities import RbsRqm, DispatcherConfig
+from app.rbs_experiment.data_serializer import RbsDataSerializer
+from app.rbs_experiment.entities import RbsRqm, DispatcherConfig, empty_rbs_rqm, RbsRqmStatus, empty_rqm_status, \
+    StatusModel, RecipeType, RbsRqmRandom, RbsRqmChanneling
 from app.rbs_experiment.recipe_list_runner import RecipeListRunner
 from threading import Thread, Lock, Condition
 import traceback
 import time
+import app.rbs_experiment.rbs as rbs_lib
 
 
 def _pick_first_file_from_path(path):
@@ -32,50 +35,116 @@ def move_and_try_copy(file, move_folder, copy_folder):
     return file
 
 
-class RqmDispatcher(Thread):
-    rqms: List[RbsRqm]
+def _get_total_counts_random(recipe: RbsRqmRandom):
+    return recipe.charge_total
 
-    def __init__(self, recipe_runner: RecipeListRunner):
+
+def _get_total_counts_channeling(recipe: RbsRqmChanneling):
+    yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
+    compare_total_charge = 2 * recipe.random_fixed_charge_total
+    return yield_optimize_total_charge + compare_total_charge
+
+
+def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+    if recipe.type == RecipeType.channeling:
+        return _get_total_counts_channeling(recipe)
+    if recipe.type == RecipeType.random:
+        return _get_total_counts_random(recipe)
+
+class RqmDispatcher(Thread):
+    _rqms: List[RbsRqm]
+    _active_rqm: RbsRqm
+    _status: RbsRqmStatus
+    _data_serializer: RbsDataSerializer
+    _rbs: rbs_lib.Rbs
+    _abort: bool
+    _lock: Lock
+
+    def __init__(self, recipe_runner: RecipeListRunner, data_serializer:RbsDataSerializer, rbs: rbs_lib.Rbs):
         Thread.__init__(self)
-        self.dir_scan_paused = False
         self.recipe_runner = recipe_runner
-        self.recipe_runner.daemon = True
-        self.lock = Lock()
-        self.pause_request = Queue[str]
         self.pause_condition = Condition()
         self.enqueue_rqm = Condition()
-        self.rqms = []
+        self._status_lock = Lock()
+        self._rqms = []
+        self._active_rqm = empty_rbs_rqm
+        self._status = empty_rqm_status
+        self._data_serializer = data_serializer
+        self._rbs = rbs
+        self._lock = Lock()
+        self._abort = False
+
+    def abort(self):
+        with self._lock:
+            self._abort = True
 
     def get_state(self):
         with self.enqueue_rqm:
-            rqms = copy.deepcopy(self.rqms)
-        rbs_state = {"dir_scan_paused": self.dir_scan_paused, "queue": rqms}
+            rqms = copy.deepcopy(self._rqms)
+            active_rqm = self._active_rqm
+        rbs_state = {"queue": rqms, "active_rqm": active_rqm, "status": self._status}
         return rbs_state
 
-    def abort(self):
-        self.recipe_runner.abort()
-        self.recipe_runner.start()
+    def rqm_start(self):
+        with self._status_lock:
+            self._status.run_status = StatusModel.Running
+
+    def rqm_end(self):
+        with self._status_lock:
+            self._status.run_status = StatusModel.Idle
+            self._status.active_recipe_sample_id = ""
+            self._status.accumulated_charge = 0
+
+    def add_rqm_to_queue(self, rqm):
+        with self.enqueue_rqm:
+            self._rqms.append(rqm)
+
+#TODO: This function needs (a lot of) cleanup
+    def run_recipe(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+        with self._status_lock:
+            self._status.active_recipe_sample_id = recipe.sample_id
+            self._status.accumulated_charge_target = _get_total_counts(recipe)
+            counts_at_start = self._status.accumulated_charge_target
+
+        command_list = []
+        if recipe.type == RecipeType.random:
+            command_list = self.recipe_runner.run_random(recipe, self._rbs, self._data_serializer)
+
+        for command in command_list:
+            t = Thread(target=command)
+            t.start()
+            while t.is_alive():
+                with self._lock:
+                    if self._abort:
+                        break
+                charge = self._rbs.get_charge()
+                target_charge = self._rbs.get_target_charge()
+                logging.info("thread still alive, charge: " + str(charge) + "target_charge:" + str(target_charge))
+                with self._status_lock:
+                    if charge < target_charge:
+                        self._status.accumulated_charge = counts_at_start + charge
+                    else:
+                        self._status.accumulated_charge = counts_at_start + target_charge
+                time.sleep(1)
+            with self._lock:
+                if self._abort:
+                    self._abort = False
+                    break
+
+        command_list.clear()
+
 
     def run(self):
-        self.recipe_runner.start()
         while True:
             time.sleep(1)
-            try:
-                self.recipe_runner.rqm_queue.put_nowait(self.get_next_rqm())
-                self.clear_next_rqm()
-            except queue.Full:
-                print("Recipe runner is already busy. back off.")
-            except IndexError:
-                pass
+            if not self._rqms:
+                continue
+            with self.enqueue_rqm:
+                active_rqm = self._rqms.pop(0)
+                self._active_rqm = active_rqm
 
-    def get_next_rqm(self) -> RbsRqm:
-        with self.enqueue_rqm:
-            return copy.deepcopy(self.rqms[0])
+            self._data_serializer.set_base_folder(active_rqm.rqm_number)
+            self._rbs.set_active_detectors(active_rqm.detectors)
 
-    def clear_next_rqm(self):
-        with self.enqueue_rqm:
-            self.rqms.pop(0)
-
-    def add_rqm_to_queue(self, rqm: RbsRqm):
-        with self.enqueue_rqm:
-            self.rqms.append(rqm)
+            for recipe in active_rqm.recipes:
+                self.run_recipe(recipe)

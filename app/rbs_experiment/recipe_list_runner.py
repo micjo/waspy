@@ -1,16 +1,18 @@
 import sys
 import time
-from typing import List, Union
+import traceback
+from typing import List, Union, Callable
 import copy
 
 from app.rbs_experiment.data_serializer import RbsDataSerializer
 from app.rbs_experiment.entities import RbsRqmStatus, RbsRqmRandom, RbsRqmChanneling, \
     RbsRqmMinimizeYield, RbsRqmFixed, RecipeType, StatusModel, empty_rbs_rqm, RbsRqm, RbsData, VaryCoordinate, \
-    CoordinateEnum, PositionCoordinates
+    CoordinateEnum, PositionCoordinates, empty_rqm_status
 import app.rbs_experiment.rbs as rbs_lib
 from threading import Thread, Lock
 from queue import Queue
 import app.rbs_experiment.yield_angle_fit as fit
+from functools import partial
 
 
 def make_count_callback(rbs_rqm_status: RbsRqmStatus):
@@ -52,52 +54,28 @@ def _make_random_recipe(recipe):
                         vary_coordinate=recipe.random_vary_coordinate)
 
 
-def _get_total_counts_random(recipe: RbsRqmRandom):
-    return recipe.charge_total
-
-
-def _get_total_counts_channeling(recipe: RbsRqmChanneling):
-    yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
-    compare_total_charge = 2 * recipe.random_fixed_charge_total
-    return yield_optimize_total_charge + compare_total_charge
-
-
-def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
-    if recipe.type == RecipeType.channeling:
-        return _get_total_counts_channeling(recipe)
-    if recipe.type == RecipeType.random:
-        return _get_total_counts_random(recipe)
-
-
 def _get_minimum_yield_angle(angles: List[float], energy_yields: List[int]) -> float:
-    min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
+    min_angle = fit.get_angle_for_minimum_yield(angles, energy_yields)
     return min_angle
 
 
-class RecipeListRunner(Thread):
+class RecipeListRunner():
     rqm_queue: Queue[RbsRqm]
     _active_rqm: RbsRqm
     _status: RbsRqmStatus
-    _status_lock: Lock()
     _data_serializer: RbsDataSerializer
     _rbs: rbs_lib.Rbs
 
     def __init__(self, setup: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
-        Thread.__init__(self)
         self._rbs = setup
         self._data_serializer = data_serializer
-        self._status_lock = Lock()
-        self.rqm_queue = Queue(1)
-        self._status = RbsRqmStatus
-        self._rqm_end()
+        self._status = empty_rqm_status
 
     def get_status(self):
-        with self._status_lock:
-            return copy.deepcopy(self._status)
+        return copy.deepcopy(self._status)
 
     def set_status_charge(self, accumulated_charge):
-        with self._status_lock:
-            self._status.accumulated_charge = accumulated_charge
+        self._status.accumulated_charge = accumulated_charge
 
     def _get_count_callback(self):
         counts_at_start = self.get_status().accumulated_charge
@@ -143,20 +121,34 @@ class RecipeListRunner(Thread):
         self._data_serializer.plot_energy_yields(recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
         self._rbs.move(min_position)
 
-    def run_random(self, recipe: RbsRqmRandom) -> RbsData:
-        self._rbs.move(recipe.start_position)
+    def run_random(self, recipe: RbsRqmRandom, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer) -> List[Callable]:
+        ret_val = [partial(rbs.move, recipe.start_position)]
         positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
-        self._rbs.prepare_counting(recipe.charge_total / len(positions))
-        self._rbs.prepare_data_acquisition()
+        ret_val.append(partial(rbs.prepare_counting, recipe.charge_total / len(positions)))
+        ret_val.append(partial(rbs.prepare_data_acquisition))
 
         for index, position in enumerate(positions):
-            self._rbs.move_and_count(position, self._get_count_callback())
-        self._rbs.stop_data_acquisition()
+            ret_val.append(partial(rbs.move_and_count, position))
+        ret_val.append(rbs.stop_data_acquisition)
 
-        rbs_data = self._rbs.get_status(True)
-        self._data_serializer.save_histograms(rbs_data, recipe.file_stem, recipe.sample_id)
-        self._data_serializer.plot_histograms(rbs_data, recipe.file_stem)
-        return rbs_data
+        def gather_results():
+            rbs_data = rbs.get_status(True)
+            data_serializer.save_histograms(rbs_data, recipe.file_stem, recipe.sample_id)
+            data_serializer.plot_histograms(rbs_data, recipe.file_stem)
+        ret_val.append(gather_results)
+        return ret_val
+
+    def configure_store(self, rqm: RbsRqm):
+        self._data_serializer.set_base_folder(rqm.rqm_number)
+        self._rbs.set_active_detectors(rqm.detectors)
+
+    def rqm_make_command_list(self, rqm: RbsRqm) -> List[Callable]:
+
+        for recipe in rqm.recipes:
+            if recipe.type == RecipeType.channeling:
+                ret_val.append(self.run_random(recipe))
+        return ret_val
+
 
     def run_fixed(self, recipe: RbsRqmFixed) -> RbsData:
         self._rbs.prepare_counting(recipe.charge_total)
@@ -184,48 +176,33 @@ class RecipeListRunner(Thread):
         detectors = self._rbs.get_detectors()
         self._data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
 
-    def abort(self):
-        sys.exit()
-
-    def _rqm_start(self, rqm: RbsRqm):
+    def rqm_start(self, rqm: RbsRqm):
+        return RbsRqmStatus()
         self._active_rqm = rqm
-        self._data_serializer.set_base_folder(rqm.rqm_number)
-        self._rbs.set_active_detectors(rqm.detectors)
-        with self._status_lock:
-            self._status.run_status = StatusModel.Running
-            self._status.active_rqm = rqm
+        self._status.run_status = StatusModel.Running
 
-    def _rqm_end(self):
-        with self._status_lock:
-            self._status.run_status = StatusModel.Idle
-            self._status.active_recipe_sample_id = ""
-            self._status.accumulated_charge = 0
-            self._status.accumulated_charge_target = 0
-            self._status.active_rqm = empty_rbs_rqm
 
-    def _recipe_start(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
-        with self._status_lock:
-            self._status.accumulated_charge = 0
-            self._status.accumulated_charge_target = 0
-            self._status.active_recipe_sample_id = recipe.sample_id
-            self._status.accumulated_charge_target = _get_total_counts(recipe)
+    def recipe_start(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+        return RbsRqmStatus(accumulated_charge=0, accumulated_charge_target=_get_total_counts(recipe),
+                              active_recipe_sample_id=recipe.sample_id,
+                              run_status=StatusModel.Running)
 
     def run(self):
         while True:
             time.sleep(1)
             rqm = self.rqm_queue.get(block=True)
-            self._rqm_start(rqm)
+            self.rqm_start(rqm)
 
             try:
                 for recipe in rqm.recipes:
-                    self._recipe_start(recipe)
+                    self.recipe_start(recipe)
 
                     if recipe.type == RecipeType.channeling:
                         self.run_channeling(recipe)
                     if recipe.type == RecipeType.random:
                         self.run_random(recipe)
             except Exception as e:
-                print(e)
+                print(traceback.format_exc())
 
-            self._rqm_end()
+            self.rqm_end()
             self.rqm_queue.task_done()
