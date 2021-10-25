@@ -7,6 +7,7 @@ from app.rbs_experiment.entities import RbsRqm, PauseModel, RbsConfig
 import app.rbs_experiment.random_csv_to_json as csv_convert
 import logging
 
+from app.rbs_experiment.recipe_list_runner import RecipeListRunner
 from app.rbs_experiment.rqm_dispatcher import RqmDispatcher
 
 router = APIRouter()
@@ -32,8 +33,8 @@ router = APIRouter()
 # async def get_rbs_experiment():
 #     rbs_state = scanner.get_state()
 #     return rbs_state
-#
-#
+
+
 
 # @router.post("/api/rbs/abort", tags=["RBS API"])
 # async def rbs_experiment_abort():
@@ -53,10 +54,20 @@ async def dry_run_rbs(rbs_experiment: RbsRqm):
 #
 #
 
-def build_api_endpoints(rqm_dispatcher: RqmDispatcher):
+def build_api_endpoints(rqm_dispatcher: RqmDispatcher, recipe_list_runner: RecipeListRunner):
     @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
     async def run_rbs(response: Response, job: RbsRqm):
         rqm_dispatcher.add_rqm_to_queue(job)
+
+    @router.get("/api/rbs/state", tags=["RBS API"], summary="Get the state of the active rqm")
+    async def get_rqm_state(response: Response):
+        print(recipe_list_runner.get_status())
+        return recipe_list_runner.get_status()
+
+    @router.get("/api/rbs/abort", tags=["RBS API"], summary="Abort the running rqm")
+    async def abort(response: Response):
+        rqm_dispatcher.abort()
+
 
 
 

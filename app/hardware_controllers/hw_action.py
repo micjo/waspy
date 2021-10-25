@@ -56,12 +56,10 @@ def pause_motrona_count(request_id, url):
     post_request(url, motrona_request)
 
 
-def motrona_counting_done(url, callback=None):
+def motrona_counting_done(url):
     while True:
         time.sleep(1)
         response = http.get_json(url)
-        if callback:
-            callback(response)
         if response["status"] == "Done":
             logging.info("motrona counting done")
             break
