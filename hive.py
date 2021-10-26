@@ -30,16 +30,16 @@ def create_app():
     rbs_setup = rbs_lib.Rbs(hive_config.rbs_config.hardware)
     rbs_data_serializer = RbsDataSerializer(hive_config.rbs_config.data_dir)
     recipe_list_scanner = RecipeListRunner(rbs_setup, rbs_data_serializer)
-    rqm_dispatcher = RqmDispatcher(recipe_list_scanner)
+    rqm_dispatcher = RqmDispatcher(recipe_list_scanner, rbs_data_serializer, rbs_setup)
     rqm_dispatcher.daemon = True
     rqm_dispatcher.start()
 
     hw_control_routes.build_api_endpoints(hive_config.hw_config)
+    hw_control_routes.build_conf_endpoint(hive_config)
     app.include_router(hw_control_routes.router)
 
-
     print('build rbs endpoints start')
-    rbs_routes.build_api_endpoints(rqm_dispatcher)
+    rbs_routes.build_api_endpoints(rqm_dispatcher, rbs_setup)
     print('build rbs endpoints finish')
     app.include_router(rbs_routes.router)
 

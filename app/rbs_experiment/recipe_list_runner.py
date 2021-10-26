@@ -6,7 +6,7 @@ import copy
 
 from app.rbs_experiment.data_serializer import RbsDataSerializer
 from app.rbs_experiment.entities import RbsRqmStatus, RbsRqmRandom, RbsRqmChanneling, \
-    RbsRqmMinimizeYield, RbsRqmFixed, RecipeType, StatusModel, empty_rbs_rqm, RbsRqm, RbsData, VaryCoordinate, \
+    RbsRqmMinimizeYield, RbsRqmFixed, RecipeType, StatusModel, RbsRqm, RbsData, VaryCoordinate, \
     CoordinateEnum, PositionCoordinates, empty_rqm_status
 import app.rbs_experiment.rbs as rbs_lib
 from threading import Thread, Lock
