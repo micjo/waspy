@@ -8,6 +8,7 @@ from pydantic.generics import GenericModel
 from app.hardware_controllers.entities import HwControllerConfig
 import app.http_routes.async_http_helper as http
 from app.hardware_controllers.hw_action import get_caen_histogram, pack
+from app.setup.config import HiveConfig
 
 router = APIRouter()
 
@@ -37,7 +38,7 @@ def _build_packed_histogram_api(key, base_url):
         if width > 2048:
             response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
             return {}
-        resp_code, data = await get_caen_histogram(base_url, board, channel)
+        resp_code, data = get_caen_histogram(base_url, board, channel)
         packed_data = pack(data, start, end, width)
         response.status_code = resp_code
         return packed_data
@@ -80,5 +81,10 @@ def build_api_endpoints(daemon_config: HwControllerConfig):
             _build_histogram_api(key, daemon.url)
             _build_packed_histogram_api(key, daemon.url)
 
+
+def build_conf_endpoint(hive_config: HiveConfig):
+    @router.get("/api/hive_config")
+    async def api_get_hive_config():
+        return hive_config
 
 

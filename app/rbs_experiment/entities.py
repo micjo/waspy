@@ -262,10 +262,15 @@ class RbsRqm(BaseModel):
                             "start_position": {"x": 0},
                             "charge_total": 60000,
                             "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2},
-                            "integration_window": {"start": 0, "end": 24},
-                            "optimize_detector_index": 0,
                             "detector_indices": [0, 1]
                         },
+                        {
+                            "type": "random", "sample_id": "RBS_075A", "file_stem": "RBS_075A_out",
+                            "start_position": {"x": 10},
+                            "charge_total": 60000,
+                            "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2},
+                            "detector_indices": [0, 1]
+                        }
                     ],
                     "parking_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0}
                 }
@@ -277,12 +282,12 @@ empty_rbs_rqm = RbsRqm(recipes=[], rqm_number="", detectors=[])
 
 class RbsRqmStatus(BaseModel):
     run_status: StatusModel
-    active_recipe_sample_id: str
+    active_sample_id: str
     accumulated_charge: float
     accumulated_charge_target: float
 
 
-empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_recipe_sample_id="", accumulated_charge=0,
+empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_sample_id="", accumulated_charge=0,
                                 accumulated_charge_target=0)
 
 

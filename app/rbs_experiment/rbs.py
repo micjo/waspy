@@ -1,6 +1,6 @@
 from datetime import datetime
 from queue import Queue
-from threading import Thread
+from threading import Thread, Lock
 from typing import List, Callable
 import logging
 import numpy as np
@@ -39,7 +39,7 @@ def fake_counter(func):
     def wrap_func(*args, **kwargs):
         value = 0
         for i in range(0,10):
-            time.sleep(1)
+            time.sleep(0.1)
             str_value = str(round(value,2))
             print("fake-counter: " + str_value + " -> 10")
             data = {"charge(nC)": str_value, "target_charge(nC)": 10}
@@ -53,6 +53,8 @@ class Rbs():
     detectors: List[CaenDetectorModel]
     _acquisition_run_time: float
     _acquisition_accumulated_charge: float
+    _acquisition_corrected_accumulated_charge: float
+    _counting: bool
 
     def __init__(self, rbs_hw: RbsHardware):
         self.hw = rbs_hw
@@ -60,6 +62,10 @@ class Rbs():
         self._start_time = time.time()
         self._acquisition_run_time = 0
         self._acquisition_accumulated_charge = 0
+        self._acquisition_corrected_accumulated_charge = 0
+        self.charge_offset = 0
+        self._counting = False
+        self._counting_lock = Lock()
 
     @fakeable
     def move(self, position: PositionCoordinates, block=False):
@@ -79,26 +85,35 @@ class Rbs():
         if position.theta is not None:
             hw_action.move_aml_second(_generate_request_id(), self.hw.aml_det_theta.url, position.theta)
 
-    @fakeable
+
     def count(self):
         logging.info("acquiring till target")
         hw_action.clear_start_motrona_count(_generate_request_id(), self.hw.motrona.url)
+        with self._counting_lock:
+            self._counting = True
         hw_action.motrona_counting_done(self.hw.motrona.url)
+        with self._counting_lock:
+            self._counting = False
         motrona = requests.get(self.hw.motrona.url).json()
         self._acquisition_accumulated_charge += float(motrona["charge(nC)"])
+        self.charge_offset += float(motrona["target_charge(nC)"])
 
     def move_and_count(self, position: PositionCoordinates):
         self.move(position)
         self.count()
 
-    def get_charge(self) -> float:
-        motrona = requests.get(self.hw.motrona.url).json()
-        return float(motrona["charge(nC)"])
-
-    def get_target_charge(self):
-        motrona = requests.get(self.hw.motrona.url).json()
-        return float(motrona["target_charge(nC)"])
-
+    def get_corrected_accumulated_charge(self):
+        increment = 0
+        with self._counting_lock:
+            if self._counting:
+                motrona = requests.get(self.hw.motrona.url).json()
+                charge = float(motrona["charge(nC)"])
+                target_charge = float(motrona["target_charge(nC)"])
+                if charge < target_charge:
+                    increment = charge
+                else:
+                    increment = target_charge
+        return self.charge_offset + increment
 
     def set_active_detectors(self, detectors):
         self.detectors = detectors
@@ -128,19 +143,16 @@ class Rbs():
                                   "histograms": histograms, "measuring_time_msec": self._acquisition_run_time,
                                   "accumulated_charge": self._acquisition_accumulated_charge})
 
-
-    @fakeable
     def prepare_data_acquisition(self):
         self._start_time = time.time()
         self._acquisition_accumulated_charge = 0
+        self.charge_offset = 0
         hw_action.stop_clear_and_arm_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
-    @fakeable
     def stop_data_acquisition(self):
         self._acquisition_run_time = time.time() - self._start_time
         hw_action.stop_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
-    @fakeable
     def prepare_counting(self, target):
         logging.info("pause counting and set target")
         hw_action.pause_motrona_count(_generate_request_id() + "_pause", self.hw.motrona.url)
