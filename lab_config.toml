@@ -1,47 +1,50 @@
-[hw_control]
-    [hw_control.aml_x_y]
-    type = "aml"
-    url = "http://localhost:22000/api/latest"
-    names = ["X", "Y"]
-    loads = [72.5, 61.7]
-    title = "AML X Y"
+[generic.hardware.aml_x_y]
+type="aml"
+title="AML X Y"
+url="http://localhost:20000/api/latest"
+names = ["X", "Y"]
+loads = [72.5,61.7]
 
-    [hw_control.aml_det_theta]
-    type = "aml"
-    url = "http://localhost:22001/api/latest"
-    names = ["Detector", "Theta"]
-    loads = [170, -180.5]
-    title = "AML Detector Theta"
+[generic.hardware.aml_phi_zeta]
+type = "aml"
+title = "AML Phi Zeta"
+url = "http://localhost:20001/api/latest"
+names = ["Phi", "Zeta"]
+loads = [0, -1]
 
-    [hw_control.aml_phi_zeta]
-    type = "aml"
-    url = "http://localhost:22002/api/latest"
-    names = ["Phi", "Zeta"]
-    loads = [0, -1]
-    title = "AML Phi Zeta"
+[generic.hardware.aml_det_theta]
+type = "aml"
+title = "AML Detector Theta"
+url = "http://localhost:20002/api/latest"
+names = ["Detector", "Theta"]
+loads = [170, -180.5]
 
-    [hw_control.motrona_rbs]
-    type = "motrona"
-    url = "http://localhost:23000/api/latest"
-    title = "Motrona RBS"
+[generic.hardware.motrona_rbs]
+type = "motrona"
+title = "Motrona RBS"
+url = "http://localhost:20100/api/latest"
 
-    [hw_control.caen_rbs]
-    type = "caen"
-    url = "http://169.254.80.218:22300/api/latest"
-    title = "Caen RBS"
+[generic.hardware.caen_rbs]
+type = "caen"
+title = "Caen RBS"
+url = "http://169.254.80.218:20200/api/latest"
 
-[rbs]
-    [rbs.input_dir]
-    watch = "/mnt/mcaiba_nas/1_watch"
+[generic.hardware.mdrive]
+type = "mdrive"
+title = "MDrive"
+url = "http://localhost:20300/api/latest"
 
-    [rbs.output_dir]
-    ongoing = "/mnt/mcaiba_nas/2_ongoing"
-    done = "/mnt/mcaiba_nas/3_done"
-    failed = "/mnt/mcaiba_nas/4_failed"
-    data = "/mnt/mcaiba_nas/5_data"
+[erd.hardware]
+mdrive = "mdrive"
 
-    [rbs.remote_output_dir]
-    ongoing = "/mnt/winbe_wasp/_02_ongoing"
-    done = "/mnt/winbe_wasp/_03_done"
-    failed = "/mnt/winbe_wasp/_04_failed"
-    data = "/mnt/winbe_wasp/_05_data"
+[rbs.hardware]
+aml_x_y = "aml_x_y"
+aml_phi_zeta = "aml_phi_zeta"
+aml_det_theta = "aml_det_theta"
+caen = "caen_rbs"
+motrona = "motrona_rbs"
+
+[rbs.data_dir]
+local = "/mnt/mcaiba_nas/5_data"
+remote = "/mnt/winbe_wasp/_05_data"
+
