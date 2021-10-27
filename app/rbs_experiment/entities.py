@@ -43,7 +43,6 @@ class RbsHardware(BaseModel):
 
 
 class RbsConfig(BaseModel):
-    folder_scan: DispatcherConfig
     data_dir: DoublePath
     hardware: RbsHardware
 
