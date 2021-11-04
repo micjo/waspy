@@ -1,6 +1,7 @@
 import copy
 import queue
 import sys
+from collections import deque
 from pathlib import Path
 from queue import Queue
 from shutil import copy2
@@ -54,6 +55,7 @@ def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
 
 class RqmDispatcher(Thread):
     _rqms: List[RbsRqm]
+    _past_rqms: deque[RbsRqm]
     _active_rqm: RbsRqm
     _status: RbsRqmStatus
     _data_serializer: RbsDataSerializer
@@ -71,6 +73,7 @@ class RqmDispatcher(Thread):
         self._rbs = rbs
         self._lock = Lock()
         self._abort = False
+        self._past_rqms = deque(maxlen=5)
 
     def abort(self):
         with self._lock:
@@ -79,8 +82,10 @@ class RqmDispatcher(Thread):
     def get_state(self):
         with self._lock:
             rqms = copy.deepcopy(self._rqms)
+            past_rqms = copy.deepcopy(list(self._past_rqms))
             active_rqm = self._active_rqm
-        rbs_state = {"queue": rqms, "active_rqm": active_rqm}
+            print(self._past_rqms)
+        rbs_state = {"queue": rqms, "active_rqm": active_rqm, "done_queue":past_rqms}
         rbs_state.update(self._status.dict())
         return rbs_state
 
@@ -91,6 +96,9 @@ class RqmDispatcher(Thread):
     def _clear_rqms(self):
         with self._lock:
             self._rqms.clear()
+            self._past_rqms.clear()
+            print("cleared rqms")
+            print(self._past_rqms)
 
     def _pop_rqm(self):
         with self._lock:
@@ -157,6 +165,10 @@ class RqmDispatcher(Thread):
                 for recipe in rqm.recipes:
                     self._run_recipe(recipe)
                     if self._should_abort():
-                        self._clear_rqms()
-                        self._clear_abort()
                         break
+                with self._lock:
+                    self._past_rqms.appendleft(rqm)
+
+            if self._should_abort():
+                self._clear_rqms()
+                self._clear_abort()

@@ -6,7 +6,7 @@ from pydantic import create_model
 from pydantic.generics import GenericModel
 
 from app.hardware_controllers.entities import HwControllerConfig
-import app.http_routes.async_http_helper as http
+import app.http_routes.http_helper as http
 from app.hardware_controllers.hw_action import get_caen_histogram, pack
 from app.setup.config import HiveConfig
 
@@ -17,7 +17,7 @@ def _build_get_api(key, url):
     @router.get("/api/" + key, tags=["Daemon API"])
     async def api_key_get(response: Response):  # type: ignore
         try:
-            response.status_code, resp = await http.get_json_with_response_code(url)
+            response.status_code, resp = http.get_json_with_response_code(url)
         except Exception as e:
             response.status_code = status.HTTP_404_NOT_FOUND
             resp = str(e)
@@ -28,7 +28,7 @@ def _build_histogram_api(key, base_url):
     @router.get("/api/" + key + "/histogram/{board}-{channel}", tags=["Daemon API"])
     async def histogram(response: Response, board: int, channel: int):
         url = base_url + "/histogram/" + str(board) + "-" + str(channel)
-        response.status_code, resp = await http.get_text_with_response_code(url)
+        response.status_code, resp = http.get_text_with_response_code(url)
         return resp
 
 
@@ -68,7 +68,7 @@ def _build_post_api(key, url):
 
     @router.post("/api/" + key, tags=["Daemon API"])
     async def api_key_post(response: Response, hardware_command: hw_schema):  # type: ignore
-        code, body = await http.post_dictionary(url, hardware_command.__root__)
+        code, body = http.post_dictionary(url, hardware_command.__root__)
         response.status_code = code
         return body
 
