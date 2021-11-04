@@ -22,7 +22,7 @@ faker = True
 
 def fake_call(func, *args, **kw):
     saved_args = locals()
-    time.sleep(0.5)
+    time.sleep(0.1)
     logging.info("Function '" + str(saved_args) + "' faked")
 
 
@@ -85,7 +85,7 @@ class Rbs():
         if position.theta is not None:
             hw_action.move_aml_second(_generate_request_id(), self.hw.aml_det_theta.url, position.theta)
 
-
+    @fakeable
     def count(self):
         logging.info("acquiring till target")
         hw_action.clear_start_motrona_count(_generate_request_id(), self.hw.motrona.url)
@@ -153,6 +153,7 @@ class Rbs():
         self._acquisition_run_time = time.time() - self._start_time
         hw_action.stop_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
+    @fakeable
     def prepare_counting(self, target):
         logging.info("pause counting and set target")
         hw_action.pause_motrona_count(_generate_request_id() + "_pause", self.hw.motrona.url)

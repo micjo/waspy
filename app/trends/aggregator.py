@@ -36,7 +36,6 @@ class Aggregator:
         self._positions = [ ["inf", 0] ]*120
         self.aggregate_lock = threading.Lock()
 
-#should switch these to aiohttp
     def aggregate(self):
         timestampStr = datetime.now().strftime("%H:%M:%S")
         response = rq.get(self._config.motrona_rbs.url)

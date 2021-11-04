@@ -1,5 +1,6 @@
 import requests
 
+
 def get_text_with_response_code(url):
     response = requests.get(url)
     return response.status_code, response.text
