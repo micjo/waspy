@@ -84,7 +84,6 @@ class RqmDispatcher(Thread):
             rqms = copy.deepcopy(self._rqms)
             past_rqms = copy.deepcopy(list(self._past_rqms))
             active_rqm = self._active_rqm
-            print(self._past_rqms)
         rbs_state = {"queue": rqms, "active_rqm": active_rqm, "done_queue":past_rqms}
         rbs_state.update(self._status.dict())
         return rbs_state
@@ -97,8 +96,6 @@ class RqmDispatcher(Thread):
         with self._lock:
             self._rqms.clear()
             self._past_rqms.clear()
-            print("cleared rqms")
-            print(self._past_rqms)
 
     def _pop_rqm(self):
         with self._lock:
@@ -132,23 +129,20 @@ class RqmDispatcher(Thread):
             self._status.accumulated_charge_target = _get_total_counts(recipe)
             self._rbs.charge_offset = 0
 
-        command_list = []
         if recipe.type == RecipeType.random:
-            command_list = self.recipe_runner.run_random(recipe, self._rbs, self._data_serializer)
+            t = Thread(target=self.recipe_runner.run_random, args=(recipe, self._rbs, self._data_serializer))
+        if recipe.type == RecipeType.channeling:
+            t = Thread(target=self.recipe_runner.run_channeling, args=(recipe, self._rbs, self._data_serializer))
 
-        for command in command_list:
-            self._run_command(command)
-            if self._should_abort():
-                return
-
-    def _run_command(self, command):
-        t = Thread(target=command)
         t.start()
         while t.is_alive():
             self._update_charge_status()
-            time.sleep(0.2)
+            time.sleep(0.5)
             if self._should_abort():
-                return
+                if not self._rbs.aborted():
+                    self._rbs.abort()
+                if not self._data_serializer.aborted():
+                    self._data_serializer.abort()
 
     def _update_charge_status(self):
         with self._lock:
@@ -172,3 +166,5 @@ class RqmDispatcher(Thread):
             if self._should_abort():
                 self._clear_rqms()
                 self._clear_abort()
+                self._rbs.resume()
+                self._data_serializer.resume()

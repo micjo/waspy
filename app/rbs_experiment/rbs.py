@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 from queue import Queue
 from threading import Thread, Lock
@@ -7,6 +8,7 @@ import numpy as np
 import requests
 import time
 from datetime import datetime
+import app.http_routes.http_helper as http
 
 from app.rbs_experiment.entities import RbsHardware, CoordinateEnum, VaryCoordinate, Window
 import app.hardware_controllers.hw_action as hw_action
@@ -32,19 +34,21 @@ def fakeable(func):
             return lambda *args, **kw: fake_call(func, args, kw)
         else:
             return func
+
     return wrap_func()
 
 
 def fake_counter(func):
     def wrap_func(*args, **kwargs):
         value = 0
-        for i in range(0,10):
+        for i in range(0, 10):
             time.sleep(0.1)
-            str_value = str(round(value,2))
+            str_value = str(round(value, 2))
             print("fake-counter: " + str_value + " -> 10")
             data = {"charge(nC)": str_value, "target_charge(nC)": 10}
             args[1](data)
             value += 1.05
+
     return wrap_func
 
 
@@ -65,13 +69,15 @@ class Rbs():
         self._acquisition_corrected_accumulated_charge = 0
         self.charge_offset = 0
         self._counting = False
-        self._counting_lock = Lock()
+        self._abort = False
+        self._lock = Lock()
 
-    @fakeable
-    def move(self, position: PositionCoordinates, block=False):
-        logging.info("Moving rbs system to '" + str(position) + "'")
+    def move(self, position: PositionCoordinates):
+        if self.aborted():
+            return
         if position is None:
             return
+        logging.info("Moving rbs system to '" + str(position) + "'")
         if position.x is not None:
             hw_action.move_aml_first(_generate_request_id(), self.hw.aml_x_y.url, position.x)
         if position.y is not None:
@@ -85,15 +91,37 @@ class Rbs():
         if position.theta is not None:
             hw_action.move_aml_second(_generate_request_id(), self.hw.aml_det_theta.url, position.theta)
 
-    @fakeable
+    def abort(self):
+        with self._lock:
+            self._abort = True
+
+    def resume(self):
+        with self._lock:
+            self._abort = False
+
+    def aborted(self):
+        with self._lock:
+            return copy.deepcopy(self._abort)
+
+    def _wait_for_count_finished(self):
+        with self._lock:
+            self._counting = True
+        while True:
+            time.sleep(1)
+            if http.get_json(self.hw.motrona.url)["status"] == "Done":
+                break
+            if self.aborted():
+                break
+
+        with self._lock:
+            self._counting = False
+
     def count(self):
+        if self.aborted():
+            return
         logging.info("acquiring till target")
         hw_action.clear_start_motrona_count(_generate_request_id(), self.hw.motrona.url)
-        with self._counting_lock:
-            self._counting = True
-        hw_action.motrona_counting_done(self.hw.motrona.url)
-        with self._counting_lock:
-            self._counting = False
+        self._wait_for_count_finished()
         motrona = requests.get(self.hw.motrona.url).json()
         self._acquisition_accumulated_charge += float(motrona["charge(nC)"])
         self.charge_offset += float(motrona["target_charge(nC)"])
@@ -104,7 +132,7 @@ class Rbs():
 
     def get_corrected_accumulated_charge(self):
         increment = 0
-        with self._counting_lock:
+        with self._lock:
             if self._counting:
                 motrona = requests.get(self.hw.motrona.url).json()
                 charge = float(motrona["charge(nC)"])
@@ -143,22 +171,30 @@ class Rbs():
                                   "histograms": histograms, "measuring_time_msec": self._acquisition_run_time,
                                   "accumulated_charge": self._acquisition_accumulated_charge})
 
-    def prepare_data_acquisition(self):
-        self._start_time = time.time()
-        self._acquisition_accumulated_charge = 0
+    def clear_offset(self):
         self.charge_offset = 0
+        self._acquisition_accumulated_charge = 0
+
+    def prepare_data_acquisition(self):
+        if self.aborted():
+            return
+        self._start_time = time.time()
         hw_action.stop_clear_and_arm_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
     def stop_data_acquisition(self):
+        if self.aborted():
+            return
         self._acquisition_run_time = time.time() - self._start_time
         hw_action.stop_caen_acquisition(_generate_request_id(), self.hw.caen.url)
 
-    @fakeable
     def prepare_counting(self, target):
+        if self.aborted():
+            return
         logging.info("pause counting and set target")
         hw_action.pause_motrona_count(_generate_request_id() + "_pause", self.hw.motrona.url)
         hw_action.set_motrona_target_charge(_generate_request_id() + "_set_target_charge", self.hw.motrona.url,
                                             target)
+        logging.info("pause counting and set target done")
 
     def get_packed_histogram(self, detector: CaenDetectorModel) -> List[int]:
         resp_code, data = hw_action.get_caen_histogram(self.hw.caen.url, detector.board, detector.channel)
