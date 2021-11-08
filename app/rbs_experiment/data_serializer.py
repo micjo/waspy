@@ -3,6 +3,8 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 from shutil import copy2
+import copy
+from threading import Lock
 from typing import List, Dict
 import numpy as np
 
@@ -88,6 +90,20 @@ class RbsDataSerializer:
         self.data_dir = data_dir
         self.sub_folder = Path("")
         self._make_folders()
+        self._lock = Lock()
+        self._abort = False
+
+    def abort(self):
+        with self._lock:
+            self._abort = True
+
+    def resume(self):
+        with self._lock:
+            self._abort = False
+
+    def aborted(self):
+        with self._lock:
+            return copy.deepcopy(self._abort)
 
     def _make_folders(self):
         Path.mkdir(self.data_dir.local, parents=True, exist_ok=True)
@@ -106,6 +122,8 @@ class RbsDataSerializer:
         return self.base_folder / self.sub_folder
 
     def _flush_plot(self, fig, file_stem):
+        if self.aborted():
+            return
         plt.subplots_adjust(hspace=0.5)
         histogram_file = file_stem + ".png"
         histogram_path = self.data_dir.local / self._get_folder() / histogram_file
@@ -117,6 +135,8 @@ class RbsDataSerializer:
         plt.close(fig)
 
     def plot_histograms(self, rbs_data: RbsData, file_stem: str):
+        if self.aborted():
+            return
         data = rbs_data.histograms
         fig, axs = plt.subplots(len(data))
         fig.suptitle(file_stem)
@@ -133,6 +153,8 @@ class RbsDataSerializer:
 
     def plot_compare(self, detectors: List[CaenDetectorModel], fixed_data: List[List[int]],
                      random_data: List[List[int]], file_stem):
+        if self.aborted():
+            return
 
         nr_of_histograms = len(fixed_data)
         fixed_labels = [detector.identifier + "_fixed" for detector in detectors]
@@ -154,6 +176,8 @@ class RbsDataSerializer:
     def plot_energy_yields(self, file_stem,
                            angles: List[float], yields: List[int], smooth_angles: List[float],
                            smooth_yields: List[float]):
+        if self.aborted():
+            return
         fig, ax = plt.subplots()
         ax.scatter(angles, yields, marker="+", color="red", label="Data Points")
         ax.axhline(np.amin(yields), label="Minimum", linestyle=":")
@@ -176,6 +200,8 @@ class RbsDataSerializer:
         plt.close(fig)
 
     def store_yields(self, file_stem, angle_values, energy_yields):
+        if self.aborted():
+            return
         yields_file = file_stem + "_yields.txt"
         yields_path = self.data_dir.local / self._get_folder() / yields_file
 
@@ -187,6 +213,8 @@ class RbsDataSerializer:
         _try_copy(yields_path, remote_yields_path)
 
     def save_histograms(self, rbs_data: RbsData, file_stem, sample_id):
+        if self.aborted():
+            return
         plt.title(file_stem)
         for index, detector in enumerate(rbs_data.detectors):
             header = _serialize_histogram_header(rbs_data, detector.identifier, file_stem, sample_id)
