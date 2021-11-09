@@ -123,7 +123,7 @@ class RecipeListRunner():
 
     def run_random(self, recipe: RbsRqmRandom, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer, clear_offset=True):
         if clear_offset:
-            rbs.clear_offset()
+            rbs.clear_total_accumulated_charge()
         rbs.move(recipe.start_position)
         positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
         rbs.prepare_counting(recipe.charge_total / len(positions))
@@ -154,7 +154,7 @@ class RecipeListRunner():
         return rbs_data
 
     def run_channeling(self, recipe: RbsRqmChanneling, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
-        rbs.clear_offset()
+        rbs.clear_total_accumulated_charge()
         rbs.move(recipe.start_position)
 
         for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
