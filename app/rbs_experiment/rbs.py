@@ -56,8 +56,8 @@ class Rbs():
     hw: RbsHardware
     detectors: List[CaenDetectorModel]
     _acquisition_run_time: float
+    _acquisition_total_accumulated_charge: float
     _acquisition_accumulated_charge: float
-    _acquisition_corrected_accumulated_charge: float
     _counting: bool
 
     def __init__(self, rbs_hw: RbsHardware):
@@ -65,8 +65,8 @@ class Rbs():
         self.detectors = []
         self._start_time = time.time()
         self._acquisition_run_time = 0
+        self._acquisition_total_accumulated_charge = 0
         self._acquisition_accumulated_charge = 0
-        self._acquisition_corrected_accumulated_charge = 0
         self.charge_offset = 0
         self._counting = False
         self._abort = False
@@ -94,6 +94,7 @@ class Rbs():
     def abort(self):
         with self._lock:
             self._abort = True
+            self.clear_total_accumulated_charge()
 
     def resume(self):
         with self._lock:
@@ -112,7 +113,6 @@ class Rbs():
                 break
             if self.aborted():
                 break
-
         with self._lock:
             self._counting = False
 
@@ -130,7 +130,7 @@ class Rbs():
         self.move(position)
         self.count()
 
-    def get_corrected_accumulated_charge(self):
+    def get_corrected_total_accumulated_charge(self):
         increment = 0
         with self._lock:
             if self._counting:
@@ -171,15 +171,16 @@ class Rbs():
                                   "histograms": histograms, "measuring_time_msec": self._acquisition_run_time,
                                   "accumulated_charge": self._acquisition_accumulated_charge})
 
-    def clear_offset(self):
+    def clear_total_accumulated_charge(self):
         self.charge_offset = 0
-        self._acquisition_accumulated_charge = 0
+        self._acquisition_total_accumulated_charge = 0
 
     def prepare_data_acquisition(self):
         if self.aborted():
             return
         self._start_time = time.time()
         hw_action.stop_clear_and_arm_caen_acquisition(_generate_request_id(), self.hw.caen.url)
+        self._acquisition_accumulated_charge = 0
 
     def stop_data_acquisition(self):
         if self.aborted():

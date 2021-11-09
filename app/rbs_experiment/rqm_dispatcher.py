@@ -146,7 +146,7 @@ class RqmDispatcher(Thread):
 
     def _update_charge_status(self):
         with self._lock:
-            self._status.accumulated_charge = self._rbs.get_corrected_accumulated_charge()
+            self._status.accumulated_charge = self._rbs.get_corrected_total_accumulated_charge()
 
     def run(self):
         while True:
