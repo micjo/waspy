@@ -31,9 +31,9 @@ def make_count_callback(rbs_rqm_status: RbsRqmStatus):
     return count_callback
 
 
-def _make_minimize_yield_recipe(index, recipe, vary_coordinate):
+def _make_minimize_yield_recipe(recipe, vary_coordinate):
     return RbsRqmMinimizeYield(type=RecipeType.minimize_yield, sample_id=recipe.sample_id,
-                               file_stem=recipe.file_stem + str(index),
+                               file_stem=recipe.file_stem,
                                total_charge=recipe.yield_charge_total,
                                vary_coordinate=vary_coordinate, integration_window=
                                recipe.yield_integration_window,
@@ -158,7 +158,7 @@ class RecipeListRunner():
         rbs.move(recipe.start_position)
 
         for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
-            yield_recipe = _make_minimize_yield_recipe(index, recipe, vary_coordinate)
+            yield_recipe = _make_minimize_yield_recipe(recipe, vary_coordinate)
             data_serializer.set_sub_folder(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
             self._minimize_yield(yield_recipe, rbs, data_serializer)
         data_serializer.clear_sub_folder()
