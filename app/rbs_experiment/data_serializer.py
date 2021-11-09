@@ -114,9 +114,11 @@ class RbsDataSerializer:
 
     def set_base_folder(self, base_folder: str):
         self.base_folder = Path(base_folder)
+        Path.mkdir(self.data_dir.remote / self.base_folder, exist_ok=True)
 
     def set_sub_folder(self, sub_folder: str):
         self.sub_folder = Path(sub_folder)
+        Path.mkdir(self.data_dir.remote / self.base_folder / self.sub_folder, exist_ok=True)
 
     def _get_folder(self):
         return self.base_folder / self.sub_folder
