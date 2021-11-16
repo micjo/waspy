@@ -15,6 +15,7 @@ class AmlConfig(BaseModel):
     type: HwControllerType
     title: str
     url: str
+    proxy: str
     names: List[str]
     loads: List[float]
 
@@ -26,6 +27,7 @@ class SimpleConfig(BaseModel):
     type: HwControllerType
     title: str
     url: str
+    proxy: str
 
     class Config:
         use_enum_values = True

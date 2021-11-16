@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.http_routes import hw_control_routes, rbs_routes
+from app.http_routes import hw_control_routes, rbs_routes, systemd_routes
 import app.rbs_experiment.rbs as rbs_lib
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -38,10 +38,10 @@ def create_app():
     hw_control_routes.build_conf_endpoint(hive_config)
     app.include_router(hw_control_routes.router)
 
-    print('build rbs endpoints start')
     rbs_routes.build_api_endpoints(rqm_dispatcher, rbs_setup)
-    print('build rbs endpoints finish')
     app.include_router(rbs_routes.router)
+
+    app.include_router(systemd_routes.router)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
                        allow_methods=['*'], allow_headers=['*'])

@@ -33,6 +33,8 @@ def make_rbs_config(config_dict: Dict) -> RbsConfig:
 
 def make_hardware_config(config_dict: Dict) -> HwControllerConfig:
     hw_config = {"controllers": config_dict["generic"]["hardware"]}
+    for key, controller in hw_config["controllers"].items():
+        controller["proxy"] = "/api/" + key
     return HwControllerConfig.parse_obj(hw_config)
 
 
