@@ -10,39 +10,10 @@ import app.rbs_experiment.random_csv_to_json as csv_convert
 
 router = APIRouter()
 
-
-# @router.get("/api/rbs/schedule", tags=["RBS API"])
-# async def get_schedule():
-#     path = cfg.input_dir.watch
-#     files = [file.name for file in sorted(path.iterdir()) if file.is_file()]
-#     return files
-#
-#
-
-# @router.get("/api/rbs/state", tags=["RBS API"])
-# async def get_rbs_experiment():
-#     rbs_state = scanner.get_state()
-#     return rbs_state
-
-
-
-# @router.post("/api/rbs/abort", tags=["RBS API"])
-# async def rbs_experiment_abort():
-#     scanner.abort()
-#     return ""
-
-
 @router.post("/api/rbs/dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
 async def dry_run_rbs(rbs_experiment: RbsRqm):
     return {"Verification": "Passed"}
 
-
-# @router.post("/api/rbs/pause_dir_scan", tags=["RBS API"],
-#              summary="Start/stop scanning the configured directory for experiments to execute")
-# async def pause_rbs_dir_scan(request: PauseModel):
-#     scanner.pause_dir_scan(request.pause_dir_scan)
-#
-#
 
 def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.Rbs):
     @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")

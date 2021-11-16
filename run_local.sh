@@ -4,4 +4,4 @@ export faker=false
 export env_state="dev"
 
 source venv/bin/activate
-uvicorn --reload --factory hive:create_app --log-level warning
+uvicorn --reload --factory hive:create_app --log-level warning --host="localhost" --port=8000

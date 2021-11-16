@@ -1,33 +1,33 @@
 [generic.hardware.aml_x_y]
 type="aml"
 title="AML X Y"
-url="http://localhost:22000/api/latest"
+url="http://localhost:20000/api/latest"
 names = ["X", "Y"]
 loads = [110,20]
 
 [generic.hardware.aml_det_theta]
 type = "aml"
 title = "AML Detector Theta"
-url = "http://localhost:22000/api/latest"
+url = "http://localhost:20000/api/latest"
 names = ["Detector", "Theta"]
 loads = [170, 10]
 
 [generic.hardware.aml_phi_zeta]
 type = "aml"
 title = "AML Phi Zeta"
-url = "http://localhost:22000/api/latest"
+url = "http://localhost:20000/api/latest"
 names = ["Phi", "Zeta"]
 loads = [0, -1]
 
 [generic.hardware.motrona_rbs]
 type = "motrona"
 title = "Motrona RBS"
-url = "http://localhost:22100/api/latest"
+url = "http://localhost:20100/api/latest"
 
 [generic.hardware.caen_rbs]
 type = "caen"
 title = "Caen RBS"
-url = "http://localhost:22200/api/latest"
+url = "http://localhost:20200/api/latest"
 
 [generic.hardware.mdrive]
 type = "mdrive"
