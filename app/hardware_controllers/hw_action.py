@@ -4,6 +4,7 @@ from typing import List, Any, Dict
 import logging
 import time
 import app.http_routes.http_helper as http
+import hive_exception
 
 
 def wait_for_request_done(url, request):
@@ -15,7 +16,7 @@ def wait_for_request_done(url, request):
             if response['request_finished'] and response["request_id"] == str(request["request_id"]):
                 break
         else:
-            raise Exception(url + ": " + error_message)
+            raise hive_exception.HardwareError(url + ": " + error_message)
 
 
 def post_request(url, request):

@@ -13,6 +13,7 @@ from threading import Thread, Lock
 from queue import Queue
 import app.rbs_experiment.yield_angle_fit as fit
 from functools import partial
+from hive_exception import HiveError as HiveError
 
 
 def make_count_callback(rbs_rqm_status: RbsRqmStatus):
@@ -65,29 +66,24 @@ class RecipeListRunner():
     _status: RbsRqmStatus
     _data_serializer: RbsDataSerializer
     _rbs: rbs_lib.Rbs
+    error: Union[None, Exception]
 
     def __init__(self, setup: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
         self._rbs = setup
         self._data_serializer = data_serializer
         self._status = empty_rqm_status
-
-    def get_status(self):
-        return copy.deepcopy(self._status)
-
-    def set_status_charge(self, accumulated_charge):
-        self._status.accumulated_charge = accumulated_charge
+        self.error = None
 
     def _get_count_callback(self):
-        counts_at_start = self.get_status().accumulated_charge
+        counts_at_start = self._status.accumulated_charge
 
         def count_callback(counter_data):
             charge = float(counter_data["charge(nC)"])
             target_charge = float(counter_data["target_charge(nC)"])
             if charge < target_charge:
-                self.set_status_charge(counts_at_start + charge)
+                self._status.accumulated_charge = counts_at_start + charge
             else:
-                self.set_status_charge(counts_at_start + target_charge)
-
+                self._status.accumulated_charge = counts_at_start + target_charge
         return count_callback
 
     def _minimize_yield(self, recipe: RbsRqmMinimizeYield, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
@@ -167,3 +163,12 @@ class RecipeListRunner():
         random_histograms = self.run_random(_make_random_recipe(recipe), rbs, data_serializer, False).histograms
         detectors = rbs.get_detectors()
         data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
+
+    def run_recipe(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling], rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
+        try:
+            if recipe.type == RecipeType.random:
+                self.run_random(recipe, rbs, data_serializer)
+            if recipe.type == RecipeType.channeling:
+                self.run_channeling(recipe, rbs, data_serializer)
+        except HiveError as e:
+            self.error = e
