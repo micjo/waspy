@@ -2,13 +2,16 @@ import logging
 import traceback
 from datetime import datetime
 from pathlib import Path
-from shutil import copy2
+from shutil import copy2, move
+import os
 import copy
 from threading import Lock
 from typing import List, Dict
 import numpy as np
+import json
 
-from app.rbs_experiment.entities import DoublePath,  RbsData, CaenDetectorModel
+
+from app.rbs_experiment.entities import DoublePath, RbsData, CaenDetectorModel, RbsRqm
 from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
@@ -112,9 +115,33 @@ class RbsDataSerializer:
     def clear_sub_folder(self):
         self.sub_folder = Path("")
 
+
+
     def set_base_folder(self, base_folder: str):
         self.base_folder = Path(base_folder)
+        Path.mkdir(self.data_dir.local / self.base_folder, exist_ok=True)
         Path.mkdir(self.data_dir.remote / self.base_folder, exist_ok=True)
+        subdir = "old_" + datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
+        self.move_files(self.data_dir.local, subdir)
+        self.move_files(self.data_dir.remote, subdir)
+
+    def move_files(self, base, subdir):
+        files_to_move = [x for x in (base / self.base_folder).iterdir() if not x.stem.startswith("old_")]
+        if files_to_move:
+            full_subdir = base / self.base_folder / subdir
+            logging.info("Existing files found, moving them to: '" + str(full_subdir) + "'.")
+            Path.mkdir(full_subdir, exist_ok=True)
+            for file in files_to_move:
+                move(file, full_subdir)
+
+    def save_rqm(self, rqm: dict):
+        file_stem = "active_rqm.txt"
+        local = self.data_dir.local / self._get_folder() / file_stem
+        remote = self.data_dir.remote /self._get_folder() / file_stem
+        with open(local, 'w+') as f:
+            f.write("Running RQM:\n")
+            f.write(json.dumps(rqm,indent=4))
+        _try_copy(local, remote)
 
     def set_sub_folder(self, sub_folder: str):
         self.sub_folder = Path(sub_folder)

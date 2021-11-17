@@ -63,7 +63,7 @@ class RqmDispatcher(Thread):
     _abort: bool
     _lock: Lock
 
-    def __init__(self, recipe_runner: RecipeListRunner, data_serializer:RbsDataSerializer, rbs: rbs_lib.Rbs):
+    def __init__(self, recipe_runner: RecipeListRunner, data_serializer: RbsDataSerializer, rbs: rbs_lib.Rbs):
         Thread.__init__(self)
         self.recipe_runner = recipe_runner
         self._rqms = []
@@ -74,6 +74,7 @@ class RqmDispatcher(Thread):
         self._lock = Lock()
         self._abort = False
         self._past_rqms = deque(maxlen=5)
+        self._failed_rqms = deque(maxlen=5)
 
     def abort(self):
         with self._lock:
@@ -83,12 +84,13 @@ class RqmDispatcher(Thread):
         with self._lock:
             rqms = copy.deepcopy(self._rqms)
             past_rqms = copy.deepcopy(list(self._past_rqms))
+            failed_rqms = copy.deepcopy(list(self._failed_rqms))
             active_rqm = self._active_rqm
-        rbs_state = {"queue": rqms, "active_rqm": active_rqm, "done_queue":past_rqms}
+        rbs_state = {"queue": rqms, "active_rqm": active_rqm, "done": past_rqms, "failed": failed_rqms}
         rbs_state.update(self._status.dict())
         return rbs_state
 
-    def add_rqm_to_queue(self, rqm):
+    def add_rqm_to_queue(self, rqm: RbsRqm):
         with self._lock:
             self._rqms.append(rqm)
 
@@ -129,11 +131,7 @@ class RqmDispatcher(Thread):
             self._status.accumulated_charge_target = _get_total_counts(recipe)
             self._rbs.charge_offset = 0
 
-        if recipe.type == RecipeType.random:
-            t = Thread(target=self.recipe_runner.run_random, args=(recipe, self._rbs, self._data_serializer))
-        if recipe.type == RecipeType.channeling:
-            t = Thread(target=self.recipe_runner.run_channeling, args=(recipe, self._rbs, self._data_serializer))
-
+        t = Thread(target=self.recipe_runner.run_recipe, args=(recipe, self._rbs, self._data_serializer))
         t.start()
         while t.is_alive():
             self._update_charge_status()
@@ -161,10 +159,26 @@ class RqmDispatcher(Thread):
                     if self._should_abort():
                         break
                 with self._lock:
-                    self._past_rqms.appendleft(rqm)
+                    if self.recipe_runner.error:
+                        rqm_dict = rqm.dict()
+                        rqm_dict["failure"] = str(self.recipe_runner.error)
+                        logging.error("RQM '" + str(rqm.rqm_number) +
+                                      "' failed with message: " + str(self.recipe_runner.error))
+                        self._failed_rqms.appendleft(rqm_dict)
+                        self.recipe_runner.error = None
+                        self._data_serializer.save_rqm(rqm_dict)
+                    else:
+                        self._past_rqms.appendleft(rqm)
+                        rqm_dict = rqm.dict()
+                        rqm_dict["failure"] = "RQM '" + str(rqm.rqm_number) + "' passed without failure."
+                        self._data_serializer.save_rqm(rqm_dict)
 
             if self._should_abort():
                 self._clear_rqms()
                 self._clear_abort()
                 self._rbs.resume()
                 self._data_serializer.resume()
+
+            if self.recipe_runner.error:
+                print("RQM Failed with error: " + str(self.recipe_runner.error))
+                self.recipe_runner.error = None
