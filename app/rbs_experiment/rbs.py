@@ -212,7 +212,7 @@ class Rbs():
 
 def single_coordinate_to_string(position: PositionCoordinates, coordinate: VaryCoordinate) -> str:
     position_value = position.dict()[coordinate.name]
-    return coordinate.name[0] + str(position_value)
+    return coordinate.name[0] + "_" + str(position_value)
 
 
 def get_positions_as_coordinate(vary_coordinate: VaryCoordinate) -> List[PositionCoordinates]:
