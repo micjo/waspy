@@ -155,6 +155,7 @@ class RecipeListRunner():
 
         for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
             yield_recipe = _make_minimize_yield_recipe(recipe, vary_coordinate)
+            yield_recipe.file_stem = recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name)
             data_serializer.set_sub_folder(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
             self._minimize_yield(yield_recipe, rbs, data_serializer)
         data_serializer.clear_sub_folder()
