@@ -115,8 +115,6 @@ class RbsDataSerializer:
     def clear_sub_folder(self):
         self.sub_folder = Path("")
 
-
-
     def set_base_folder(self, base_folder: str):
         self.base_folder = Path(base_folder)
         Path.mkdir(self.data_dir.local / self.base_folder, exist_ok=True)
