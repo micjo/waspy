@@ -1,7 +1,7 @@
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
-import app.rbs_experiment.entities as rbs
+import app.rbs.entities as rbs
 
 
 def get_sections(csv_text: str):

@@ -9,7 +9,7 @@ class HwControllerType(str, Enum):
     motrona = 'motrona'
     caen = 'caen'
     mdrive = 'mdrive'
-
+    mpa3 = 'mpa3'
 
 class AmlConfig(BaseModel):
     type: HwControllerType

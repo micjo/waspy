@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import ANY
 
-import app.rbs_experiment.entities as entities
-import app.rbs_experiment.rbs as rbs_lib
+import app.rbs.entities as entities
+import app.rbs.rbs_setup as rbs_lib
 
 config = entities.RbsConfig(
     aml_x_y=entities.AmlConfig(type="aml", title="aml x y", url="url_x_y", key="aml_x_y",
@@ -18,7 +18,7 @@ config = entities.RbsConfig(
 
 )
 
-rbs = rbs_lib.Rbs(config)
+rbs = rbs_lib.RbsSetup(config)
 
 
 def test_move_to_x_position():

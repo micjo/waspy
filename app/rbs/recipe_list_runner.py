@@ -4,14 +4,14 @@ import traceback
 from typing import List, Union, Callable
 import copy
 
-from app.rbs_experiment.data_serializer import RbsDataSerializer
-from app.rbs_experiment.entities import RbsRqmStatus, RbsRqmRandom, RbsRqmChanneling, \
+from app.rbs.data_serializer import RbsDataSerializer
+from app.rbs.entities import RbsRqmStatus, RbsRqmRandom, RbsRqmChanneling, \
     RbsRqmMinimizeYield, RbsRqmFixed, RecipeType, StatusModel, RbsRqm, RbsData, VaryCoordinate, \
     CoordinateEnum, PositionCoordinates, empty_rqm_status
-import app.rbs_experiment.rbs as rbs_lib
+import app.rbs.rbs_setup as rbs_lib
 from threading import Thread, Lock
 from queue import Queue
-import app.rbs_experiment.yield_angle_fit as fit
+import app.rbs.yield_angle_fit as fit
 from functools import partial
 from hive_exception import HiveError as HiveError
 
@@ -65,10 +65,10 @@ class RecipeListRunner():
     _active_rqm: RbsRqm
     _status: RbsRqmStatus
     _data_serializer: RbsDataSerializer
-    _rbs: rbs_lib.Rbs
+    _rbs: rbs_lib.RbsSetup
     error: Union[None, Exception]
 
-    def __init__(self, setup: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
+    def __init__(self, setup: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
         self._rbs = setup
         self._data_serializer = data_serializer
         self._status = empty_rqm_status
@@ -86,7 +86,7 @@ class RecipeListRunner():
                 self._status.accumulated_charge = counts_at_start + target_charge
         return count_callback
 
-    def _minimize_yield(self, recipe: RbsRqmMinimizeYield, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
+    def _minimize_yield(self, recipe: RbsRqmMinimizeYield, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
         rbs.move(recipe.start_position)
         positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
         rbs.prepare_counting(recipe.total_charge / len(positions))
@@ -117,7 +117,7 @@ class RecipeListRunner():
         data_serializer.plot_energy_yields(recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
         rbs.move(min_position)
 
-    def run_random(self, recipe: RbsRqmRandom, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer, clear_offset=True):
+    def run_random(self, recipe: RbsRqmRandom, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer, clear_offset=True):
         if clear_offset:
             rbs.clear_total_accumulated_charge()
         rbs.move(recipe.start_position)
@@ -138,7 +138,7 @@ class RecipeListRunner():
         self._data_serializer.set_base_folder(rqm.rqm_number)
         self._rbs.set_active_detectors(rqm.detectors)
 
-    def run_fixed(self, recipe: RbsRqmFixed, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer) -> RbsData:
+    def run_fixed(self, recipe: RbsRqmFixed, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
         rbs.prepare_counting(recipe.charge_total)
         rbs.prepare_data_acquisition()
         rbs.count()
@@ -149,7 +149,7 @@ class RecipeListRunner():
         data_serializer.plot_histograms(rbs_data, recipe.file_stem)
         return rbs_data
 
-    def run_channeling(self, recipe: RbsRqmChanneling, rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
+    def run_channeling(self, recipe: RbsRqmChanneling, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
         rbs.clear_total_accumulated_charge()
         rbs.move(recipe.start_position)
 
@@ -165,7 +165,7 @@ class RecipeListRunner():
         detectors = rbs.get_detectors()
         data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
 
-    def run_recipe(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling], rbs: rbs_lib.Rbs, data_serializer: RbsDataSerializer):
+    def run_recipe(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling], rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
         try:
             if recipe.type == RecipeType.random:
                 self.run_random(recipe, rbs, data_serializer)

@@ -242,8 +242,7 @@ class RbsRqm(BaseModel):
                 RbsRqmChanneling.parse_obj(recipe)
 
     class Config:
-        class Config:
-            use_enum_values = True
+        use_enum_values = True
 
         schema_extra = {
             'example':

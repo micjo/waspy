@@ -1,23 +1,16 @@
 import copy
-from datetime import datetime
-from queue import Queue
-from threading import Thread, Lock
-from typing import List, Callable
+from threading import Lock
+from typing import List
 import logging
 import numpy as np
 import requests
 import time
-from datetime import datetime
 import app.http_routes.http_helper as http
+from app.http_routes.http_helper import generate_request_id
 
-from app.rbs_experiment.entities import RbsHardware, CoordinateEnum, VaryCoordinate, Window
+from app.rbs.entities import RbsHardware, VaryCoordinate, Window
 import app.hardware_controllers.hw_action as hw_action
-from app.rbs_experiment.entities import CaenDetectorModel, RbsData, PositionCoordinates
-
-
-def _generate_request_id() -> str:
-    return datetime.now().strftime("%Y.%m.%d__%H:%M__%S.%f")
-
+from app.rbs.entities import CaenDetectorModel, RbsData, PositionCoordinates
 
 faker = True
 
@@ -52,7 +45,7 @@ def fake_counter(func):
     return wrap_func
 
 
-class Rbs():
+class RbsSetup:
     hw: RbsHardware
     detectors: List[CaenDetectorModel]
     _acquisition_run_time: float
@@ -79,17 +72,17 @@ class Rbs():
             return
         logging.info("Moving rbs system to '" + str(position) + "'")
         if position.x is not None:
-            hw_action.move_aml_first(_generate_request_id(), self.hw.aml_x_y.url, position.x)
+            hw_action.move_aml_first(generate_request_id(), self.hw.aml_x_y.url, position.x)
         if position.y is not None:
-            hw_action.move_aml_second(_generate_request_id(), self.hw.aml_x_y.url, position.y)
+            hw_action.move_aml_second(generate_request_id(), self.hw.aml_x_y.url, position.y)
         if position.phi is not None:
-            hw_action.move_aml_first(_generate_request_id(), self.hw.aml_phi_zeta.url, position.phi)
+            hw_action.move_aml_first(generate_request_id(), self.hw.aml_phi_zeta.url, position.phi)
         if position.zeta is not None:
-            hw_action.move_aml_second(_generate_request_id(), self.hw.aml_phi_zeta.url, position.zeta)
+            hw_action.move_aml_second(generate_request_id(), self.hw.aml_phi_zeta.url, position.zeta)
         if position.detector is not None:
-            hw_action.move_aml_first(_generate_request_id(), self.hw.aml_det_theta.url, position.detector)
+            hw_action.move_aml_first(generate_request_id(), self.hw.aml_det_theta.url, position.detector)
         if position.theta is not None:
-            hw_action.move_aml_second(_generate_request_id(), self.hw.aml_det_theta.url, position.theta)
+            hw_action.move_aml_second(generate_request_id(), self.hw.aml_det_theta.url, position.theta)
 
     def abort(self):
         with self._lock:
@@ -120,7 +113,7 @@ class Rbs():
         if self.aborted():
             return
         logging.info("acquiring till target")
-        hw_action.clear_start_motrona_count(_generate_request_id(), self.hw.motrona.url)
+        hw_action.clear_start_motrona_count(generate_request_id(), self.hw.motrona.url)
         self._wait_for_count_finished()
         motrona = requests.get(self.hw.motrona.url).json()
         self._acquisition_accumulated_charge += float(motrona["charge(nC)"])
@@ -179,21 +172,21 @@ class Rbs():
         if self.aborted():
             return
         self._start_time = time.time()
-        hw_action.stop_clear_and_arm_caen_acquisition(_generate_request_id(), self.hw.caen.url)
+        hw_action.stop_clear_and_arm_caen_acquisition(generate_request_id(), self.hw.caen.url)
         self._acquisition_accumulated_charge = 0
 
     def stop_data_acquisition(self):
         if self.aborted():
             return
         self._acquisition_run_time = time.time() - self._start_time
-        hw_action.stop_caen_acquisition(_generate_request_id(), self.hw.caen.url)
+        hw_action.stop_caen_acquisition(generate_request_id(), self.hw.caen.url)
 
     def prepare_counting(self, target):
         if self.aborted():
             return
         logging.info("pause counting and set target")
-        hw_action.pause_motrona_count(_generate_request_id() + "_pause", self.hw.motrona.url)
-        hw_action.set_motrona_target_charge(_generate_request_id() + "_set_target_charge", self.hw.motrona.url,
+        hw_action.pause_motrona_count(generate_request_id() + "_pause", self.hw.motrona.url)
+        hw_action.set_motrona_target_charge(generate_request_id() + "_set_target_charge", self.hw.motrona.url,
                                             target)
         logging.info("pause counting and set target done")
 
