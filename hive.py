@@ -1,16 +1,13 @@
-import asyncio
-
-from app.rbs_experiment.data_serializer import RbsDataSerializer
-from app.rbs_experiment.entities import DispatcherConfig
-from app.rbs_experiment.recipe_list_runner import RecipeListRunner
-from app.rbs_experiment.rqm_dispatcher import RqmDispatcher
+from app.rbs.data_serializer import RbsDataSerializer
+from app.rbs.recipe_list_runner import RecipeListRunner
+from app.rbs.rqm_dispatcher import RqmDispatcher
 from app.setup.config import GlobalConfig, make_hive_config
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.http_routes import hw_control_routes, rbs_routes, systemd_routes
-import app.rbs_experiment.rbs as rbs_lib
+import app.rbs.rbs_setup as rbs_lib
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
@@ -27,7 +24,7 @@ def create_app():
     app = FastAPI(docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    rbs_setup = rbs_lib.Rbs(hive_config.rbs_config.hardware)
+    rbs_setup = rbs_lib.RbsSetup(hive_config.rbs_config.hardware)
     rbs_data_serializer = RbsDataSerializer(hive_config.rbs_config.data_dir)
     recipe_list_scanner = RecipeListRunner(rbs_setup, rbs_data_serializer)
     rqm_dispatcher = RqmDispatcher(recipe_list_scanner, rbs_data_serializer, rbs_setup)

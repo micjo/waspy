@@ -11,7 +11,7 @@ import numpy as np
 import json
 
 
-from app.rbs_experiment.entities import DoublePath, RbsData, CaenDetectorModel, RbsRqm
+from app.rbs.entities import DoublePath, RbsData, CaenDetectorModel, RbsRqm
 from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.use('Agg')

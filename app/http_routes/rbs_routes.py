@@ -1,12 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, Response
 from starlette import status
 
-from app.rbs_experiment.entities import RbsRqm, PauseModel, RbsConfig
-from app.rbs_experiment.rqm_dispatcher import RqmDispatcher
-import app.rbs_experiment.rbs as rbs_lib
+from app.rbs.entities import RbsRqm, PauseModel, RbsConfig
+from app.rbs.rqm_dispatcher import RqmDispatcher
+import app.rbs.rbs_setup as rbs_lib
 import logging
 import traceback
-import app.rbs_experiment.random_csv_to_json as csv_convert
+import app.rbs.random_csv_to_json as csv_convert
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ async def dry_run_rbs(rbs_experiment: RbsRqm):
     return {"Verification": "Passed"}
 
 
-def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.Rbs):
+def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.RbsSetup):
     @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
     async def run_rbs(job: RbsRqm):
         rqm_dispatcher.add_rqm_to_queue(job)

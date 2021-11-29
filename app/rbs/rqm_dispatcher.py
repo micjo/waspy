@@ -1,21 +1,17 @@
 import copy
-import queue
-import sys
 from collections import deque
-from pathlib import Path
-from queue import Queue
 from shutil import copy2
 import logging
 from typing import List, Union
 
-from app.rbs_experiment.data_serializer import RbsDataSerializer
-from app.rbs_experiment.entities import RbsRqm, DispatcherConfig, empty_rbs_rqm, RbsRqmStatus, empty_rqm_status, \
+from app.rbs.data_serializer import RbsDataSerializer
+from app.rbs.entities import RbsRqm, empty_rbs_rqm, RbsRqmStatus, empty_rqm_status, \
     StatusModel, RecipeType, RbsRqmRandom, RbsRqmChanneling
-from app.rbs_experiment.recipe_list_runner import RecipeListRunner
-from threading import Thread, Lock, Condition
+from app.rbs.recipe_list_runner import RecipeListRunner
+from threading import Thread, Lock
 import traceback
 import time
-import app.rbs_experiment.rbs as rbs_lib
+import app.rbs.rbs_setup as rbs_lib
 
 
 def _pick_first_file_from_path(path):
@@ -59,11 +55,11 @@ class RqmDispatcher(Thread):
     _active_rqm: RbsRqm
     _status: RbsRqmStatus
     _data_serializer: RbsDataSerializer
-    _rbs: rbs_lib.Rbs
+    _rbs: rbs_lib.RbsSetup
     _abort: bool
     _lock: Lock
 
-    def __init__(self, recipe_runner: RecipeListRunner, data_serializer: RbsDataSerializer, rbs: rbs_lib.Rbs):
+    def __init__(self, recipe_runner: RecipeListRunner, data_serializer: RbsDataSerializer, rbs: rbs_lib.RbsSetup):
         Thread.__init__(self)
         self.recipe_runner = recipe_runner
         self._rqms = []

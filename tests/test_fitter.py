@@ -1,4 +1,4 @@
-import app.rbs_experiment.yield_angle_fit as fitter
+import app.rbs.yield_angle_fit as fitter
 import pytest
 
 energy_yields = [451.0, 463.0, 424.0, 428.0, 451.0, 444.0, 449.0, 430.0, 451.0, 426.0, 387.0, 250.0, 148.0, 91.0, 136.0,
@@ -22,7 +22,7 @@ def test_fit_and_smooth():
     from unittest.mock import patch, mock_open
     patch("builtins.open", mock_open(read_data="data"))
 
-    import app.rbs_experiment.yield_plot as plotting
+    import app.rbs.yield_plot as plotting
 
     float_angles = [float(x) for x in angles]
     data_index = 0

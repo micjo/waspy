@@ -3,7 +3,7 @@ from typing import Optional, Dict
 
 from pydantic import BaseSettings, BaseModel
 from app.hardware_controllers.entities import HwControllerConfig
-from app.rbs_experiment.entities import RbsConfig
+from app.rbs.entities import RbsConfig
 import logging
 import tomli
 
