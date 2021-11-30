@@ -29,13 +29,25 @@ type = "caen"
 title = "Caen RBS"
 url = "http://localhost:20200/api/latest"
 
-[generic.hardware.mdrive]
+[generic.hardware.mdrive_z]
 type = "mdrive"
-title = "MDrive"
+title = "MDrive Z"
 url = "http://localhost:22300/api/latest"
 
+[generic.hardware.mdrive_theta]
+type = "mdrive"
+title = "MDrive Theta"
+url = "http://localhost:22301/api/latest"
+
+[generic.hardware.mpa3]
+type = "mpa3"
+title = "MPA 3"
+url = "http://localhost:22301/api/latest"
+
 [erd.hardware]
-mdrive = "mdrive"
+mdrive_z = "mdrive_z"
+mdrive_theta = "mdrive_theta"
+mpa3 = "mpa3"
 
 [rbs.hardware]
 aml_x_y = "aml_x_y"

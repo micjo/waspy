@@ -1,5 +1,5 @@
 from app.erd.entities import ErdHardware, ErdRqm
-from app.erd.erd_hardware import ErdSetup
+from app.erd.erd_setup import ErdSetup
 
 if __name__ == "__main__":
     erd_hardware = ErdHardware.parse_obj({

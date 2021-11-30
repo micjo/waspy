@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Optional, Dict
 
 from pydantic import BaseSettings, BaseModel
+
+from app.erd.entities import ErdConfig
 from app.hardware_controllers.entities import HwControllerConfig
 from app.rbs.entities import RbsConfig
 import logging
@@ -16,12 +18,20 @@ logging.basicConfig(
 class HiveConfig(BaseModel):
     hw_config: HwControllerConfig
     rbs_config: RbsConfig
+    erd_config: ErdConfig
 
 
 class GlobalConfig(BaseSettings):
     CONFIG_FILE: Optional[str]
     FAKER = False
     ENV_STATE = "dev"
+
+
+def make_erd_config(config_dict: Dict) -> ErdConfig:
+    erd_config = config_dict["erd"]
+    for key, value in config_dict["erd"]["hardware"].items():
+        erd_config["hardware"][key] = config_dict["generic"]["hardware"][value]
+    return ErdConfig.parse_obj(erd_config)
 
 
 def make_rbs_config(config_dict: Dict) -> RbsConfig:
@@ -41,4 +51,5 @@ def make_hardware_config(config_dict: Dict) -> HwControllerConfig:
 def make_hive_config(config_file) -> HiveConfig:
     with open(config_file, "rb") as f:
         conf_from_file = tomli.load(f)
-        return HiveConfig(hw_config=make_hardware_config(conf_from_file), rbs_config=make_rbs_config(conf_from_file))
+        return HiveConfig(hw_config=make_hardware_config(conf_from_file), rbs_config=make_rbs_config(conf_from_file),
+                          erd_config=make_erd_config(conf_from_file))
