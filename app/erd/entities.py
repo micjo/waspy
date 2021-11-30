@@ -12,12 +12,16 @@ class ErdHardware(BaseModel):
     mpa3: SimpleConfig
 
 
+class ErdConfig(BaseModel):
+    hardware: ErdHardware
+
+
 class Erd(BaseModel):
     measuring_time_sec: int
     spectrum_filename: Path
     theta: int
-    z_min: int
-    z_max: int
+    z_start: int
+    z_end: int
     z_increment: int
 
 
@@ -38,11 +42,11 @@ class ErdRqm(BaseModel):
                     "recipes": [
                         {
                             "measuring_time_sec": 30, "spectrum_filename": "test_001",
-                            "theta": 10, "z_min": 0, "z_max": 30, "z_step": 2
+                            "theta": 10, "z_start": 0, "z_end": 30, "z_increment": 2
                         },
                         {
                             "measuring_time_sec": 30, "spectrum_filename": "test_002",
-                            "theta": 10, "z_min": 0, "z_max": 30, "z_step": 2
+                            "theta": 10, "z_start": 0, "z_end": 30, "z_increment": 2
                         },
                     ]
                 }
