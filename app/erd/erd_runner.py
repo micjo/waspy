@@ -13,8 +13,11 @@ def run_recipe(recipe: Erd, erd_setup: ErdSetup):
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
     erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.spectrum_filename)
     erd_setup.start_acquisition()
-    for z in get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment):
+    erd_setup.wait_for_acquisition_started()
+    z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
+    for z in z_range:
         erd_setup.move(z)
+        time.sleep(recipe.measuring_time_sec/len(z_range))
     erd_setup.wait_for_acquisition_done()
 
 
