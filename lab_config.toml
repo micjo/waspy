@@ -17,7 +17,7 @@ type = "aml"
 title = "AML Detector Theta"
 url = "http://localhost:22002/api/latest"
 names = ["Detector", "Theta"]
-loads = [170, -180.5]
+loads = [170.0, -180.5]
 
 [generic.hardware.motrona_rbs]
 type = "motrona"
@@ -29,13 +29,25 @@ type = "caen"
 title = "Caen RBS"
 url = "http://169.254.80.218:22200/api/latest"
 
-[generic.hardware.mdrive]
+[generic.hardware.mdrive_z]
 type = "mdrive"
-title = "MDrive"
-url = "http://localhost:22300/api/latest"
+title = "MDrive Z"
+url = "http://169.254.100.229:22124/api/latest"
+
+[generic.hardware.mdrive_theta]
+type = "mdrive"
+title = "MDrive Theta"
+url = "http://169.254.100.229:22123/api/latest"
+
+[generic.hardware.mpa3]
+type = "mpa3"
+title = "MPA 3"
+url = "http://169.254.155.94:25000/api/latest"
 
 [erd.hardware]
-mdrive = "mdrive"
+mdrive_z = "mdrive_z"
+mdrive_theta = "mdrive_theta"
+mpa3 = "mpa3"
 
 [rbs.hardware]
 aml_x_y = "aml_x_y"
