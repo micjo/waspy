@@ -40,6 +40,15 @@ def acquisition_done(url):
             break
 
 
+def acquisition_started(url):
+    while True:
+        time.sleep(1)
+        response = http.get_json(url)
+        if response["acquiring"]:
+            logging.info("Acquisition has started")
+            break
+
+
 def fakeable(func):
     def fake_call(call, *args, **kw):
         saved_args = locals()
@@ -75,6 +84,10 @@ class ErdSetup:
     @fakeable
     def wait_for_acquisition_done(self):
         acquisition_done(self.hw.mpa3.url)
+
+    @fakeable
+    def wait_for_acquisition_started(self):
+        acquisition_started(self.hw.mpa3.url)
 
     @fakeable
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: Path):
