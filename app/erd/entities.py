@@ -18,7 +18,7 @@ class ErdConfig(BaseModel):
 
 class Erd(BaseModel):
     measuring_time_sec: int
-    spectrum_filename: Path
+    spectrum_filename: str
     theta: int
     z_start: int
     z_end: int
