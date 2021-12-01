@@ -7,6 +7,7 @@ from app.erd.erd_setup import ErdSetup, get_z_range
 from hive_exception import HiveError
 from threading import Thread, Lock
 import time
+import logging
 
 
 def run_recipe(recipe: Erd, erd_setup: ErdSetup):
@@ -15,6 +16,8 @@ def run_recipe(recipe: Erd, erd_setup: ErdSetup):
     erd_setup.start_acquisition()
     erd_setup.wait_for_acquisition_started()
     z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
+    wait_time = recipe.measuring_time_sec/len(z_range)
+    logging.info("positions: " + str(z_range) + "wait_time_sec between steps: " + str(wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
     for z in z_range:
         erd_setup.move(z)
         time.sleep(recipe.measuring_time_sec/len(z_range))

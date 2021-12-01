@@ -6,12 +6,14 @@ from typing import List
 
 from app.erd.entities import ErdHardware, PositionCoordinates
 import app.http_routes.http_helper as http
+import logging
 
 
 def get_z_range(start, end, increment) -> List[PositionCoordinates]:
     if increment == 0:
         return [PositionCoordinates(z=start)]
     coordinate_range = np.arange(start, end + increment, increment)
+    logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " +str(increment)) 
     numpy_z_steps = np.around(coordinate_range, decimals=2)
     positions = [PositionCoordinates(z=float(z_step)) for z_step in numpy_z_steps]
     return positions
@@ -35,7 +37,7 @@ def acquisition_done(url):
     while True:
         time.sleep(1)
         response = http.get_json(url)
-        if not response["acquiring"]:
+        if not response["acquisition_status"]["acquiring"]:
             logging.info("Acquisition has completed")
             break
 
@@ -44,7 +46,7 @@ def acquisition_started(url):
     while True:
         time.sleep(1)
         response = http.get_json(url)
-        if response["acquiring"]:
+        if response["acquisition_status"]["acquiring"]:
             logging.info("Acquisition has started")
             break
 
