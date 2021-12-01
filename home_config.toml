@@ -1,8 +1,8 @@
-[generic.hardware.aml_x_y]
+[any.hardware.aml_u_v]
 type="aml"
-title="AML X Y"
-url="http://localhost:20000/api/latest"
-names = ["X", "Y"]
+title="AML U V"
+url="http://localhost:30000/api/latest"
+names = ["U", "V"]
 loads = [110,20]
 
 [generic.hardware.aml_det_theta]
@@ -44,10 +44,21 @@ type = "mpa3"
 title = "MPA 3"
 url = "http://localhost:22301/api/latest"
 
-[erd.hardware]
-mdrive_z = "mdrive_z"
-mdrive_theta = "mdrive_theta"
-mpa3 = "mpa3"
+[erd.hardware.mdrive_z]
+type="mdrive"
+title="mdrive z"
+url="http://localhost:22400/api/latest"
+
+[erd.hardware.mdrive_theta]
+type="mdrive"
+title="mdrive theta"
+url="http://localhost:22401/api/latest"
+
+[erd.hardware.mpa3]
+type="mpa3"
+title="mpa 3"
+url="http://localhost:22500/api/latest"
+
 
 [rbs.hardware]
 aml_x_y = "aml_x_y"
