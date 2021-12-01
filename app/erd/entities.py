@@ -42,11 +42,11 @@ class ErdRqm(BaseModel):
                     "recipes": [
                         {
                             "measuring_time_sec": 30, "spectrum_filename": "test_001",
-                            "theta": 10, "z_start": 0, "z_end": 30, "z_increment": 2
+                            "theta": 40, "z_start": 1, "z_end": 1, "z_increment": 10
                         },
                         {
                             "measuring_time_sec": 30, "spectrum_filename": "test_002",
-                            "theta": 10, "z_start": 0, "z_end": 30, "z_increment": 2
+                            "theta": 70, "z_start": 10, "z_end": 2, "z_increment": 20
                         },
                     ]
                 }
