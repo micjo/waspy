@@ -85,14 +85,14 @@ class ErdSetup:
     def wait_for_acquisition_started(self):
         acquisition_started(self.hw.mpa3.url)
 
-    def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: Path):
+    def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
         http.post_request(self.hw.mpa3.url, {
             "request_id": http.generate_request_id(),
             "halt": True,
             "erase": True,
             "run_time_enable": True,
             "set_run_time_set_point": measuring_time_sec,
-            "set_filename": WindowsPath(spectrum_filename)
+            "set_filename": spectrum_filename
         })
 
     def start_acquisition(self):
