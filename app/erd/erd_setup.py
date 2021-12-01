@@ -66,7 +66,6 @@ class ErdSetup:
     def __init__(self, erd_hw: ErdHardware):
         self.hw = erd_hw
 
-    @fakeable
     def move(self, position: PositionCoordinates):
         if position is None:
             return
@@ -76,20 +75,16 @@ class ErdSetup:
         if position.z is not None:
             move_mdrive(http.generate_request_id(), self.hw.mdrive_z.url, position.z)
 
-    @fakeable
     def wait_for_arrival(self):
         move_mdrive_done(self.hw.mdrive_theta.url)
         move_mdrive_done(self.hw.mdrive_z.url)
 
-    @fakeable
     def wait_for_acquisition_done(self):
         acquisition_done(self.hw.mpa3.url)
 
-    @fakeable
     def wait_for_acquisition_started(self):
         acquisition_started(self.hw.mpa3.url)
 
-    @fakeable
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: Path):
         http.post_request(self.hw.mpa3.url, {
             "request_id": http.generate_request_id(),
@@ -100,7 +95,6 @@ class ErdSetup:
             "set_filename": WindowsPath(spectrum_filename)
         })
 
-    @fakeable
     def start_acquisition(self):
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "start": True})
 
