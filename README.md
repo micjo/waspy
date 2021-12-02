@@ -41,4 +41,4 @@ run.bat
 You may want to remove the `--reload` option when running in production. It is a useful feature when developing, but it requires extra CPU (about 30% on an i3-9100). If you
 do not strictly need it, disable it.
 
-Testing github port blocking 6
+Testing github port blocking 7
