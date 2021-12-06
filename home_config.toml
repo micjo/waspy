@@ -49,7 +49,7 @@ url = "http://localhost:22301/api/latest"
 [erd.hardware.mpa3]
 type = "mpa3"
 title = "MPA 3"
-url = "http://localhost:22301/api/latest"
+url = "http://localhost:22400/api/latest"
 
 [rbs.folder_scan]
 watch = "/tmp/ACQ/1_watch"
