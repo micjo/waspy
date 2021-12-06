@@ -1,7 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Response
 from starlette import status
 
-from app.rbs.entities import RbsRqm, PauseModel, RbsConfig
+from app.http_routes.hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
+    build_packed_histogram
+from app.rbs.entities import RbsRqm, PauseModel, RbsConfig, RbsHardware
 from app.rbs.rqm_dispatcher import RqmDispatcher
 import app.rbs.rbs_setup as rbs_lib
 import logging
@@ -16,7 +18,7 @@ async def dry_run_rbs(rbs_experiment: RbsRqm):
     return {"Verification": "Passed"}
 
 
-def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.RbsSetup):
+def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.RbsSetup, rbs_hardware: RbsHardware):
     @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
     async def run_rbs(job: RbsRqm):
         rqm_dispatcher.add_rqm_to_queue(job)
@@ -50,3 +52,10 @@ def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.RbsSetup):
             logging.error(traceback.format_exc())
             response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
             return str(e)
+
+    for key, daemon in rbs_hardware.dict().items():
+        build_get_redirect(daemon['proxy'], daemon['url'], router, ["RBS API"])
+        build_post_redirect(daemon['proxy'], daemon['url'], router, ["RBS API"])
+        if daemon['type'] == 'caen':
+            build_histogram_redirect(daemon['proxy'], daemon['url'])
+            build_packed_histogram(daemon['proxy'], daemon['url'])

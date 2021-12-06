@@ -2,7 +2,7 @@ import asyncio
 import threading
 import requests as rq
 from datetime import datetime
-from app.setup.config import HwControllerConfig
+from app.setup.config import AnyHardware
 
 aml_config = [
     {"id":"aml_x_y", "title": "AML X Y", "first_name":"X", "second_name":"Y",
@@ -30,7 +30,7 @@ rbs_config = {
 
 
 class Aggregator:
-    def __init__(self, config: HwControllerConfig):
+    def __init__(self, config: AnyHardware):
         self._config = config
         self._samples = [ ["inf", 0] ]*120
         self._positions = [ ["inf", 0] ]*120

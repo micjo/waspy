@@ -26,24 +26,25 @@ def create_app():
     app = FastAPI(docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    hw_control_routes.build_api_endpoints(hive_config.hw_config)
+    # hw_control_routes.build_api_endpoints(hive_config.rbs_config.hardware.dict())
     hw_control_routes.build_conf_endpoint(hive_config)
+    hw_control_routes.build_api_endpoints(hive_config.any.hardware)
     app.include_router(hw_control_routes.router)
 
-    rbs_setup = rbs_lib.RbsSetup(hive_config.rbs_config.hardware)
-    rbs_data_serializer = RbsDataSerializer(hive_config.rbs_config.data_dir)
+    rbs_setup = rbs_lib.RbsSetup(hive_config.rbs.hardware)
+    rbs_data_serializer = RbsDataSerializer(hive_config.rbs.data_dir)
     recipe_list_scanner = RecipeListRunner(rbs_setup, rbs_data_serializer)
     rqm_dispatcher = RqmDispatcher(recipe_list_scanner, rbs_data_serializer, rbs_setup)
     rqm_dispatcher.daemon = True
     rqm_dispatcher.start()
-    rbs_routes.build_api_endpoints(rqm_dispatcher, rbs_setup)
+    rbs_routes.build_api_endpoints(rqm_dispatcher, rbs_setup, hive_config.rbs.hardware)
     app.include_router(rbs_routes.router)
 
-    erd_setup = ErdSetup(hive_config.erd_config.hardware)
+    erd_setup = ErdSetup(hive_config.erd.hardware)
     erd_runner = ErdRunner(erd_setup)
     erd_runner.daemon = True
     erd_runner.start()
-    erd_routes.build_api_endpoints(erd_runner)
+    erd_routes.build_api_endpoints(erd_runner, hive_config.erd.hardware)
     app.include_router(erd_routes.router)
 
     app.include_router(systemd_routes.router)
