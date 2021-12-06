@@ -12,6 +12,7 @@ import logging
 
 def run_recipe(recipe: Erd, erd_setup: ErdSetup):
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
+    erd_setup.wait_for_arrival()
     erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.spectrum_filename)
     erd_setup.start_acquisition()
     erd_setup.wait_for_acquisition_started()

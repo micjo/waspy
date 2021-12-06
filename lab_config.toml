@@ -1,60 +1,50 @@
-[generic.hardware.aml_x_y]
+[any.hardware]
+
+[rbs.hardware.aml_x_y]
 type="aml"
 title="AML X Y"
 url="http://localhost:22000/api/latest"
 names = ["X", "Y"]
 loads = [72.5,61.7]
 
-[generic.hardware.aml_phi_zeta]
+[rbs.hardware.aml_phi_zeta]
 type = "aml"
 title = "AML Phi Zeta"
 url = "http://localhost:22001/api/latest"
 names = ["Phi", "Zeta"]
 loads = [0, -1]
 
-[generic.hardware.aml_det_theta]
+[rbs.hardware.aml_det_theta]
 type = "aml"
 title = "AML Detector Theta"
 url = "http://localhost:22002/api/latest"
 names = ["Detector", "Theta"]
 loads = [170.0, -180.5]
 
-[generic.hardware.motrona_rbs]
+[rbs.hardware.motrona]
 type = "motrona"
-title = "Motrona RBS"
+title = "Motrona"
 url = "http://localhost:22100/api/latest"
 
-[generic.hardware.caen_rbs]
+[rbs.hardware.caen]
 type = "caen"
-title = "Caen RBS"
+title = "Caen"
 url = "http://169.254.80.218:22200/api/latest"
 
-[generic.hardware.mdrive_z]
+[erd.hardware.mdrive_z]
 type = "mdrive"
 title = "MDrive Z"
 url = "http://169.254.100.229:22124/api/latest"
 
-[generic.hardware.mdrive_theta]
+[erd.hardware.mdrive_theta]
 type = "mdrive"
 title = "MDrive Theta"
 url = "http://169.254.100.229:22123/api/latest"
 
-[generic.hardware.mpa3]
+[erd.hardware.mpa3]
 type = "mpa3"
 title = "MPA 3"
 url = "http://169.254.155.94:25000/api/latest"
-
-[erd.hardware]
-mdrive_z = "mdrive_z"
-mdrive_theta = "mdrive_theta"
-mpa3 = "mpa3"
-
-[rbs.hardware]
-aml_x_y = "aml_x_y"
-aml_phi_zeta = "aml_phi_zeta"
-aml_det_theta = "aml_det_theta"
-caen = "caen_rbs"
-motrona = "motrona_rbs"
 
 [rbs.data_dir]
 local = "/mnt/mcaiba_nas/transfer_RBS"
