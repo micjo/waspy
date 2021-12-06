@@ -29,7 +29,7 @@ def move_mdrive_done(url):
         time.sleep(1)
         response = http.get_json(url)
         if not response["moving_to_target"]:
-            logging.info("Motor has arrived")
+            logging.info("Motor '" + url + "' has arrived ")
             break
 
 
@@ -80,12 +80,15 @@ class ErdSetup:
     def wait_for_arrival(self):
         move_mdrive_done(self.hw.mdrive_theta.url)
         move_mdrive_done(self.hw.mdrive_z.url)
+        logging.info("Motors have arrived")
 
     def wait_for_acquisition_done(self):
         acquisition_done(self.hw.mpa3.url)
+        logging.info("Acquisition completed")
 
     def wait_for_acquisition_started(self):
         acquisition_started(self.hw.mpa3.url)
+        logging.info("Acquisition Started")
 
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
         http.post_request(self.hw.mpa3.url, {
@@ -93,7 +96,7 @@ class ErdSetup:
             "halt": True,
             "erase": True,
             "run_time_enable": True,
-            "set_run_time_set_point": measuring_time_sec,
+            "set_run_time_setpoint": measuring_time_sec,
             "set_filename": spectrum_filename
         })
 
