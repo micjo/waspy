@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List, Optional
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 from pathlib import Path
 
 from app.hardware_controllers.entities import SimpleConfig

@@ -4,7 +4,7 @@ from typing import Optional, Dict
 from pydantic import BaseSettings, BaseModel
 
 from app.erd.entities import ErdConfig
-from app.hardware_controllers.entities import HwControllerConfig
+from app.hardware_controllers.entities import AnyConfig
 from app.rbs.entities import RbsConfig
 import logging
 import tomli
@@ -16,9 +16,9 @@ logging.basicConfig(
 
 
 class HiveConfig(BaseModel):
-    hw_config: HwControllerConfig
-    rbs_config: RbsConfig
-    erd_config: ErdConfig
+    any: AnyConfig
+    rbs: RbsConfig
+    erd: ErdConfig
 
 
 class GlobalConfig(BaseSettings):
@@ -27,29 +27,15 @@ class GlobalConfig(BaseSettings):
     ENV_STATE = "dev"
 
 
-def make_erd_config(config_dict: Dict) -> ErdConfig:
-    erd_config = config_dict["erd"]
-    for key, value in config_dict["erd"]["hardware"].items():
-        erd_config["hardware"][key] = config_dict["generic"]["hardware"][value]
-    return ErdConfig.parse_obj(erd_config)
-
-
-def make_rbs_config(config_dict: Dict) -> RbsConfig:
-    rbs_config = config_dict["rbs"]
-    for key, value in config_dict["rbs"]["hardware"].items():
-        rbs_config["hardware"][key] = config_dict["generic"]["hardware"][value]
-    return RbsConfig.parse_obj(rbs_config)
-
-
-def make_hardware_config(config_dict: Dict) -> HwControllerConfig:
-    hw_config = {"controllers": config_dict["generic"]["hardware"]}
-    for key, controller in hw_config["controllers"].items():
-        controller["proxy"] = "/api/" + key
-    return HwControllerConfig.parse_obj(hw_config)
-
-
 def make_hive_config(config_file) -> HiveConfig:
     with open(config_file, "rb") as f:
         conf_from_file = tomli.load(f)
-        return HiveConfig(hw_config=make_hardware_config(conf_from_file), rbs_config=make_rbs_config(conf_from_file),
-                          erd_config=make_erd_config(conf_from_file))
+        print(conf_from_file)
+
+        for setup_key, setup_item in conf_from_file.items():
+            print(setup_key)
+            for hardware_key, hardware_item in setup_item["hardware"].items():
+                hardware_item["proxy"] = "/api/" + setup_key + "/" + hardware_key
+                print(hardware_item)
+
+        return HiveConfig.parse_obj(conf_from_file)
