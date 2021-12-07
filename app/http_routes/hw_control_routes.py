@@ -10,19 +10,17 @@ from app.hardware_controllers.entities import AnyHardware
 from app.hardware_controllers.hw_action import get_caen_histogram, pack
 from app.setup.config import HiveConfig
 
-router = APIRouter()
 
-
-def build_histogram_redirect(from_url, to_url):
-    @router.get(from_url + "/histogram/{board}-{channel}", tags=["Daemon API"])
+def build_histogram_redirect(some_router, from_url, to_url, tags):
+    @some_router.get(from_url + "/histogram/{board}-{channel}", tags=tags)
     async def histogram(response: Response, board: int, channel: int):
         url = to_url + "/histogram/" + str(board) + "-" + str(channel)
         response.status_code, resp = http.get_text_with_response_code(url)
         return resp
 
 
-def build_packed_histogram(from_url, to_url):
-    @router.get(from_url + "/histogram/{board}-{channel}/pack-{start}-{end}-{width}", tags=["Daemon API"])
+def build_packed_histogram(some_router, from_url, to_url, tags):
+    @some_router.get(from_url + "/histogram/{board}-{channel}/pack-{start}-{end}-{width}", tags=tags)
     async def histogram(response: Response, board: int, channel: int, start: int, end: int, width: int):
         if width > 2048:
             response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
@@ -52,18 +50,18 @@ def _convert_snakecase_to_camelcase(text):
     return ''.join(word.title() for word in text.split('_'))
 
 
-def build_post_redirect(from_url, to_url, router, tags):
+def build_post_redirect(some_router, from_url, to_url, tags):
     hw_schema = _make_hw_schema(_convert_snakecase_to_camelcase(from_url), to_url)
 
-    @router.post(from_url, tags=tags)
+    @some_router.post(from_url, tags=tags)
     async def api_key_post(response: Response, hardware_command: hw_schema):  # type: ignore
         code, body = http.post_dictionary(to_url, hardware_command.__root__)
         response.status_code = code
         return body
 
 
-def build_get_redirect(from_url, to_url, router, tags):
-    @router.get(from_url, tags=tags)
+def build_get_redirect(some_router, from_url, to_url, tags):
+    @some_router.get(from_url, tags=tags)
     async def api_key_get(response: Response):  # type: ignore
         try:
             response.status_code, resp = http.get_json_with_response_code(to_url)
@@ -73,13 +71,16 @@ def build_get_redirect(from_url, to_url, router, tags):
         return resp
 
 
+router = APIRouter()
+
+
 def build_api_endpoints(any_hardware: AnyHardware):
     for key, daemon in any_hardware.__root__.items():
         build_get_redirect(daemon.proxy, daemon.url, router, ["ANY API"])
         build_post_redirect(daemon.proxy, daemon.url, router, ["ANY API"])
         if daemon.type == 'caen':
-            build_histogram_redirect(daemon.proxy, daemon.url)
-            build_packed_histogram(daemon.proxy, daemon.url)
+            build_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
+            build_packed_histogram(router, daemon.proxy, daemon.url, ["ANY API"])
 
 
 def build_conf_endpoint(hive_config: HiveConfig):

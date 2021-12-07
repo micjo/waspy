@@ -54,8 +54,8 @@ def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.RbsSetup, rb
             return str(e)
 
     for key, daemon in rbs_hardware.dict().items():
-        build_get_redirect(daemon['proxy'], daemon['url'], router, ["RBS API"])
-        build_post_redirect(daemon['proxy'], daemon['url'], router, ["RBS API"])
+        build_get_redirect(router, daemon['proxy'], daemon['url'], ["RBS API"])
+        build_post_redirect(router, daemon['proxy'], daemon['url'], ["RBS API"])
         if daemon['type'] == 'caen':
-            build_histogram_redirect(daemon['proxy'], daemon['url'])
-            build_packed_histogram(daemon['proxy'], daemon['url'])
+            build_histogram_redirect(router, daemon['proxy'], daemon['url'], ["RBS API"])
+            build_packed_histogram(router, daemon['proxy'], daemon['url'], ["RBS API"])
