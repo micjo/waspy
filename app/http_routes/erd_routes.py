@@ -17,8 +17,8 @@ def build_api_endpoints(erd_runner: ErdRunner, erd_hardware: ErdHardware):
             return {"Queue is full"}
 
     for key, daemon in erd_hardware.dict().items():
-        build_get_redirect(daemon['proxy'], daemon['url'], router, ["ERD API"])
-        build_post_redirect(daemon['proxy'], daemon['url'], router, ["ERD API"])
+        build_get_redirect(router, daemon['proxy'], daemon['url'], ["ERD API"])
+        build_post_redirect(router, daemon['proxy'], daemon['url'], ["ERD API"])
 
 
 
