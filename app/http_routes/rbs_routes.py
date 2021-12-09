@@ -1,5 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Response
-from starlette import status
+from fastapi import APIRouter, UploadFile, File, Response, status
 
 from app.http_routes.hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram

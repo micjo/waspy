@@ -7,6 +7,7 @@ from typing import List
 from app.erd.entities import ErdHardware, PositionCoordinates
 import app.http_routes.http_helper as http
 import logging
+from threading import Lock
 
 
 def get_z_range(start, end, increment) -> List[PositionCoordinates]:
@@ -67,6 +68,8 @@ class ErdSetup:
 
     def __init__(self, erd_hw: ErdHardware):
         self.hw = erd_hw
+        self._lock = Lock()
+        self._abort = False
 
     def move(self, position: PositionCoordinates):
         if position is None:
@@ -81,6 +84,18 @@ class ErdSetup:
         move_mdrive_done(self.hw.mdrive_theta.url)
         move_mdrive_done(self.hw.mdrive_z.url)
         logging.info("Motors have arrived")
+
+    def abort(self):
+        with self._lock:
+            self._abort = True
+
+    def resume(self):
+        with self._lock:
+            self._abort = False
+
+    def _acquisition_done(self):
+        pass
+        # TODO - need to check abort state
 
     def wait_for_acquisition_done(self):
         acquisition_done(self.hw.mpa3.url)

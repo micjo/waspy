@@ -18,7 +18,8 @@ class ErdConfig(BaseModel):
 
 class Erd(BaseModel):
     measuring_time_sec: int
-    spectrum_filename: str
+    sample_id: str
+    file_stem: str
     theta: int
     z_start: int
     z_end: int
@@ -31,6 +32,7 @@ class PositionCoordinates(BaseModel):
 
 
 class ErdRqm(BaseModel):
+    rqm_number: str
     recipes: List[Erd]
 
     class Config:
@@ -51,3 +53,16 @@ class ErdRqm(BaseModel):
                     ]
                 }
         }
+
+
+empty_erd_rqm = ErdRqm(recipes=[], rqm_number="")
+
+
+class ErdRqmStatus(BaseModel):
+    run_status: str
+    active_sample_id: str
+    run_time: float
+    run_time_target: float
+
+
+empty_rqm_status = ErdRqmStatus(run_status="idle", active_sample_id="", run_time=0, run_time_target=0)
