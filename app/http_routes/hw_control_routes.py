@@ -76,8 +76,8 @@ router = APIRouter()
 
 def build_api_endpoints(any_hardware: AnyHardware):
     for key, daemon in any_hardware.__root__.items():
-        build_get_redirect(daemon.proxy, daemon.url, router, ["ANY API"])
-        build_post_redirect(daemon.proxy, daemon.url, router, ["ANY API"])
+        build_get_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
+        build_post_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
         if daemon.type == 'caen':
             build_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
             build_packed_histogram(router, daemon.proxy, daemon.url, ["ANY API"])
@@ -87,5 +87,3 @@ def build_conf_endpoint(hive_config: HiveConfig):
     @router.get("/api/hive_config")
     async def api_get_hive_config():
         return hive_config
-
-

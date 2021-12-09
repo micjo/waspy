@@ -122,6 +122,7 @@ class RqmDispatcher(Thread):
             self._abort = False
 
     def _run_recipe(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+        logging.info("\t[RQM] Recipe start: " + str(recipe))
         with self._lock:
             self._status.active_sample_id = recipe.sample_id
             self._status.accumulated_charge_target = _get_total_counts(recipe)
@@ -137,10 +138,36 @@ class RqmDispatcher(Thread):
                     self._rbs.abort()
                 if not self._data_serializer.aborted():
                     self._data_serializer.abort()
+                t.join()
 
     def _update_charge_status(self):
         with self._lock:
             self._status.accumulated_charge = self._rbs.get_corrected_total_accumulated_charge()
+
+    def _write_result(self, rqm):
+        with self._lock:
+            rqm_dict = rqm.dict()
+            if self._should_abort():
+                rqm_dict["failure"] = "RQM '" + str(rqm.rqm_number) + "' aborted"
+                logging.error("[RQM] RQM Abort: '" + str(rqm) + "'")
+            elif self.recipe_runner.error:
+                rqm_dict["failure"] = str(self.recipe_runner.error)
+                logging.error("[RQM] RQM Failure:'" + str(rqm) + "'")
+                self._failed_rqms.appendleft(rqm_dict)
+                self.recipe_runner.error = None
+            else:
+                rqm_dict["failure"] = "[RQM] Done:'" + str(rqm) + "'"
+                logging.info("[RQM] RQM Done:'" + str(rqm) + "'")
+                self._past_rqms.appendleft(rqm)
+            self._data_serializer.save_rqm(rqm_dict)
+
+    def _handle_abort(self):
+        if self._should_abort():
+            logging.error("[RQM] Abort: Clearing Schedule")
+            self._clear_rqms()
+            self._clear_abort()
+            self._rbs.resume()
+            self._data_serializer.resume()
 
     def run(self):
         while True:
@@ -150,31 +177,12 @@ class RqmDispatcher(Thread):
             if rqm != empty_rbs_rqm:
                 self._data_serializer.set_base_folder(rqm.rqm_number)
                 self._rbs.set_active_detectors(rqm.detectors)
+                logging.info("[RQM] RQM Start: '" + str(rqm) + "'")
                 for recipe in rqm.recipes:
                     self._run_recipe(recipe)
                     if self._should_abort():
                         break
-                with self._lock:
-                    if self.recipe_runner.error:
-                        rqm_dict = rqm.dict()
-                        rqm_dict["failure"] = str(self.recipe_runner.error)
-                        logging.error("RQM '" + str(rqm.rqm_number) +
-                                      "' failed with message: " + str(self.recipe_runner.error))
-                        self._failed_rqms.appendleft(rqm_dict)
-                        self.recipe_runner.error = None
-                        self._data_serializer.save_rqm(rqm_dict)
-                    else:
-                        self._past_rqms.appendleft(rqm)
-                        rqm_dict = rqm.dict()
-                        rqm_dict["failure"] = "RQM '" + str(rqm.rqm_number) + "' passed without failure."
-                        self._data_serializer.save_rqm(rqm_dict)
+                self._write_result(rqm)
+            self._handle_abort()
 
-            if self._should_abort():
-                self._clear_rqms()
-                self._clear_abort()
-                self._rbs.resume()
-                self._data_serializer.resume()
 
-            if self.recipe_runner.error:
-                print("RQM Failed with error: " + str(self.recipe_runner.error))
-                self.recipe_runner.error = None
