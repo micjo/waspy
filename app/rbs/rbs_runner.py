@@ -12,6 +12,7 @@ from threading import Thread, Lock
 import traceback
 import time
 import app.rbs.rbs_setup as rbs_lib
+from hive_exception import AbortedError
 
 
 def _pick_first_file_from_path(path):
@@ -58,6 +59,7 @@ class RbsRunner(Thread):
     _rbs: rbs_lib.RbsSetup
     _abort: bool
     _lock: Lock
+    _error: Union[None, Exception]
 
     def __init__(self, recipe_runner: RecipeListRunner, data_serializer: RbsDataSerializer, rbs: rbs_lib.RbsSetup):
         Thread.__init__(self)
@@ -71,6 +73,7 @@ class RbsRunner(Thread):
         self._abort = False
         self._past_rqms = deque(maxlen=5)
         self._failed_rqms = deque(maxlen=5)
+        self._error = None
 
     def abort(self):
         with self._lock:
@@ -138,7 +141,8 @@ class RbsRunner(Thread):
                     self._rbs.abort()
                 if not self._data_serializer.aborted():
                     self._data_serializer.abort()
-                t.join()
+        t.join()
+        self._error = self.recipe_runner.error
 
     def _update_charge_status(self):
         with self._lock:
@@ -147,16 +151,14 @@ class RbsRunner(Thread):
     def _write_result(self, rqm):
         with self._lock:
             rqm_dict = rqm.dict()
-            if self._should_abort():
-                rqm_dict["failure"] = "RQM '" + str(rqm.rqm_number) + "' aborted"
-                logging.error("[RQM] RQM Abort: '" + str(rqm) + "'")
-            elif self.recipe_runner.error:
-                rqm_dict["failure"] = str(self.recipe_runner.error)
+            if self.recipe_runner.error:
+                rqm_dict["error_state"] = str(self._error)
                 logging.error("[RQM] RQM Failure:'" + str(rqm) + "'")
+                logging.error("[RQM] RQM Failed with error:'" + str(self._error) + "'")
                 self._failed_rqms.appendleft(rqm_dict)
                 self.recipe_runner.error = None
             else:
-                rqm_dict["failure"] = "[RQM] Done:'" + str(rqm) + "'"
+                rqm_dict["error_state"] = "[RQM] Done with no errors"
                 logging.info("[RQM] RQM Done:'" + str(rqm) + "'")
                 self._past_rqms.appendleft(rqm)
             self._data_serializer.save_rqm(rqm_dict)
@@ -181,6 +183,7 @@ class RbsRunner(Thread):
                 for recipe in rqm.recipes:
                     self._run_recipe(recipe)
                     if self._should_abort():
+                        self._error = AbortedError("Aborted RQM")
                         break
                 self._write_result(rqm)
             self._handle_abort()

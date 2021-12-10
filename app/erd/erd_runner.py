@@ -30,7 +30,7 @@ def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDat
             time.sleep(2)
         erd_setup.wait_for_acquisition_done()
         erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
-    except HiveError as e:
+    except Exception as e:
         errored = e
     error.put(errored)
 
@@ -59,12 +59,14 @@ class ErdRunner(Thread):
         self._failed_rqms = deque(maxlen=5)
         self._status = empty_erd_status
         self._data_serializer = erd_data_serializer
+        self._error = None
 
     def resume(self):
         with self._lock:
             self._abort = False
 
     def abort(self):
+        logging.info("abort request")
         with self._lock:
             self._abort = True
 
@@ -135,13 +137,13 @@ class ErdRunner(Thread):
         with self._lock:
             rqm_dict = rqm.dict()
             if self._error:
-                rqm_dict["failure"] = str(self._error)
+                rqm_dict["error_state"] = str(self._error)
                 logging.error("[RQM] RQM Failure:'" + str(rqm) + "'")
                 logging.error("[RQM] RQM Failed with error:'" + str(self._error) + "'")
                 self._failed_rqms.appendleft(rqm_dict)
                 self._error = None
             else:
-                rqm_dict["failure"] = "[RQM] Done:'" + str(rqm) + "'"
+                rqm_dict["error_state"] = "Done with no errors"
                 logging.info("[RQM] RQM Done:'" + str(rqm) + "'")
                 self._past_rqms.appendleft(rqm)
             self._data_serializer.save_rqm(rqm_dict)
@@ -152,7 +154,6 @@ class ErdRunner(Thread):
             self._clear_rqms()
             self._clear_abort()
             self._erd_setup.resume()
-            self._error = AbortedError("Aborted RQM")
 
     def run(self):
         while True:
@@ -165,6 +166,7 @@ class ErdRunner(Thread):
                 for recipe in rqm.recipes:
                     self._run_recipe(recipe)
                     if self._should_abort():
+                        self._error = AbortedError("Aborted RQM")
                         break
                 self._write_result(rqm)
             self._handle_abort()
