@@ -75,7 +75,6 @@ class ErdSetup:
         self._lock = Lock()
         self._abort = False
 
-    @fakeable
     def move(self, position: PositionCoordinates):
         if position is None:
             return
@@ -85,36 +84,30 @@ class ErdSetup:
         if position.z is not None:
             move_mdrive(http.generate_request_id(), self.hw.mdrive_z.url, position.z)
 
-    @fakeable
     def wait_for_arrival(self):
         move_mdrive_done(self.hw.mdrive_theta.url)
         move_mdrive_done(self.hw.mdrive_z.url)
         logging.info("Motors have arrived")
 
-    @fakeable
     def abort(self):
         with self._lock:
             self._abort = True
 
-    @fakeable
     def resume(self):
         with self._lock:
             self._abort = False
 
-    @fakeable
     def wait_for_acquisition_done(self):
-        acquisition_done(self.hw.mpa3.url)
+        self._acquisition_done(self.hw.mpa3.url)
         logging.info("Acquisition completed")
 
-    @fakeable
     def wait_for_acquisition_started(self):
         acquisition_started(self.hw.mpa3.url)
         logging.info("Acquisition Started")
 
     def get_histogram(self):
-        return requests.get(self.hw.mpa3.url).text
+        return requests.get(self.hw.mpa3.url + "/histogram").text
 
-    @fakeable
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
         http.post_request(self.hw.mpa3.url, {
             "request_id": http.generate_request_id(),
@@ -125,7 +118,6 @@ class ErdSetup:
             "set_filename": spectrum_filename
         })
 
-    @fakeable
     def start_acquisition(self):
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "start": True})
 
@@ -134,13 +126,14 @@ class ErdSetup:
             return copy.deepcopy(self._abort)
 
     def _acquisition_done(self, url):
+        print("wait for acquisition done")
         while True:
             time.sleep(1)
             response = http.get_json(url)
             if not response["acquisition_status"]["acquiring"]:
                 logging.info("Acquisition has completed")
                 break
-            if self._aborted:
+            if self._aborted():
                 break
 
 
