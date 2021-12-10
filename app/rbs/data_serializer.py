@@ -16,6 +16,7 @@ from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
+
 def _try_copy(source, destination):
     logging.info("copying {source} to {destination}".format(source=source, destination=destination))
     try:

@@ -1,8 +1,9 @@
+from app.erd.data_serializer import ErdDataSerializer
 from app.erd.erd_runner import ErdRunner
 from app.erd.erd_setup import ErdSetup
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.recipe_list_runner import RecipeListRunner
-from app.rbs.rqm_dispatcher import RqmDispatcher
+from app.rbs.rbs_runner import RbsRunner
 from app.setup.config import GlobalConfig, make_hive_config
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
@@ -34,14 +35,15 @@ def create_app():
     rbs_setup = rbs_lib.RbsSetup(hive_config.rbs.hardware)
     rbs_data_serializer = RbsDataSerializer(hive_config.rbs.data_dir)
     recipe_list_scanner = RecipeListRunner(rbs_setup, rbs_data_serializer)
-    rqm_dispatcher = RqmDispatcher(recipe_list_scanner, rbs_data_serializer, rbs_setup)
+    rqm_dispatcher = RbsRunner(recipe_list_scanner, rbs_data_serializer, rbs_setup)
     rqm_dispatcher.daemon = True
     rqm_dispatcher.start()
     rbs_routes.build_api_endpoints(rqm_dispatcher, rbs_setup, hive_config.rbs.hardware)
     app.include_router(rbs_routes.router)
 
     erd_setup = ErdSetup(hive_config.erd.hardware)
-    erd_runner = ErdRunner(erd_setup)
+    erd_data_serializer = ErdDataSerializer(hive_config.erd.data_dir)
+    erd_runner = ErdRunner(erd_setup, erd_data_serializer)
     erd_runner.daemon = True
     erd_runner.start()
     erd_routes.build_api_endpoints(erd_runner, hive_config.erd.hardware)

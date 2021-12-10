@@ -6,3 +6,8 @@ class HiveError(Exception):
 class HardwareError(HiveError):
     """ An exception for any hardware related requests"""
     pass
+
+
+class AbortedError(HiveError):
+    """ An exception for any hardware related requests"""
+    pass

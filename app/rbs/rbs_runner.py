@@ -49,7 +49,7 @@ def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
         return _get_total_counts_random(recipe)
 
 
-class RqmDispatcher(Thread):
+class RbsRunner(Thread):
     _rqms: List[RbsRqm]
     _past_rqms: deque[RbsRqm]
     _active_rqm: RbsRqm

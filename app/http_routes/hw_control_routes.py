@@ -74,6 +74,15 @@ def build_get_redirect(some_router, from_url, to_url, tags):
 router = APIRouter()
 
 
+def build_mpa3_histogram_redirect(some_router, from_url, to_url, tags):
+    @some_router.get(from_url + "/histogram", tags=tags)
+    async def histogram(response: Response):
+        print(to_url)
+        url = to_url + "/histogram"
+        response.status_code, resp = http.get_text_with_response_code(url)
+        return resp
+
+
 def build_api_endpoints(any_hardware: AnyHardware):
     for key, daemon in any_hardware.__root__.items():
         build_get_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
@@ -81,6 +90,9 @@ def build_api_endpoints(any_hardware: AnyHardware):
         if daemon.type == 'caen':
             build_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
             build_packed_histogram(router, daemon.proxy, daemon.url, ["ANY API"])
+        if daemon.type == 'mpa3':
+            build_mpa3_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
+
 
 
 def build_conf_endpoint(hive_config: HiveConfig):

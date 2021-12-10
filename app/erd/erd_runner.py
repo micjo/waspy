@@ -4,15 +4,16 @@ from collections import deque
 from queue import Queue
 from typing import List, Union
 
-from app.erd.entities import ErdRqm, Erd, PositionCoordinates, ErdRqmStatus, empty_erd_rqm
+from app.erd.data_serializer import ErdDataSerializer
+from app.erd.entities import ErdRqm, Erd, PositionCoordinates, ErdRqmStatus, empty_erd_rqm, empty_erd_status
 from app.erd.erd_setup import ErdSetup, get_z_range
-from hive_exception import HiveError
+from hive_exception import HiveError, AbortedError
 from threading import Thread, Lock
 import time
 import logging
 
 
-def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, error: Queue):
+def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer, error: Queue):
     errored = None
     try:
         erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
@@ -25,8 +26,10 @@ def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, error: Queue):
         logging.info("positions: " + str(z_range) + "wait_time_sec between steps: " + str(wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
         for z in z_range:
             erd_setup.move(z)
-            time.sleep(recipe.measuring_time_sec/len(z_range))
+            # time.sleep(recipe.measuring_time_sec/len(z_range))
+            time.sleep(2)
         erd_setup.wait_for_acquisition_done()
+        erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
     except HiveError as e:
         errored = e
     error.put(errored)
@@ -39,20 +42,23 @@ class ErdRunner(Thread):
     _failed_rqms: deque[ErdRqm]
     _status: ErdRqmStatus
     _erd_setup: ErdSetup
+    _data_serializer: ErdDataSerializer
     _abort: bool
     _lock: Lock
     _error: Union[None, Exception]
 
-    def __init__(self, erd_setup: ErdSetup):
+    def __init__(self, erd_setup: ErdSetup, erd_data_serializer):
         Thread.__init__(self)
         self._lock = Lock()
-        self.rqms = []
+        self._rqms = []
         self._active_rqm = empty_erd_rqm
         self._lock = Lock()
         self._erd_setup = erd_setup
         self._abort = False
         self._past_rqms = deque(maxlen=5)
         self._failed_rqms = deque(maxlen=5)
+        self._status = empty_erd_status
+        self._data_serializer = erd_data_serializer
 
     def resume(self):
         with self._lock:
@@ -114,30 +120,31 @@ class ErdRunner(Thread):
             self._status.run_time_target = recipe.measuring_time_sec
 
         error_value = Queue()
-        t = Thread(target=run_erd_recipe, args=(recipe, self._erd_setup, error_value))
+        t = Thread(target=run_erd_recipe, args=(recipe, self._erd_setup, self._data_serializer, error_value))
+        self._status.run_time = 0
         t.start()
         while t.is_alive():
             time.sleep(1)
             self._status.run_time += 1
             if self._should_abort():
                 self._erd_setup.abort()
+        t.join()
         self._error = error_value.get()
 
     def _write_result(self, rqm):
         with self._lock:
             rqm_dict = rqm.dict()
-            if self._should_abort():
-                rqm_dict["failure"] = "RQM '" + str(rqm.rqm_number) + "' aborted"
-                logging.error("[RQM] RQM Abort: '" + str(rqm) + "'")
-            elif self._error:
+            if self._error:
                 rqm_dict["failure"] = str(self._error)
                 logging.error("[RQM] RQM Failure:'" + str(rqm) + "'")
+                logging.error("[RQM] RQM Failed with error:'" + str(self._error) + "'")
                 self._failed_rqms.appendleft(rqm_dict)
                 self._error = None
             else:
                 rqm_dict["failure"] = "[RQM] Done:'" + str(rqm) + "'"
                 logging.info("[RQM] RQM Done:'" + str(rqm) + "'")
                 self._past_rqms.appendleft(rqm)
+            self._data_serializer.save_rqm(rqm_dict)
 
     def _handle_abort(self):
         if self._should_abort():
@@ -145,6 +152,7 @@ class ErdRunner(Thread):
             self._clear_rqms()
             self._clear_abort()
             self._erd_setup.resume()
+            self._error = AbortedError("Aborted RQM")
 
     def run(self):
         while True:
@@ -152,6 +160,7 @@ class ErdRunner(Thread):
             rqm = self._pop_rqm()
             self._set_active_rqm(rqm)
             if rqm != empty_erd_rqm:
+                self._data_serializer.set_base_folder(rqm.rqm_number)
                 logging.info("[RQM] RQM Start: '" + str(rqm) + "'")
                 for recipe in rqm.recipes:
                     self._run_recipe(recipe)
