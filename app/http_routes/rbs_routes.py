@@ -3,7 +3,7 @@ from fastapi import APIRouter, UploadFile, File, Response, status
 from app.http_routes.hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram
 from app.rbs.entities import RbsRqm, PauseModel, RbsConfig, RbsHardware
-from app.rbs.rqm_dispatcher import RqmDispatcher
+from app.rbs.rbs_runner import RbsRunner
 import app.rbs.rbs_setup as rbs_lib
 import logging
 import traceback
@@ -17,7 +17,7 @@ async def dry_run_rbs(rbs_experiment: RbsRqm):
     return {"Verification": "Passed"}
 
 
-def build_api_endpoints(rqm_dispatcher: RqmDispatcher, rbs: rbs_lib.RbsSetup, rbs_hardware: RbsHardware):
+def build_api_endpoints(rqm_dispatcher: RbsRunner, rbs: rbs_lib.RbsSetup, rbs_hardware: RbsHardware):
     @router.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
     async def run_rbs(job: RbsRqm):
         rqm_dispatcher.add_rqm_to_queue(job)

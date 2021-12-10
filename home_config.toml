@@ -63,3 +63,7 @@ done.remote = "/tmp/ACQ/REM/4_done"
 [rbs.data_dir]
 local = "/tmp/ACQ/5_data"
 remote = "/tmp/ACQ/REM/_05_data"
+
+[erd.data_dir]
+local = "/tmp/ACQ/ERD/5_data"
+remote = "/tmp/ACQ/ERD/REM/_05_data"

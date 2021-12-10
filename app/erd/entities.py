@@ -6,6 +6,11 @@ from pathlib import Path
 from app.hardware_controllers.entities import SimpleConfig
 
 
+class DoublePath(BaseModel):
+    local: Path
+    remote: Path
+
+
 class ErdHardware(BaseModel):
     mdrive_z: SimpleConfig
     mdrive_theta: SimpleConfig
@@ -14,6 +19,7 @@ class ErdHardware(BaseModel):
 
 class ErdConfig(BaseModel):
     hardware: ErdHardware
+    data_dir: DoublePath
 
 
 class Erd(BaseModel):
@@ -65,4 +71,4 @@ class ErdRqmStatus(BaseModel):
     run_time_target: float
 
 
-empty_rqm_status = ErdRqmStatus(run_status="idle", active_sample_id="", run_time=0, run_time_target=0)
+empty_erd_status = ErdRqmStatus(run_status="idle", active_sample_id="", run_time=0, run_time_target=0)

@@ -134,10 +134,6 @@ class RecipeListRunner():
         data_serializer.plot_histograms(rbs_data, recipe.file_stem)
         return rbs_data
 
-    def configure_store(self, rqm: RbsRqm):
-        self._data_serializer.set_base_folder(rqm.rqm_number)
-        self._rbs.set_active_detectors(rqm.detectors)
-
     def run_fixed(self, recipe: RbsRqmFixed, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
         rbs.prepare_counting(recipe.charge_total)
         rbs.prepare_data_acquisition()
