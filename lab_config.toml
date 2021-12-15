@@ -50,3 +50,6 @@ url = "http://169.254.155.94:25000/api/latest"
 local = "/mnt/mcaiba_nas/transfer_RBS"
 remote = "/mnt/winbe_wasp/transfer_RBS"
 
+[erd.data_dir]
+local = "/mnt/mcaiba_nas/transfer_ERD/tst"
+remote = "/mnt/winbe_wasp/transfer_ERD/tst"

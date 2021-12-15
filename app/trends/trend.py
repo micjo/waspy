@@ -8,7 +8,7 @@ import pandas as pd
 from threading import Lock
 from app.setup.config import HiveConfig
 
-BASE_PATH = Path("/tmp/trends")
+BASE_PATH = Path("/root/trends")
 
 
 def get_path(today):
