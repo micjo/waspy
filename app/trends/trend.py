@@ -29,17 +29,20 @@ class Trend(Thread):
 
         while True:
             time.sleep(1)
-            current = get_json(self.hive_config.rbs.hardware.motrona)["current(nA)"]
+            current = get_json(self.hive_config.rbs.hardware.motrona.url)["current(nA)"]
+            x_position = get_json(self.hive_config.rbs.hardware.aml_x_y.url)["motor_1_position"]
+            y_position = get_json(self.hive_config.rbs.hardware.aml_x_y.url)["motor_2_position"]
             today = datetime.now().strftime("%Y-%m-%d")
             with self._lock:
                 if not Path(get_path(today)).is_file():
                     print("file does not exist")
                     with open(get_path(today), 'a') as f:
-                        line = "timestamp,value\n"
+                        line = "timestamp,rbs_current,x_position,y_position\n"
                         f.write(line)
 
                 with open(get_path(today), 'a') as f:
-                    line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "," + value + "\n"
+                    line = str(datetime.now().strftime(
+                        "%Y-%m-%d %H:%M:%S")) + "," + current + "," + x_position + "," + y_position + "\n"
                     f.write(line)
 
                 self.data = pd.read_csv(get_path(today))
@@ -66,7 +69,6 @@ class Trend(Thread):
         with self._lock:
             return self.data.loc[self.data['timestamp'].isin(idx)].to_dict(orient='list')
 
-
     def get_values(self):
         today = datetime.now().strftime("%Y-%m-%d")
         with self._lock:
@@ -74,5 +76,3 @@ class Trend(Thread):
 
         data = data.head(10000)
         return data.to_dict(orient='list')
-
-

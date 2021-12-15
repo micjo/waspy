@@ -54,7 +54,7 @@ def create_app():
     erd_routes.build_api_endpoints(erd_runner, hive_config.erd.hardware)
     app.include_router(erd_routes.router)
 
-    trend = Trend()
+    trend = Trend(hive_config)
     trend.daemon = True
     trend.start()
     build_trend_routes(app, trend)
