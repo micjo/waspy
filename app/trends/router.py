@@ -4,7 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
-from app.trends.aggregator import Aggregator
+from app.trends.trend import Aggregator
 from app.setup.config import daemons
 
 # aggregator = agg.Aggregator(rbs_config)

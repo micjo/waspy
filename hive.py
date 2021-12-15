@@ -1,6 +1,9 @@
+from starlette.responses import HTMLResponse
+
 from app.erd.data_serializer import ErdDataSerializer
 from app.erd.erd_runner import ErdRunner
 from app.erd.erd_setup import ErdSetup
+from app.http_routes.trend_routes import build_trend_routes
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.recipe_list_runner import RecipeListRunner
 from app.rbs.rbs_runner import RbsRunner
@@ -13,6 +16,8 @@ from app.http_routes import hw_control_routes, rbs_routes, systemd_routes, erd_r
 import app.rbs.rbs_setup as rbs_lib
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+
+from app.trends.trend import Trend
 
 
 def create_app():
@@ -49,6 +54,11 @@ def create_app():
     erd_routes.build_api_endpoints(erd_runner, hive_config.erd.hardware)
     app.include_router(erd_routes.router)
 
+    trend = Trend()
+    trend.daemon = True
+    trend.start()
+    build_trend_routes(app, trend)
+
     app.include_router(systemd_routes.router)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
@@ -56,13 +66,19 @@ def create_app():
 
     @app.get("/", include_in_schema=False)
     async def custom_swagger_ui_html():
-        return get_swagger_ui_html(
+        text = get_swagger_ui_html(
             openapi_url="openapi.json",
             title=app.title + " - Swagger UI",
             oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
             swagger_js_url="static/swagger-ui-bundle.js",
             swagger_css_url="static/swagger-ui.css",
         )
+        html = text.body
+        # This is a somewhat nasty hack to disable syntax highlighting on the output. Syntax hightlighting makes rendering large
+        # datasets extremely slow. Your browser will hang. Disabling it fixes it. A pull request is open for this, but
+        # not integrated yet at this point (https://github.com/tiangolo/fastapi/pull/2568)
+        html = html.replace(b"SwaggerUIBundle({", b"SwaggerUIBundle({syntaxHighlight:false,")
+        return HTMLResponse(html)
 
     @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
     async def swagger_ui_redirect():
