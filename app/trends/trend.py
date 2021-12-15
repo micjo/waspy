@@ -1,12 +1,12 @@
 import json
 from threading import Thread
-from app.http_routes.http_helper import get_text
+from app.http_routes.http_helper import get_text, get_json
 from pathlib import Path
 import time
 from datetime import datetime, timedelta
 import pandas as pd
 from threading import Lock
-
+from app.setup.config import HiveConfig
 
 BASE_PATH = Path("/tmp/trends")
 
@@ -18,17 +18,18 @@ def get_path(today):
 class Trend(Thread):
     _lock: Lock
 
-    def __init__(self):
+    def __init__(self, hive_config: HiveConfig):
         Thread.__init__(self)
         self._lock = Lock()
         self.data = None
+        self.hive_config = hive_config
 
     def run(self):
         Path.mkdir(Path("/tmp/trends/"), parents=True, exist_ok=True)
 
         while True:
             time.sleep(1)
-            value = get_text("http://localhost:8000/api/some_number")
+            current = get_json(self.hive_config.rbs.hardware.motrona)["current(nA)"]
             today = datetime.now().strftime("%Y-%m-%d")
             with self._lock:
                 if not Path(get_path(today)).is_file():
