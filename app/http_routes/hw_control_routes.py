@@ -1,3 +1,4 @@
+import random
 from typing import Dict
 
 import requests
@@ -84,6 +85,10 @@ def build_mpa3_histogram_redirect(some_router, from_url, to_url, tags):
 
 
 def build_api_endpoints(any_hardware: AnyHardware):
+    @router.get("/api/some_number")
+    async def get_random_number():
+        return random.randint(0,20)
+
     for key, daemon in any_hardware.__root__.items():
         build_get_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
         build_post_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
@@ -92,7 +97,6 @@ def build_api_endpoints(any_hardware: AnyHardware):
             build_packed_histogram(router, daemon.proxy, daemon.url, ["ANY API"])
         if daemon.type == 'mpa3':
             build_mpa3_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
-
 
 
 def build_conf_endpoint(hive_config: HiveConfig):
