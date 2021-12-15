@@ -65,7 +65,6 @@ class RbsSetup:
         self._abort = False
         self._lock = Lock()
 
-    @fakeable
     def move(self, position: PositionCoordinates):
         if self.aborted():
             return
@@ -110,7 +109,6 @@ class RbsSetup:
         with self._lock:
             self._counting = False
 
-    @fakeable
     def count(self):
         if self.aborted():
             return

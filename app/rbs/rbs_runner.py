@@ -143,6 +143,7 @@ class RbsRunner(Thread):
                     self._data_serializer.abort()
         t.join()
         self._error = self.recipe_runner.error
+        self.recipe_runner.error = None
 
     def _update_charge_status(self):
         with self._lock:
@@ -151,12 +152,12 @@ class RbsRunner(Thread):
     def _write_result(self, rqm):
         with self._lock:
             rqm_dict = rqm.dict()
-            if self.recipe_runner.error:
+            if self._error:
                 rqm_dict["error_state"] = str(self._error)
                 logging.error("[RQM] RQM Failure:'" + str(rqm) + "'")
                 logging.error("[RQM] RQM Failed with error:'" + str(self._error) + "'")
                 self._failed_rqms.appendleft(rqm_dict)
-                self.recipe_runner.error = None
+                self._error = None
             else:
                 rqm_dict["error_state"] = "[RQM] Done with no errors"
                 logging.info("[RQM] RQM Done:'" + str(rqm) + "'")
