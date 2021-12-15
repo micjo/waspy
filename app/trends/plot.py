@@ -33,6 +33,12 @@ def set_request(req):
     request = req
 
 
+log_scale = False
+def lin_log():
+    global log_scale
+    log_scale = not log_scale
+
+
 class Graph:
     def __init__(self):
         self.fig = plt.figure(sys.argv[2])
@@ -59,6 +65,8 @@ class Graph:
         self.min_button.on_clicked(lambda e: set_request("minutes"))
         self.terminal_button = widgets.Button(plt.axes([0.01, 0.01, 0.075, 0.060]), 'Term.')
         self.terminal_button.on_clicked(lambda e: show_window())
+        self.b_log = widgets.Button(plt.axes([0.01, 0.94, 0.075, 0.060]), 'lin/log')
+        self.b_log.on_clicked(lambda e: lin_log())
 
     def __call__(self, data):
         self.reset_axes()
@@ -72,13 +80,17 @@ class Graph:
         self.axes.clear()
         self.axes.set_xlabel("Time")
         self.axes.set_ylabel(sys.argv[2])
-
         self.axes.grid(which='both')
         self.axes.yaxis.set_ticks_position('left')
         self.axes.xaxis.set_ticks_position('bottom')
         self.axes.xaxis_date()
         self.axes.xaxis.set_major_formatter(dates.DateFormatter('%H:%M'))
         self.axes.xaxis.set_major_locator(ticker.AutoLocator())
+        global log_scale
+        if log_scale:
+            self.axes.set_yscale('log')
+        else:
+            self.axes.set_yscale('linear')
 
 
 def show_window():
