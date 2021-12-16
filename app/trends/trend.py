@@ -69,10 +69,16 @@ class Trend(Thread):
         with self._lock:
             return self.data.loc[self.data['timestamp'].isin(idx)].to_dict(orient='list')
 
-    def get_values(self):
-        today = datetime.now().strftime("%Y-%m-%d")
-        with self._lock:
-            data = pd.read_csv(get_path(today))
+    def get_values(self, start: datetime, end: datetime, step: timedelta):
+        frequency = str(step.total_seconds()) + "S"
+        idx = pd.date_range(start, end, freq=frequency)
+        days_in_range = pd.date_range(start.replace(hour=0, minute=0, second=0),
+                                      end.replace(hour=0, minute=0, second=0), freq='1D')
+        day_files = [d.strftime('/tmp/trends/trends_%Y-%m-%d.txt') for d in days_in_range]
 
-        data = data.head(10000)
-        return data.to_dict(orient='list')
+        with self._lock:
+            dataframes = [pd.read_csv(day) for day in day_files]
+            data = pd.concat(dataframes)
+            data['timestamp'] = pd.to_datetime(data['timestamp'])
+
+            return data.loc[data['timestamp'].isin(idx)].to_dict(orient='list')
