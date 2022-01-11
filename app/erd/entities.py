@@ -26,10 +26,10 @@ class Erd(BaseModel):
     measuring_time_sec: int
     sample_id: str
     file_stem: str
-    theta: int
-    z_start: int
-    z_end: int
-    z_increment: int
+    theta: float
+    z_start: float
+    z_end: float
+    z_increment: float
 
 
 class PositionCoordinates(BaseModel):
@@ -49,12 +49,14 @@ class ErdRqm(BaseModel):
                 {
                     "recipes": [
                         {
-                            "measuring_time_sec": 30, "spectrum_filename": "test_001",
-                            "theta": 40, "z_start": 1, "z_end": 1, "z_increment": 10
+                            "rqm_number": "test_1", "measuring_time_sec": 30, "file_stem": "test_001",
+                            "sample_id": "something_1", "theta": 40.00, "z_start": 1.00, "z_end": 5.00,
+                            "z_increment": 0.50
                         },
                         {
-                            "measuring_time_sec": 30, "spectrum_filename": "test_002",
-                            "theta": 70, "z_start": 10, "z_end": 2, "z_increment": 20
+                            "rqm_number": "test_2", "measuring_time_sec": 30, "file_stem": "test_002",
+                            "sample_id": "something_2", "theta": 70.05, "z_start": 5.00, "z_end": 50.00,
+                            "z_increment": 10.00
                         },
                     ]
                 }
