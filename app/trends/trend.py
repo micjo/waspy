@@ -29,20 +29,21 @@ class Trend(Thread):
 
         while True:
             time.sleep(1)
-            current = get_json(self.hive_config.rbs.hardware.motrona.url)["current(nA)"]
-            x_position = get_json(self.hive_config.rbs.hardware.aml_x_y.url)["motor_1_position"]
-            y_position = get_json(self.hive_config.rbs.hardware.aml_x_y.url)["motor_2_position"]
+            ad1_count_rate = get_json(self.hive_config.erd.hardware.mpa3)["ad1"]["total_rate"]
+            ad2_count_rate = get_json(self.hive_config.erd.hardware.mpa3)["ad2"]["total_rate"]
+            z_position = get_json(self.hive_config.erd.hardware.mdrive_z)["motor_position"]
+            rotation_position = get_json(self.hive_config.erd.hardware.mdrive_theta)["motor_position"]
             today = datetime.now().strftime("%Y-%m-%d")
             with self._lock:
                 if not Path(get_path(today)).is_file():
                     print("file does not exist")
                     with open(get_path(today), 'a') as f:
-                        line = "timestamp,rbs_current,x_position,y_position\n"
+                        line = "timestamp,ad1_count_rate,ad2_count_rate,z_position,rotation_position\n"
                         f.write(line)
 
                 with open(get_path(today), 'a') as f:
                     line = str(datetime.now().strftime(
-                        "%Y-%m-%d %H:%M:%S")) + "," + current + "," + x_position + "," + y_position + "\n"
+                        "%Y-%m-%d %H:%M:%S")) + "," + ad1_count_rate + "," + ad2_count_rate + "," + z_position + "," + rotation_position + "\n"
                     f.write(line)
 
                 self.data = pd.read_csv(get_path(today))
