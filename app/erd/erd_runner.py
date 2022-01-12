@@ -26,8 +26,7 @@ def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDat
         logging.info("positions: " + str(z_range) + "wait_time_sec between steps: " + str(wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
         for z in z_range:
             erd_setup.move(z)
-            # time.sleep(recipe.measuring_time_sec/len(z_range))
-            time.sleep(2)
+            time.sleep(recipe.measuring_time_sec/len(z_range))
         erd_setup.wait_for_acquisition_done()
         erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
     except Exception as e:
