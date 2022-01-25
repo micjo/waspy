@@ -21,11 +21,11 @@ def get_text(url):
 
 
 def get_json(url):
-    return requests.get(url,timeout=10).json()
+    return requests.get(url, timeout=10).json()
 
 
 def post_dictionary(url, data):
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, timeout=10)
     return response.status_code, response.text
 
 
