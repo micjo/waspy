@@ -6,22 +6,22 @@ import hive_exception
 
 
 def get_text_with_response_code(url):
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     return response.status_code, response.text
 
 
 def get_json_with_response_code(url):
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     return response.status_code, response.json()
 
 
 def get_text(url):
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     return response.text
 
 
 def get_json(url):
-    return requests.get(url).json()
+    return requests.get(url,timeout=10).json()
 
 
 def post_dictionary(url, data):

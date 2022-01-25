@@ -23,11 +23,11 @@ def build_api_endpoints(erd_runner: ErdRunner, erd_hardware: ErdHardware):
         if daemon['type'] == 'mpa3':
             build_mpa3_histogram_redirect(router, daemon['proxy'], daemon['url'], ["ERD API"])
 
-    @router.get("/api/erd/state", tags=["RBS API"], summary="Get the state of the active rqm")
+    @router.get("/api/erd/state", tags=["ERD API"], summary="Get the state of the active rqm")
     async def get_rqm_state():
         return erd_runner.get_state()
 
-    @router.post("/api/erd/abort", tags=["RBS API"], summary="Abort the running rqm")
+    @router.post("/api/erd/abort", tags=["ERD API"], summary="Abort the running rqm")
     async def abort():
         erd_runner.abort()
 

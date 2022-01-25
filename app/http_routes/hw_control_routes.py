@@ -40,7 +40,7 @@ def _make_hw_schema(class_name, url):
 
         class Config:
             try:
-                schema_extra = requests.get(url + "/caps").json()
+                schema_extra = requests.get(url + "/caps", timeout=5).json()
             except:
                 pass
 
