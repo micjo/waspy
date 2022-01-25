@@ -106,7 +106,7 @@ class ErdSetup:
         logging.info("Acquisition Started")
 
     def get_histogram(self):
-        return requests.get(self.hw.mpa3.url + "/histogram").text
+        return requests.get(self.hw.mpa3.url + "/histogram", timeout=10).text
 
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
         http.post_request(self.hw.mpa3.url, {

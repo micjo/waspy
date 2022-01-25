@@ -115,7 +115,7 @@ class RbsSetup:
         logging.info("acquiring till target")
         hw_action.clear_start_motrona_count(generate_request_id(), self.hw.motrona.url)
         self._wait_for_count_finished()
-        motrona = requests.get(self.hw.motrona.url).json()
+        motrona = requests.get(self.hw.motrona.url, timeout=10).json()
         self._acquisition_accumulated_charge += float(motrona["charge(nC)"])
         self.charge_offset += float(motrona["target_charge(nC)"])
 
@@ -127,7 +127,7 @@ class RbsSetup:
         increment = 0
         with self._lock:
             if self._counting:
-                motrona = requests.get(self.hw.motrona.url).json()
+                motrona = requests.get(self.hw.motrona.url, timeout=10).json()
                 charge = float(motrona["charge(nC)"])
                 target_charge = float(motrona["target_charge(nC)"])
                 if charge < target_charge:
@@ -150,11 +150,11 @@ class RbsSetup:
         return self.detectors
 
     def get_status(self, get_histograms=False) -> RbsData:
-        aml_x_y = requests.get(self.hw.aml_x_y.url).json()
-        aml_phi_zeta = requests.get(self.hw.aml_det_theta.url).json()
-        aml_det_theta = requests.get(self.hw.aml_phi_zeta.url).json()
-        motrona = requests.get(self.hw.motrona.url).json()
-        caen = requests.get(self.hw.caen.url).json()
+        aml_x_y = requests.get(self.hw.aml_x_y.url, timeout=10).json()
+        aml_phi_zeta = requests.get(self.hw.aml_det_theta.url, timeout=10).json()
+        aml_det_theta = requests.get(self.hw.aml_phi_zeta.url, timeout=10).json()
+        motrona = requests.get(self.hw.motrona.url, timeout=10).json()
+        caen = requests.get(self.hw.caen.url, timeout=10).json()
         histograms = []
         if get_histograms:
             histograms = self.get_histograms()
@@ -197,7 +197,7 @@ class RbsSetup:
 
     def verify_caen_boards(self, detectors: List[CaenDetectorModel]):
         for detector in detectors:
-            caen_data = requests.get(self.hw.caen.url).json()
+            caen_data = requests.get(self.hw.caen.url, timeout=10).json()
             if "board_" + str(detector['board']) not in caen_data:
                 raise Exception("The specified board in the detector list does not exist")
 

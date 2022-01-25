@@ -23,7 +23,7 @@ hide = True
 
 def get_data():
     while True:
-        response = requests.get("http://169.254.150.200/hive/api/trends/" + request)
+        response = requests.get("http://169.254.150.200/hive/api/trends/" + request, timeout=10)
         yield response.json()
 
 
