@@ -13,16 +13,16 @@ from app.setup.config import HiveConfig
 
 
 def build_histogram_redirect(some_router, from_url, to_url, tags):
-    @some_router.get(from_url + "/histogram/{board}-{channel}", tags=tags)
-    async def histogram(response: Response, board: int, channel: int):
-        url = to_url + "/histogram/" + str(board) + "-" + str(channel)
+    @some_router.get(from_url + "/histogram/{board}/{channel}", tags=tags)
+    async def histogram(response: Response, board: str, channel: int):
+        url = to_url + "/histogram/" + board + "/" + str(channel)
         response.status_code, resp = http.get_text_with_response_code(url)
         return resp
 
 
 def build_packed_histogram(some_router, from_url, to_url, tags):
-    @some_router.get(from_url + "/histogram/{board}-{channel}/pack-{start}-{end}-{width}", tags=tags)
-    async def histogram(response: Response, board: int, channel: int, start: int, end: int, width: int):
+    @some_router.get(from_url + "/histogram/{board}/{channel}/pack/{start}-{end}-{width}", tags=tags)
+    async def histogram(response: Response, board: str, channel: int, start: int, end: int, width: int):
         if width > 2048:
             response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
             return {}
