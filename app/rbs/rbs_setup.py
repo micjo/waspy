@@ -109,6 +109,7 @@ class RbsSetup:
         with self._lock:
             self._counting = False
 
+    @fakeable
     def count(self):
         if self.aborted():
             return
@@ -198,8 +199,12 @@ class RbsSetup:
     def verify_caen_boards(self, detectors: List[CaenDetectorModel]):
         for detector in detectors:
             caen_data = requests.get(self.hw.caen.url, timeout=10).json()
-            if "board_" + str(detector['board']) not in caen_data:
-                raise Exception("The specified board in the detector list does not exist")
+            board_id = str(detector['board'])
+            valid_board_ids = [board['id'] for board in caen_data['boards']]
+            board_exists = any(board_id == valid_board_id for valid_board_id in valid_board_ids)
+            if not board_exists:
+                raise Exception("The specified board in the detector list does not exist. Actual: '" + board_id +
+                                "' Expected: '" + str(valid_board_ids) + "'")
 
 
 def single_coordinate_to_string(position: PositionCoordinates, coordinate: VaryCoordinate) -> str:
