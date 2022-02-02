@@ -23,7 +23,7 @@ def build_histogram_redirect(some_router, from_url, to_url, tags):
 def build_packed_histogram(some_router, from_url, to_url, tags):
     @some_router.get(from_url + "/histogram/{board}/{channel}/pack/{start}-{end}-{width}", tags=tags)
     async def histogram(response: Response, board: str, channel: int, start: int, end: int, width: int):
-        if width > 2048:
+        if width > end-start:
             response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
             return {}
         resp_code, data = get_caen_histogram(to_url, board, channel)
