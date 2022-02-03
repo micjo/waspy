@@ -74,7 +74,7 @@ def stop_caen_acquisition(request_id, url):
     http.post_request(url, request)
 
 
-def get_caen_histogram(base_url, board: int, channel: int) -> tuple[Any, List[int]]:
+def get_caen_histogram(base_url, board: str, channel: int) -> tuple[Any, List[int]]:
     url = base_url + "/histogram/" + str(board) + "/" + str(channel)
     resp_code, raw_data = http.get_text_with_response_code(url)
     raw_data = raw_data.split(";")
