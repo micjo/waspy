@@ -34,17 +34,22 @@ url = "http://169.254.80.218:22200/api/latest"
 [erd.hardware.mdrive_z]
 type = "mdrive"
 title = "MDrive Z"
+load = -180
 url = "http://169.254.100.229:22124/api/latest"
+trend = {"z_position":"motor_1_position"}
 
 [erd.hardware.mdrive_theta]
 type = "mdrive"
 title = "MDrive Theta"
+load = 90
 url = "http://169.254.100.229:22123/api/latest"
+trend = {"theta_position":"motor_1_position"}
 
 [erd.hardware.mpa3]
 type = "mpa3"
 title = "MPA 3"
 url = "http://169.254.155.94:25000/api/latest"
+trend = {"ad1_count_rate": "ad1.total_rate", "ad2_count_rate": "ad2.total_rate"}
 
 [rbs.data_dir]
 local = "/mnt/mcaiba_nas/transfer_RBS"

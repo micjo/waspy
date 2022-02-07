@@ -12,6 +12,15 @@ class HwControllerType(str, Enum):
     mpa3 = 'mpa3'
 
 
+class MdriveConfig(BaseModel):
+    type: HwControllerType
+    title: str
+    url: str
+    load: float
+    proxy: Optional[str]
+    trend: Optional[Dict]
+
+
 class AmlConfig(BaseModel):
     type: HwControllerType
     title: str
@@ -19,6 +28,7 @@ class AmlConfig(BaseModel):
     names: List[str]
     loads: List[float]
     proxy: Optional[str]
+    trend: Optional[Dict]
 
     class Config:
         use_enum_values = True
@@ -29,6 +39,7 @@ class SimpleConfig(BaseModel):
     title: str
     url: str
     proxy: Optional[str]
+    trend: Optional[Dict]
 
     class Config:
         use_enum_values = True
