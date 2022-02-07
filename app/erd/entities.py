@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, validator, Field
 from pathlib import Path
 
-from app.hardware_controllers.entities import SimpleConfig
+from app.hardware_controllers.entities import SimpleConfig, MdriveConfig
 
 
 class DoublePath(BaseModel):
@@ -12,8 +12,8 @@ class DoublePath(BaseModel):
 
 
 class ErdHardware(BaseModel):
-    mdrive_z: SimpleConfig
-    mdrive_theta: SimpleConfig
+    mdrive_z: MdriveConfig
+    mdrive_theta: MdriveConfig
     mpa3: SimpleConfig
 
 

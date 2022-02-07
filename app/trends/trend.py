@@ -1,18 +1,99 @@
 import json
 from threading import Thread
-from app.http_routes.http_helper import get_text, get_json
+from typing import Dict
+
+from pydantic import BaseModel
+
+from app.hardware_controllers.entities import SimpleConfig
+from app.http_routes.http_helper import get_text, get_json, get_json_safe
 from pathlib import Path
-import time
+import time, requests
 from datetime import datetime, timedelta
 import pandas as pd
+import numpy as np
 from threading import Lock
 from app.setup.config import HiveConfig
+from app.rbs.entities import RbsHardware
+from app.erd.entities import ErdHardware
 
-BASE_PATH = Path("/root/trends")
+BASE_PATH = Path("/tmp/trends")
 
 
-def get_path(today):
-    return BASE_PATH / str("trends_" + today + ".txt")
+def get_path(leader: int, today: str) -> Path:
+    return BASE_PATH / "trends_{today}_{leader:03d}.txt".format(today=today, leader=leader)
+
+
+def get_existing_leader(today: str) -> int:
+    i = 0
+    while get_path(i, today).exists():
+        i += 1
+    return i - 1
+
+
+def is_trend_file_missing(leader: int, today: str) -> bool:
+    full_path = get_path(leader, today)
+    return not full_path.exists()
+
+
+class TrendValues(BaseModel):
+    aml_x_y: Dict
+    motrona: Dict
+    zaxis: Dict
+    rotation: Dict
+
+
+def get_trend_values(hive_config: HiveConfig) -> Dict:
+    trend_values = {}
+
+    for field, value in hive_config.erd.hardware.__dict__.items():
+        hw = SimpleConfig.parse_obj(value)
+        if hw.trend:
+            for key, item in hw.trend.items():
+                try:
+                    json_response = requests.get(hw.url, timeout=0.5).json()
+                    for nestedKey in item.split('.'):
+                        json_response = json_response[nestedKey]
+                    trend_values[key] = json_response
+                except Exception as e:
+                    trend_values[key] = ""
+
+    return trend_values
+
+
+def get_title(trend_values: Dict) -> str:
+    return "timestamp," + ",".join(list(trend_values.keys())) + "\n"
+
+
+def writeTitle(title: str, file: Path):
+    with open(file, 'w') as f:
+        f.write(title)
+
+
+def create_file_if_missing(day_leader, today, title):
+    if is_trend_file_missing(day_leader, today):
+        file_path = get_path(day_leader + 1, today)
+        file_path.touch(exist_ok=True)
+        writeTitle(title, file_path)
+
+
+def create_new_file_if_titles_dont_match(day_leader, today, title):
+    file_path = get_path(day_leader, today)
+    with open(file_path, 'r') as f:
+        existing_title = f.readline()
+
+    if title != existing_title:
+        day_leader += 1
+        file_path = get_path(day_leader, today)
+        file_path.touch(exist_ok=True)
+        writeTitle(title, file_path)
+
+
+def write_values(day_leader: int, today: str, trend_values: Dict):
+    file_path = get_path(day_leader, today)
+    values = [str(value) for value in trend_values.values()]
+    with open(file_path, 'a') as f:
+        line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "," + ",".join(values) + "\n"
+        f.write(line)
 
 
 class Trend(Thread):
@@ -25,32 +106,21 @@ class Trend(Thread):
         self.hive_config = hive_config
 
     def run(self):
-        Path.mkdir(Path("/tmp/trends/"), parents=True, exist_ok=True)
+        Path.mkdir(BASE_PATH, parents=True, exist_ok=True)
 
         while True:
             time.sleep(1)
-            current = get_json(self.hive_config.rbs.hardware.motrona.url)["current(nA)"]
-            x_position = get_json(self.hive_config.rbs.hardware.aml_x_y.url)["motor_1_position"]
-            y_position = get_json(self.hive_config.rbs.hardware.aml_x_y.url)["motor_2_position"]
-            ad1_count_rate = get_json(self.hive_config.erd.hardware.mpa3.url)["ad1"]["total_rate"]
-            ad2_count_rate = get_json(self.hive_config.erd.hardware.mpa3.url)["ad2"]["total_rate"]
-            z_position = get_json(self.hive_config.erd.hardware.mdrive_z.url)["motor_position"]
-            rotation_position = get_json(self.hive_config.erd.hardware.mdrive_theta.url)["motor_position"]
+            trend_values = get_trend_values(self.hive_config)
+            title = get_title(trend_values)
+
             today = datetime.now().strftime("%Y-%m-%d")
-            with self._lock:
-                if not Path(get_path(today)).is_file():
-                    print("file does not exist")
-                    with open(get_path(today), 'a') as f:
-                        line = "timestamp,ad1_count_rate,ad2_count_rate,z_position,rotation_position,rbs_current,rbs_x,rbs_y\n"
-                        f.write(line)
+            day_leader = get_existing_leader(today)
+            create_file_if_missing(day_leader, today, title)
+            day_leader = get_existing_leader(today)
+            create_new_file_if_titles_dont_match(day_leader, today, title)
 
-                with open(get_path(today), 'a') as f:
-                    line = str(datetime.now().strftime(
-                        "%Y-%m-%d %H:%M:%S")) + "," + ad1_count_rate + "," + ad2_count_rate + "," + z_position + "," + rotation_position + "," + current + "," + x_position + "," + y_position + "\n"
-                    f.write(line)
+            write_values(day_leader, today, trend_values)
 
-                self.data = pd.read_csv(get_path(today))
-                self.data['timestamp'] = pd.to_datetime(self.data['timestamp'])
 
     def get_last_10_minutes(self):
         right_now = datetime.now()
@@ -78,11 +148,16 @@ class Trend(Thread):
         idx = pd.date_range(start, end, freq=frequency)
         days_in_range = pd.date_range(start.replace(hour=0, minute=0, second=0),
                                       end.replace(hour=0, minute=0, second=0), freq='1D')
-        day_files = [d.strftime('/tmp/trends/trends_%Y-%m-%d.txt') for d in days_in_range]
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        day_leader = get_existing_leader(today)
+        last_file =get_path(day_leader, today)
+        day_files = [last_file]
+        #TODO: cleanup
+        # day_files = [d.strftime(BASE_PATH / 'trends_%Y-%m-%d.txt') for d in days_in_range]
 
         with self._lock:
             dataframes = [pd.read_csv(day) for day in day_files]
             data = pd.concat(dataframes)
             data['timestamp'] = pd.to_datetime(data['timestamp'])
-
-            return data.loc[data['timestamp'].isin(idx)].to_dict(orient='list')
+            return data.replace({np.nan: None}).loc[data['timestamp'].isin(idx)].to_dict(orient='list')

@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+from typing import Dict
 
 import requests
 import hive_exception
@@ -22,6 +23,14 @@ def get_text(url):
 
 def get_json(url):
     return requests.get(url, timeout=10).json()
+
+
+def get_json_safe(url, timeout, default_value: Dict) -> Dict:
+    try:
+        json_value = requests.get(url, timeout=timeout).json()
+    except TimeoutError as e:
+        json_value = default_value
+    return json_value
 
 
 def post_dictionary(url, data):
