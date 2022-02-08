@@ -35,15 +35,19 @@ url = "http://169.254.80.218:22200/api/latest"
 type = "mdrive"
 title = "MDrive Z"
 load = -180
-url = "http://169.254.100.229:22124/api/latest"
+url = "http://127.0.0.1:22124/api/latest"
 trend = {"z_position":"motor_1_position"}
 
 [erd.hardware.mdrive_theta]
 type = "mdrive"
 title = "MDrive Theta"
+<<<<<<< Updated upstream
 load = 90
 url = "http://169.254.100.229:22123/api/latest"
 trend = {"theta_position":"motor_1_position"}
+=======
+url = "http://127.0.0.1:22123/api/latest"
+>>>>>>> Stashed changes
 
 [erd.hardware.mpa3]
 type = "mpa3"
