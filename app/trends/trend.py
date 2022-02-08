@@ -17,8 +17,7 @@ from app.setup.config import HiveConfig
 from app.rbs.entities import RbsHardware
 from app.erd.entities import ErdHardware
 
-BASE_PATH = Path("/tmp/trends")
-
+BASE_PATH = Path("/root/trends")
 
 def get_path(leader: int, today: str) -> Path:
     return BASE_PATH / "trends_{today}_{leader:03d}.txt".format(today=today, leader=leader)
@@ -139,6 +138,8 @@ class Trend(Thread):
             create_file_if_missing(day_leader, today, title)
             day_leader = get_existing_leader(today)
             create_new_file_if_titles_dont_match(day_leader, today, title)
+            day_leader = get_existing_leader(today)
+            print("writing values to" + str(day_leader))
             write_values(day_leader, today, trend_values)
 
     def get_last_10_minutes(self):
