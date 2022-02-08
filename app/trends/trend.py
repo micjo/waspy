@@ -139,7 +139,6 @@ class Trend(Thread):
             day_leader = get_existing_leader(today)
             create_new_file_if_titles_dont_match(day_leader, today, title)
             day_leader = get_existing_leader(today)
-            print("writing values to" + str(day_leader))
             write_values(day_leader, today, trend_values)
 
     def get_last_10_minutes(self):
@@ -171,10 +170,11 @@ class Trend(Thread):
             day_leader = get_existing_leader(day)
             valid_days.extend([get_path(x, day) for x in range(day_leader + 1)])
 
+
         dataframes = [pd.read_csv(day) for day in valid_days]
         data = pd.concat(dataframes)
         data['timestamp'] = pd.to_datetime(data['timestamp'])
         data.replace({np.nan: None}, inplace=True)
-        data.drop(data[~data['timestamp'].isin(idx)].index, inplace=True)
+        data = data.loc[data['timestamp'].isin(idx)]
         values = data.to_dict(orient='list')
         return values
