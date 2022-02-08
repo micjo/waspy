@@ -109,7 +109,6 @@ class RbsSetup:
         with self._lock:
             self._counting = False
 
-    @fakeable
     def count(self):
         if self.aborted():
             return

@@ -76,6 +76,8 @@ class ErdSetup:
         self._abort = False
 
     def move(self, position: PositionCoordinates):
+        if self._aborted():
+            return
         if position is None:
             return
         logging.info("moving erd system to '" + str(position) + "'")
@@ -85,6 +87,8 @@ class ErdSetup:
             move_mdrive(http.generate_request_id(), self.hw.mdrive_z.url, position.z)
 
     def wait_for_arrival(self):
+        if self._aborted():
+            return
         move_mdrive_done(self.hw.mdrive_theta.url)
         move_mdrive_done(self.hw.mdrive_z.url)
         logging.info("Motors have arrived")
@@ -97,18 +101,36 @@ class ErdSetup:
         with self._lock:
             self._abort = False
 
+
+    def wait_for(self, seconds):
+        sleep_time = 0
+        while sleep_time < seconds:
+            if self._aborted():
+                return
+            time.sleep(1)
+            sleep_time += 1
+
+
     def wait_for_acquisition_done(self):
+        if self._aborted():
+            return
         self._acquisition_done(self.hw.mpa3.url)
         logging.info("Acquisition completed")
 
     def wait_for_acquisition_started(self):
+        if self._aborted():
+            return
         acquisition_started(self.hw.mpa3.url)
         logging.info("Acquisition Started")
 
     def get_histogram(self):
+        if self._aborted():
+            return ""
         return requests.get(self.hw.mpa3.url + "/histogram", timeout=10).text
 
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
+        if self._aborted():
+            return ""
         http.post_request(self.hw.mpa3.url, {
             "request_id": http.generate_request_id(),
             "halt": True,
@@ -119,6 +141,8 @@ class ErdSetup:
         })
 
     def start_acquisition(self):
+        if self._aborted():
+            return ""
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "start": True})
 
     def _aborted(self):
@@ -134,6 +158,7 @@ class ErdSetup:
                 logging.info("Acquisition has completed")
                 break
             if self._aborted():
+                logging.info("acquisition done: abort requested")
                 break
 
 

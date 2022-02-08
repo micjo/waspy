@@ -14,7 +14,7 @@ import logging
 
 
 def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer, error: Queue):
-    errored = None
+    error_value = None
     try:
         erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
         erd_setup.wait_for_arrival()
@@ -22,16 +22,18 @@ def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDat
         erd_setup.start_acquisition()
         erd_setup.wait_for_acquisition_started()
         z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
-        wait_time = recipe.measuring_time_sec/len(z_range)
-        logging.info("positions: " + str(z_range) + "wait_time_sec between steps: " + str(wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
+        wait_time = recipe.measuring_time_sec / len(z_range)
+        logging.info("testimg positions: " + str(z_range) + "wait_time_sec between steps: " + str(
+            wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
         for z in z_range:
             erd_setup.move(z)
-            time.sleep(recipe.measuring_time_sec/len(z_range))
+            erd_setup.wait_for(wait_time)
+
         erd_setup.wait_for_acquisition_done()
         erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
-    except Exception as e:
-        errored = e
-    error.put(errored)
+    except HiveError as e:
+        error_value = e
+    error.put(error_value)
 
 
 class ErdRunner(Thread):
@@ -65,7 +67,6 @@ class ErdRunner(Thread):
             self._abort = False
 
     def abort(self):
-        logging.info("abort request")
         with self._lock:
             self._abort = True
 

@@ -139,7 +139,6 @@ class Trend(Thread):
             create_file_if_missing(day_leader, today, title)
             day_leader = get_existing_leader(today)
             create_new_file_if_titles_dont_match(day_leader, today, title)
-
             write_values(day_leader, today, trend_values)
 
     def get_last_10_minutes(self):
