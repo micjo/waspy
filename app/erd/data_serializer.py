@@ -86,7 +86,7 @@ class ErdDataSerializer:
     def save_histogram(self, histogram: str, file_stem):
         if self.aborted():
             return
-        file_stem += ".txt"
+        file_stem += ".flt"
         local = self.data_dir.local / self._get_folder() / file_stem
         remote = self.data_dir.remote / self._get_folder() / file_stem
         with open(local, 'w+') as f:
