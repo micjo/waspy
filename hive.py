@@ -3,6 +3,7 @@ from starlette.responses import HTMLResponse
 from app.erd.data_serializer import ErdDataSerializer
 from app.erd.erd_runner import ErdRunner
 from app.erd.erd_setup import ErdSetup
+from app.http_routes.systemd_routes import build_systemd_endpoints
 from app.http_routes.trend_routes import build_trend_routes
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.recipe_list_runner import RecipeListRunner
@@ -60,6 +61,7 @@ def create_app():
     build_trend_routes(app, trend)
 
     app.include_router(systemd_routes.router)
+    build_systemd_endpoints(app)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
                        allow_methods=['*'], allow_headers=['*'])
