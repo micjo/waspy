@@ -111,9 +111,6 @@ class RbsRunner(Thread):
     def _set_active_rqm(self, rqm):
         with self._lock:
             self._active_rqm = rqm
-            self._status.active_sample_id = ""
-            self._status.accumulated_charge = 0
-            self._status.accumulated_charge_target = 0
             self._status.active_rqm_status = []
             if rqm != empty_rbs_rqm:
                 self._status.run_status = StatusModel.Running
@@ -131,8 +128,6 @@ class RbsRunner(Thread):
     def _run_recipe(self, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
         logging.info("\t[RQM] Recipe start: " + str(recipe))
         with self._lock:
-            self._status.active_sample_id = recipe.sample_id
-            self._status.accumulated_charge_target = _get_total_counts(recipe)
             self._rbs.charge_offset = 0
             self._status.active_rqm_status.append(ActiveRecipe(recipe_id=recipe.file_stem,
                                                                run_time=timedelta(0),
