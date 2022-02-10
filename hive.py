@@ -61,7 +61,7 @@ def create_app():
     build_trend_routes(app, trend)
 
     app.include_router(systemd_routes.router)
-    build_systemd_endpoints(app)
+    build_systemd_endpoints(app, hive_config)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
                        allow_methods=['*'], allow_headers=['*'])
