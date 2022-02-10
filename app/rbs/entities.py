@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 from enum import Enum
 from typing import List, Optional, Union, Literal, Dict
@@ -278,15 +279,21 @@ class RbsRqm(BaseModel):
 empty_rbs_rqm = RbsRqm(recipes=[], rqm_number="", detectors=[])
 
 
+class ActiveRecipe(BaseModel):
+    recipe_id: str
+    run_time: timedelta
+
+
 class RbsRqmStatus(BaseModel):
     run_status: StatusModel
     active_sample_id: str
     accumulated_charge: float
     accumulated_charge_target: float
+    active_recipe_status: List[ActiveRecipe]
 
 
 empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_sample_id="", accumulated_charge=0,
-                                accumulated_charge_target=0)
+                                accumulated_charge_target=0, active_recipe_status=[])
 
 
 class ExperimentStateModel(BaseModel):

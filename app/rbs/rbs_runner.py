@@ -1,12 +1,13 @@
 import copy
 from collections import deque
+from datetime import timedelta, datetime
 from shutil import copy2
 import logging
 from typing import List, Union
 
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.entities import RbsRqm, empty_rbs_rqm, RbsRqmStatus, empty_rqm_status, \
-    StatusModel, RecipeType, RbsRqmRandom, RbsRqmChanneling
+    StatusModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, ActiveRecipe
 from app.rbs.recipe_list_runner import RecipeListRunner
 from threading import Thread, Lock
 import traceback
@@ -116,6 +117,7 @@ class RbsRunner(Thread):
             else:
                 self._status.run_status = StatusModel.Idle
 
+
     def _should_abort(self):
         with self._lock:
             return copy.deepcopy(self._abort)
@@ -130,11 +132,17 @@ class RbsRunner(Thread):
             self._status.active_sample_id = recipe.sample_id
             self._status.accumulated_charge_target = _get_total_counts(recipe)
             self._rbs.charge_offset = 0
+            self._status.active_recipe_status.append(ActiveRecipe(recipe_id=recipe.file_stem,
+                                                                  run_time=timedelta(0)))
+            recipe_start_time = datetime.now()
 
         t = Thread(target=self.recipe_runner.run_recipe, args=(recipe, self._rbs, self._data_serializer))
         t.start()
         while t.is_alive():
             self._update_charge_status()
+            with self._lock:
+                self._status.active_recipe_status[-1].run_time = datetime.now() - recipe_start_time
+
             time.sleep(0.5)
             if self._should_abort():
                 if not self._rbs.aborted():
