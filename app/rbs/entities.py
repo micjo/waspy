@@ -288,14 +288,10 @@ class ActiveRecipe(BaseModel):
 
 class RbsRqmStatus(BaseModel):
     run_status: StatusModel
-    active_sample_id: str
-    accumulated_charge: float
-    accumulated_charge_target: float
     active_rqm_status: List[ActiveRecipe]
 
 
-empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_sample_id="", accumulated_charge=0,
-                                accumulated_charge_target=0, active_rqm_status=[])
+empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_rqm_status=[])
 
 
 class ExperimentStateModel(BaseModel):
