@@ -15,6 +15,8 @@ import time
 import app.rbs.rbs_setup as rbs_lib
 from hive_exception import AbortedError
 
+faker = False
+
 
 def _pick_first_file_from_path(path):
     files = [file for file in sorted(path.iterdir()) if file.is_file()]
@@ -112,11 +114,11 @@ class RbsRunner(Thread):
             self._status.active_sample_id = ""
             self._status.accumulated_charge = 0
             self._status.accumulated_charge_target = 0
+            self._status.active_rqm_status = []
             if rqm != empty_rbs_rqm:
                 self._status.run_status = StatusModel.Running
             else:
                 self._status.run_status = StatusModel.Idle
-
 
     def _should_abort(self):
         with self._lock:
@@ -132,8 +134,10 @@ class RbsRunner(Thread):
             self._status.active_sample_id = recipe.sample_id
             self._status.accumulated_charge_target = _get_total_counts(recipe)
             self._rbs.charge_offset = 0
-            self._status.active_recipe_status.append(ActiveRecipe(recipe_id=recipe.file_stem,
-                                                                  run_time=timedelta(0)))
+            self._status.active_rqm_status.append(ActiveRecipe(recipe_id=recipe.file_stem,
+                                                               run_time=timedelta(0),
+                                                               accumulated_charge_corrected=0,
+                                                               accumulated_charge_target=_get_total_counts(recipe)))
             recipe_start_time = datetime.now()
 
         t = Thread(target=self.recipe_runner.run_recipe, args=(recipe, self._rbs, self._data_serializer))
@@ -141,7 +145,7 @@ class RbsRunner(Thread):
         while t.is_alive():
             self._update_charge_status()
             with self._lock:
-                self._status.active_recipe_status[-1].run_time = datetime.now() - recipe_start_time
+                self._status.active_rqm_status[-1].run_time = datetime.now() - recipe_start_time
 
             time.sleep(0.5)
             if self._should_abort():
@@ -155,7 +159,11 @@ class RbsRunner(Thread):
 
     def _update_charge_status(self):
         with self._lock:
-            self._status.accumulated_charge = self._rbs.get_corrected_total_accumulated_charge()
+            if faker:
+                self._status.active_rqm_status[-1].accumulated_charge_corrected += 10
+            else:
+                self._status.active_rqm_status[-1].accumulated_charge_corrected = \
+                    self._rbs.get_corrected_total_accumulated_charge()
 
     def _write_result(self, rqm):
         with self._lock:
@@ -196,5 +204,3 @@ class RbsRunner(Thread):
                         break
                 self._write_result(rqm)
             self._handle_abort()
-
-

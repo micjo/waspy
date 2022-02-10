@@ -124,7 +124,7 @@ class VaryCoordinate(BaseModel):
 
 
 class CaenDetectorModel(BaseModel):
-    board: int
+    board: str
     channel: int
     identifier: str = Field(
         description="This will be used in the filenames for storage and in the plots for titles")
@@ -282,6 +282,8 @@ empty_rbs_rqm = RbsRqm(recipes=[], rqm_number="", detectors=[])
 class ActiveRecipe(BaseModel):
     recipe_id: str
     run_time: timedelta
+    accumulated_charge_corrected: float
+    accumulated_charge_target: float
 
 
 class RbsRqmStatus(BaseModel):
@@ -289,11 +291,11 @@ class RbsRqmStatus(BaseModel):
     active_sample_id: str
     accumulated_charge: float
     accumulated_charge_target: float
-    active_recipe_status: List[ActiveRecipe]
+    active_rqm_status: List[ActiveRecipe]
 
 
 empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_sample_id="", accumulated_charge=0,
-                                accumulated_charge_target=0, active_recipe_status=[])
+                                accumulated_charge_target=0, active_rqm_status=[])
 
 
 class ExperimentStateModel(BaseModel):
