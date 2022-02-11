@@ -1,23 +1,20 @@
-import copy
-import json
+import requests
+import time
+from datetime import datetime, timedelta
+from pathlib import Path
+from threading import Lock
 from threading import Thread
 from typing import Dict
 
+import numpy as np
+import pandas as pd
 from pydantic import BaseModel
 
 from app.hardware_controllers.entities import SimpleConfig
-from app.http_routes.http_helper import get_text, get_json, get_json_safe
-from pathlib import Path
-import time, requests
-from datetime import datetime, timedelta
-import pandas as pd
-import numpy as np
-from threading import Lock
-from app.setup.config import HiveConfig
-from app.rbs.entities import RbsHardware
-from app.erd.entities import ErdHardware
+from app.setup.config import HiveConfig, GlobalConfig
 
-BASE_PATH = Path("/root/trends")
+env_config = GlobalConfig()
+BASE_PATH = Path(env_config.TREND_STORE)
 
 def get_path(leader: int, today: str) -> Path:
     return BASE_PATH / "trends_{today}_{leader:03d}.txt".format(today=today, leader=leader)

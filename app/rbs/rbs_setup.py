@@ -14,11 +14,8 @@ from app.rbs.entities import CaenDetectorModel, RbsData, PositionCoordinates
 from app.rbs.entities import RbsHardware, VaryCoordinate, Window
 from app.setup.config import GlobalConfig
 
-
 env_conf = GlobalConfig()
-print(env_conf.FAKER)
 faker = env_conf.FAKER
-
 
 def fake_call(func, *args, **kw):
     saved_args = locals()

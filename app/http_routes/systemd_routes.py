@@ -26,11 +26,11 @@ async def hw_control(start: bool):
     # For these commands to work, you have to make sure that these commands can be run without having to provide a
     # password. Look for 'visudo allow command' in a search engine for more information
     if start:
-        print("Starting daemons")
+        logging.info("Starting daemons")
         subprocess.run(["/bin/systemctl start aml_x_y aml_det_theta aml_phi_zeta motrona"], shell=True)
         subprocess.run(["/usr/bin/ssh olympus 'sudo systemctl start caen'"], shell=True)
     else:
-        print("Stopping daemons")
+        logging.info("Stopping daemons")
         subprocess.run(["/bin/systemctl stop aml_x_y aml_det_theta aml_phi_zeta motrona"], shell=True)
         subprocess.run(["/usr/bin/ssh olympus 'sudo systemctl stop caen'"], shell=True)
 
