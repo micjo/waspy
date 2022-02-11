@@ -6,6 +6,7 @@ title="AML X Y"
 url="http://127.0.0.1:22000/api/latest"
 names = ["X", "Y"]
 loads = [72.5,61.7]
+trend = {"rbs_x"="motor_1_position", "rbs_y"="motor_2_position"}
 
 [rbs.hardware.aml_phi_zeta]
 type = "aml"
@@ -13,6 +14,7 @@ title = "AML Phi Zeta"
 url = "http://127.0.0.1:22001/api/latest"
 names = ["Phi", "Zeta"]
 loads = [0, -1]
+trend = {"rbs_phi"="motor_1_position", "rbs_zeta"="motor_2_position"}
 
 [rbs.hardware.aml_det_theta]
 type = "aml"
@@ -25,6 +27,7 @@ loads = [170.0, -180.5]
 type = "motrona"
 title = "Motrona"
 url = "http://127.0.0.1:22100/api/latest"
+trend = {"rbs_current"="current(nA)"}
 
 [rbs.hardware.caen]
 type = "caen"
@@ -36,24 +39,20 @@ type = "mdrive"
 title = "MDrive Z"
 load = -180
 url = "http://127.0.0.1:22124/api/latest"
-trend = {"z_position":"motor_1_position"}
+trend = {"erd_z"="motor_position"}
 
 [erd.hardware.mdrive_theta]
 type = "mdrive"
 title = "MDrive Theta"
-<<<<<<< Updated upstream
 load = 90
-url = "http://169.254.100.229:22123/api/latest"
-trend = {"theta_position":"motor_1_position"}
-=======
 url = "http://127.0.0.1:22123/api/latest"
->>>>>>> Stashed changes
+trend = {"erd_theta"="motor_position"}
 
 [erd.hardware.mpa3]
 type = "mpa3"
 title = "MPA 3"
 url = "http://169.254.155.94:25000/api/latest"
-trend = {"ad1_count_rate": "ad1.total_rate", "ad2_count_rate": "ad2.total_rate"}
+trend = {"erd_ad1_count_rate"= "ad1.total_rate", "erd_ad2_count_rate"= "ad2.total_rate"}
 
 [rbs.data_dir]
 local = "/mnt/mcaiba_nas/transfer_RBS"
