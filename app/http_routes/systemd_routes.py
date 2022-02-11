@@ -10,6 +10,7 @@ from starlette import status
 from app.hardware_controllers.entities import SimpleConfig
 from app.setup.config import HiveConfig
 from hive_exception import InvalidDaemonError
+import logging
 
 router = APIRouter()
 
@@ -34,9 +35,9 @@ async def hw_control(start: bool):
         subprocess.run(["/usr/bin/ssh olympus 'sudo systemctl stop caen'"], shell=True)
 
 
-def build_systemd_endpoints(router, hive_config:HiveConfig):
+def build_systemd_endpoints(router, hive_config: HiveConfig):
     @router.post("/api/service")
-    async def service(name:str, start:bool):
+    async def service(name: str, start: bool):
 
         if not (name in hive_config.erd.hardware.__dict__ or name in hive_config.rbs.hardware.__dict__):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -46,7 +47,7 @@ def build_systemd_endpoints(router, hive_config:HiveConfig):
         command = "/bin/systemctl {start_stop} {daemon}".format(start_stop=start_or_stop, daemon=name)
 
         if name == "caen":
-            command = "/usr/bin/ssh olympus '" + command +"'"
+            command = "/usr/bin/ssh olympus 'sudo " + command + "'"
 
-        print(command)
+        logging.info("Executing : {" + command + "}")
         subprocess.run([command], shell=True)
