@@ -49,4 +49,4 @@ def build_systemd_endpoints(router, hive_config:HiveConfig):
             command = "/usr/bin/ssh olympus '" + command +"'"
 
         print(command)
-        # subprocess.run([command], shell=True)
+        subprocess.run([command], shell=True)

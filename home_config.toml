@@ -8,7 +8,7 @@ loads = [110,20]
 [rbs.hardware.aml_x_y]
 type="aml"
 title="AML X Y"
-url="http://localhost:30000/api/latest"
+url="http://localhost:20000/api/latest"
 names = ["X", "Y"]
 loads = [110,20]
 
@@ -46,7 +46,7 @@ trend = {"z_position"="motor_position", log="loggers.log_vlinx"}
 [erd.hardware.mdrive_theta]
 type = "mdrive"
 title = "MDrive Theta"
-url = "http://localhost:22301/api/latest"
+url = "http://localhost:22300/api/latest"
 load = 90
 trend = {"theta_position"="motor_position"}
 

@@ -1,39 +1,22 @@
 import copy
 import queue
 from collections import deque
+from datetime import timedelta, datetime
 from queue import Queue
 from typing import List, Union
 
 from app.erd.data_serializer import ErdDataSerializer
-from app.erd.entities import ErdRqm, Erd, PositionCoordinates, ErdRqmStatus, empty_erd_rqm, empty_erd_status
+from app.erd.entities import ErdRqm, Erd, PositionCoordinates, ErdRqmStatus, empty_erd_rqm, empty_erd_status, \
+    ActiveRecipe
 from app.erd.erd_setup import ErdSetup, get_z_range
 from hive_exception import HiveError, AbortedError
 from threading import Thread, Lock
 import time
 import logging
+from app.setup.config import GlobalConfig
 
-
-def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer, error: Queue):
-    error_value = None
-    try:
-        erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
-        erd_setup.wait_for_arrival()
-        erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.file_stem)
-        erd_setup.start_acquisition()
-        erd_setup.wait_for_acquisition_started()
-        z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
-        wait_time = recipe.measuring_time_sec / len(z_range)
-        logging.info("testimg positions: " + str(z_range) + "wait_time_sec between steps: " + str(
-            wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
-        for z in z_range:
-            erd_setup.move(z)
-            erd_setup.wait_for(wait_time)
-
-        erd_setup.wait_for_acquisition_done()
-        erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
-    except HiveError as e:
-        error_value = e
-    error.put(error_value)
+env_config = GlobalConfig()
+faker = env_config.FAKER
 
 
 class ErdRunner(Thread):
@@ -99,9 +82,7 @@ class ErdRunner(Thread):
     def _set_active_rqm(self, rqm):
         with self._lock:
             self._active_rqm = rqm
-            self._status.active_sample_id = ""
-            self._status.run_time = 0
-            self._status.run_time_target = 0
+            self._status.active_rqm_status = []
             if rqm != empty_erd_rqm:
                 self._status.run_status = "Running"
             else:
@@ -115,19 +96,25 @@ class ErdRunner(Thread):
         with self._lock:
             self._abort = False
 
+
+    '''
+    for progress - this should come from the erd_setup and come directly from the mpa3 daemon. (run_time vs 
+    run_time_target.) now there is a potential for >100% progress which is odd
+    '''
     def _run_recipe(self, recipe: Erd):
         logging.info("\t[RQM] Recipe start: " + str(recipe))
         with self._lock:
-            self._status.active_sample_id = recipe.sample_id
-            self._status.run_time_target = recipe.measuring_time_sec
+            self._status.active_rqm_status.append(ActiveRecipe(recipe_id = recipe.file_stem,
+                                                               run_time=timedelta(0),
+                                                               run_time_target=recipe.measuring_time_sec))
 
+        recipe_start_time = datetime.now()
         error_value = Queue()
         t = Thread(target=run_erd_recipe, args=(recipe, self._erd_setup, self._data_serializer, error_value))
-        self._status.run_time = 0
         t.start()
         while t.is_alive():
+            self._status.active_rqm_status[-1].run_time = datetime.now() - recipe_start_time
             time.sleep(1)
-            self._status.run_time += 1
             if self._should_abort():
                 self._erd_setup.abort()
         t.join()
@@ -148,6 +135,7 @@ class ErdRunner(Thread):
                 self._past_rqms.appendleft(rqm)
             self._data_serializer.save_rqm(rqm_dict)
 
+    ''' Abort should be a model instead of a boolean, this allows more fine-grained abortion control'''
     def _handle_abort(self):
         if self._should_abort():
             logging.error("[RQM] Abort: Clearing Schedule")
@@ -170,3 +158,28 @@ class ErdRunner(Thread):
                         break
                 self._write_result(rqm)
             self._handle_abort()
+
+
+def run_erd_recipe(recipe: Erd, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer, error: Queue):
+    error_value = None
+    try:
+        erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
+        erd_setup.wait_for_arrival()
+        erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.file_stem)
+        erd_setup.start_acquisition()
+        erd_setup.wait_for_acquisition_started()
+        z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
+        wait_time = recipe.measuring_time_sec / len(z_range)
+        logging.info("testing positions: " + str(z_range) + "wait_time_sec between steps: " + str(
+            wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
+        for z in z_range:
+            erd_setup.move(z)
+            erd_setup.wait_for(wait_time)
+
+        erd_setup.wait_for_acquisition_done()
+        erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
+    except HiveError as e:
+        error_value = e
+    error.put(error_value)
+
+

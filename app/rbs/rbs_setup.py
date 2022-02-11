@@ -1,18 +1,23 @@
 import copy
+import logging
+import time
 from threading import Lock
 from typing import List
-import logging
+
 import numpy as np
 import requests
-import time
+
+import app.hardware_controllers.hw_action as hw_action
 import app.http_routes.http_helper as http
 from app.http_routes.http_helper import generate_request_id
-
-from app.rbs.entities import RbsHardware, VaryCoordinate, Window
-import app.hardware_controllers.hw_action as hw_action
 from app.rbs.entities import CaenDetectorModel, RbsData, PositionCoordinates
+from app.rbs.entities import RbsHardware, VaryCoordinate, Window
+from app.setup.config import GlobalConfig
 
-faker = False
+
+env_conf = GlobalConfig()
+print(env_conf.FAKER)
+faker = env_conf.FAKER
 
 
 def fake_call(func, *args, **kw):
@@ -27,7 +32,6 @@ def fakeable(func):
             return lambda *args, **kw: fake_call(func, args, kw)
         else:
             return func
-
     return wrap_func()
 
 def fake_counter(func):

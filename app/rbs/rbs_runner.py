@@ -14,43 +14,10 @@ import traceback
 import time
 import app.rbs.rbs_setup as rbs_lib
 from hive_exception import AbortedError
+from app.setup.config import GlobalConfig
 
-faker = False
-
-
-def _pick_first_file_from_path(path):
-    files = [file for file in sorted(path.iterdir()) if file.is_file()]
-    try:
-        return files[0]
-    except:
-        return ""
-
-
-def move_and_try_copy(file, move_folder, copy_folder):
-    file.replace(move_folder / file.name)
-    file = move_folder / file.name
-    try:
-        copy2(file, copy_folder)
-    except:
-        logging.error(traceback.format_exc())
-    return file
-
-
-def _get_total_counts_random(recipe: RbsRqmRandom):
-    return recipe.charge_total
-
-
-def _get_total_counts_channeling(recipe: RbsRqmChanneling):
-    yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
-    compare_total_charge = 2 * recipe.random_fixed_charge_total
-    return yield_optimize_total_charge + compare_total_charge
-
-
-def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
-    if recipe.type == RecipeType.channeling:
-        return _get_total_counts_channeling(recipe)
-    if recipe.type == RecipeType.random:
-        return _get_total_counts_random(recipe)
+env_config = GlobalConfig()
+faker = env_config.FAKER
 
 
 class RbsRunner(Thread):
@@ -133,8 +100,7 @@ class RbsRunner(Thread):
                                                                run_time=timedelta(0),
                                                                accumulated_charge_corrected=0,
                                                                accumulated_charge_target=_get_total_counts(recipe)))
-            recipe_start_time = datetime.now()
-
+        recipe_start_time = datetime.now()
         t = Thread(target=self.recipe_runner.run_recipe, args=(recipe, self._rbs, self._data_serializer))
         t.start()
         while t.is_alive():
@@ -199,3 +165,38 @@ class RbsRunner(Thread):
                         break
                 self._write_result(rqm)
             self._handle_abort()
+
+
+def _pick_first_file_from_path(path):
+    files = [file for file in sorted(path.iterdir()) if file.is_file()]
+    try:
+        return files[0]
+    except:
+        return ""
+
+
+def move_and_try_copy(file, move_folder, copy_folder):
+    file.replace(move_folder / file.name)
+    file = move_folder / file.name
+    try:
+        copy2(file, copy_folder)
+    except:
+        logging.error(traceback.format_exc())
+    return file
+
+
+def _get_total_counts_random(recipe: RbsRqmRandom):
+    return recipe.charge_total
+
+
+def _get_total_counts_channeling(recipe: RbsRqmChanneling):
+    yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
+    compare_total_charge = 2 * recipe.random_fixed_charge_total
+    return yield_optimize_total_charge + compare_total_charge
+
+
+def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+    if recipe.type == RecipeType.channeling:
+        return _get_total_counts_channeling(recipe)
+    if recipe.type == RecipeType.random:
+        return _get_total_counts_random(recipe)
