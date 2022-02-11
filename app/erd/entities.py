@@ -1,3 +1,4 @@
+from datetime import timedelta
 from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, validator, Field
@@ -66,11 +67,15 @@ class ErdRqm(BaseModel):
 empty_erd_rqm = ErdRqm(recipes=[], rqm_number="")
 
 
-class ErdRqmStatus(BaseModel):
-    run_status: str
-    active_sample_id: str
-    run_time: float
+class ActiveRecipe(BaseModel):
+    recipe_id: str
+    run_time: timedelta
     run_time_target: float
 
 
-empty_erd_status = ErdRqmStatus(run_status="idle", active_sample_id="", run_time=0, run_time_target=0)
+class ErdRqmStatus(BaseModel):
+    run_status: str
+    active_rqm_status: List[ActiveRecipe]
+
+
+empty_erd_status = ErdRqmStatus(run_status="idle", active_rqm_status=[])
