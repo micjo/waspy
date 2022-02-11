@@ -1,23 +1,23 @@
+import logging
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse
 
+import app.rbs.rbs_setup as rbs_lib
 from app.erd.data_serializer import ErdDataSerializer
 from app.erd.erd_runner import ErdRunner
 from app.erd.erd_setup import ErdSetup
+from app.http_routes import hw_control_routes, rbs_routes, systemd_routes, erd_routes
 from app.http_routes.systemd_routes import build_systemd_endpoints
 from app.http_routes.trend_routes import build_trend_routes
 from app.rbs.data_serializer import RbsDataSerializer
-from app.rbs.recipe_list_runner import RecipeListRunner
 from app.rbs.rbs_runner import RbsRunner
+from app.rbs.recipe_list_runner import RecipeListRunner
 from app.setup.config import GlobalConfig, make_hive_config
-from fastapi import FastAPI
-from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from app.http_routes import hw_control_routes, rbs_routes, systemd_routes, erd_routes
-import app.rbs.rbs_setup as rbs_lib
-from fastapi.middleware.cors import CORSMiddleware
-import logging
-
 from app.trends.trend import Trend
 
 

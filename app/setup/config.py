@@ -25,6 +25,7 @@ class GlobalConfig(BaseSettings):
     CONFIG_FILE: Optional[str]
     FAKER = False
     ENV_STATE = "dev"
+    TREND_STORE = "/root/trends/"
 
 
 def make_hive_config(config_file) -> HiveConfig:
