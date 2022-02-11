@@ -15,7 +15,6 @@ from app.setup.config import GlobalConfig
 
 
 env_conf = GlobalConfig()
-print(env_conf.FAKER)
 faker = env_conf.FAKER
 
 
