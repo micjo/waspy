@@ -63,6 +63,29 @@ class RbsRunner(Thread):
         with self._lock:
             self._rqms.append(rqm)
 
+    def run(self):
+        while True:
+            time.sleep(1)
+            rqm = self._pop_rqm()
+            self._set_active_rqm(rqm)
+            if rqm != empty_rbs_rqm:
+                self._data_serializer.set_base_folder(rqm.rqm_number)
+                self._rbs.set_active_detectors(rqm.detectors)
+                logging.info("[RQM] RQM Start: '" + str(rqm) + "'")
+                for recipe in rqm.recipes:
+                    self._run_recipe(recipe)
+                    if self._should_abort():
+                        self._error = AbortedError("Aborted RQM")
+                        break
+                self._write_result(rqm)
+            self._handle_abort()
+
+    def abort_scheduled_rqm(self, rqm_number:str):
+        with self._lock:
+            for rqm in self._rqms:
+                if rqm.rqm_number == rqm_number:
+                    self._rqms.remove(rqm)
+
     def _clear_rqms(self):
         with self._lock:
             self._rqms.clear()
@@ -149,22 +172,6 @@ class RbsRunner(Thread):
             self._rbs.resume()
             self._data_serializer.resume()
 
-    def run(self):
-        while True:
-            time.sleep(1)
-            rqm = self._pop_rqm()
-            self._set_active_rqm(rqm)
-            if rqm != empty_rbs_rqm:
-                self._data_serializer.set_base_folder(rqm.rqm_number)
-                self._rbs.set_active_detectors(rqm.detectors)
-                logging.info("[RQM] RQM Start: '" + str(rqm) + "'")
-                for recipe in rqm.recipes:
-                    self._run_recipe(recipe)
-                    if self._should_abort():
-                        self._error = AbortedError("Aborted RQM")
-                        break
-                self._write_result(rqm)
-            self._handle_abort()
 
 
 def _pick_first_file_from_path(path):
