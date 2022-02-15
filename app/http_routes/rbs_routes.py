@@ -26,9 +26,13 @@ def build_api_endpoints(rqm_dispatcher: RbsRunner, rbs: rbs_lib.RbsSetup, rbs_ha
     async def get_rqm_state():
         return rqm_dispatcher.get_state()
 
-    @router.post("/api/rbs/abort", tags=["RBS API"], summary="Abort the running rqm")
+    @router.post("/api/rbs/abort_run", tags=["RBS API"], summary="Abort the running rqm")
     async def abort():
         rqm_dispatcher.abort()
+
+    @router.post("/api/rbs/abort", tags=["RBS API"], summary="Abort the running rqm")
+    async def abort(rqm_number: str):
+        rqm_dispatcher.abort_scheduled_rqm(rqm_number)
 
     @router.get("/api/rbs/hw_config", tags=["RBS API"])
     async def get_hw_config():
