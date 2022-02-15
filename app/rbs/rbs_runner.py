@@ -80,16 +80,9 @@ class RbsRunner(Thread):
                 self._write_result(rqm)
             self._handle_abort()
 
-    def abort_scheduled_rqm(self, rqm_number:str):
-        with self._lock:
-            for rqm in self._rqms:
-                if rqm.rqm_number == rqm_number:
-                    self._rqms.remove(rqm)
-
-    def _clear_rqms(self):
+    def abort_schedule(self):
         with self._lock:
             self._rqms.clear()
-            self._past_rqms.clear()
 
     def _pop_rqm(self):
         with self._lock:
@@ -166,8 +159,7 @@ class RbsRunner(Thread):
 
     def _handle_abort(self):
         if self._should_abort():
-            logging.error("[RQM] Abort: Clearing Schedule")
-            self._clear_rqms()
+            logging.error("[RQM] Abort: Stopped Active")
             self._clear_abort()
             self._rbs.resume()
             self._data_serializer.resume()
