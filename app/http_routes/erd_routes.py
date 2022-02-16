@@ -27,9 +27,14 @@ def build_api_endpoints(erd_runner: ErdRunner, erd_hardware: ErdHardware):
     async def get_rqm_state():
         return erd_runner.get_state()
 
-    @router.post("/api/erd/abort", tags=["ERD API"], summary="Abort the running rqm")
-    async def abort():
-        erd_runner.abort()
+    @router.post("/api/rbs/abort_active", tags=["RBS API"], summary="Abort the running rqm")
+    async def abort_active():
+        erd_runner.abort_active()
+
+    @router.post("/api/rbs/abort_schedule", tags=["RBS API"], summary="Abort the scheduled rqms")
+    async def abort_schedule():
+        erd_runner.abort_schedule()
+
 
     @router.post("/api/erd/rqm_csv", tags=["ERD API"])
     async def parse_rqm_csv(response: Response, file: UploadFile = File(...)):

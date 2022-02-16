@@ -1,23 +1,25 @@
 import copy
+import logging
+import time
+import traceback
 from collections import deque
 from datetime import timedelta, datetime
 from shutil import copy2
-import logging
+from threading import Thread, Lock
 from typing import List, Union
 
+import app.rbs.rbs_setup as rbs_lib
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.entities import RbsRqm, empty_rbs_rqm, RbsRqmStatus, empty_rqm_status, \
     StatusModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, ActiveRecipe
 from app.rbs.recipe_list_runner import RecipeListRunner
-from threading import Thread, Lock
-import traceback
-import time
-import app.rbs.rbs_setup as rbs_lib
-from hive_exception import AbortedError
 from app.setup.config import GlobalConfig
+from hive_exception import AbortedError
 
 env_config = GlobalConfig()
 faker = env_config.FAKER
+
+""""""""""""""""""""""""""""""
 
 
 class RbsRunner(Thread):
@@ -45,7 +47,7 @@ class RbsRunner(Thread):
         self._failed_rqms = deque(maxlen=5)
         self._error = None
 
-    def abort(self):
+    def abort_active(self):
         with self._lock:
             self._abort = True
 
@@ -165,7 +167,6 @@ class RbsRunner(Thread):
             self._data_serializer.resume()
 
 
-
 def _pick_first_file_from_path(path):
     files = [file for file in sorted(path.iterdir()) if file.is_file()]
     try:
@@ -184,18 +185,5 @@ def move_and_try_copy(file, move_folder, copy_folder):
     return file
 
 
-def _get_total_counts_random(recipe: RbsRqmRandom):
-    return recipe.charge_total
 
 
-def _get_total_counts_channeling(recipe: RbsRqmChanneling):
-    yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
-    compare_total_charge = 2 * recipe.random_fixed_charge_total
-    return yield_optimize_total_charge + compare_total_charge
-
-
-def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
-    if recipe.type == RecipeType.channeling:
-        return _get_total_counts_channeling(recipe)
-    if recipe.type == RecipeType.random:
-        return _get_total_counts_random(recipe)

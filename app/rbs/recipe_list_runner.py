@@ -9,6 +9,12 @@ from app.rbs.entities import RbsRqmStatus, RbsRqmRandom, RbsRqmChanneling, \
 from hive_exception import HiveError as HiveError
 
 
+
+
+
+
+
+
 def make_count_callback(rbs_rqm_status: RbsRqmStatus):
     counts_at_start = rbs_rqm_status.accumulated_charge
 

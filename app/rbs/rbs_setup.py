@@ -39,7 +39,6 @@ def fake_counter(func):
             str_value = str(round(value, 2))
             print("fake-counter: " + str_value + " -> 10")
             data = {"charge(nC)": str_value, "target_charge(nC)": 10}
-            args[1](data)
             value += 1.05
 
     return wrap_func
