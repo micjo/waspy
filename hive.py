@@ -17,6 +17,7 @@ from app.http_routes.trend_routes import build_trend_routes
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.rbs_runner import RbsRunner
 from app.rbs.recipe_list_runner import RecipeListRunner
+from app.rqm.rqm_runner import RqmRunner
 from app.setup.config import GlobalConfig, make_hive_config
 from app.trends.trend import Trend
 
@@ -38,22 +39,26 @@ def create_app():
     hw_control_routes.build_api_endpoints(hive_config.any.hardware)
     app.include_router(hw_control_routes.router)
 
+    rqm_runner = RqmRunner()
     rbs_setup = rbs_lib.RbsSetup(hive_config.rbs.hardware)
     rbs_data_serializer = RbsDataSerializer(hive_config.rbs.data_dir)
     recipe_list_scanner = RecipeListRunner(rbs_setup, rbs_data_serializer)
-    rqm_dispatcher = RbsRunner(recipe_list_scanner, rbs_data_serializer, rbs_setup)
-    rqm_dispatcher.daemon = True
-    rqm_dispatcher.start()
-    rbs_routes.build_api_endpoints(rqm_dispatcher, rbs_setup, hive_config.rbs.hardware)
+    # rqm_dispatcher = RbsRunner(recipe_list_scanner, rbs_data_serializer, rbs_setup)
+    # rqm_dispatcher.daemon = True
+    # rqm_dispatcher.start()
+    rbs_routes.build_api_endpoints(rqm_runner, rbs_data_serializer, rbs_setup, hive_config.rbs.hardware)
     app.include_router(rbs_routes.router)
+
+    rqm_runner.daemon= True
+    rqm_runner.start()
 
     erd_setup = ErdSetup(hive_config.erd.hardware)
     erd_data_serializer = ErdDataSerializer(hive_config.erd.data_dir)
-    erd_runner = ErdRunner(erd_setup, erd_data_serializer)
-    erd_runner.daemon = True
-    erd_runner.start()
-    erd_routes.build_api_endpoints(erd_runner, hive_config.erd.hardware)
-    app.include_router(erd_routes.router)
+    # erd_runner = ErdRunner(erd_setup, erd_data_serializer)
+    # erd_runner.daemon = True
+    # erd_runner.start()
+    # erd_routes.build_api_endpoints(erd_runner, hive_config.erd.hardware)
+    # app.include_router(erd_routes.router)
 
     trend = Trend(hive_config)
     trend.daemon = True
@@ -62,6 +67,7 @@ def create_app():
 
     app.include_router(systemd_routes.router)
     build_systemd_endpoints(app, hive_config)
+
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
                        allow_methods=['*'], allow_headers=['*'])
