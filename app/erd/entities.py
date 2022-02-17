@@ -23,7 +23,7 @@ class ErdConfig(BaseModel):
     data_dir: DoublePath
 
 
-class Erd(BaseModel):
+class ErdRecipe(BaseModel):
     measuring_time_sec: int
     sample_id: str
     file_stem: str
@@ -40,7 +40,7 @@ class PositionCoordinates(BaseModel):
 
 class ErdRqm(BaseModel):
     rqm_number: str
-    recipes: List[Erd]
+    recipes: List[ErdRecipe]
 
     class Config:
         use_enum_value = True

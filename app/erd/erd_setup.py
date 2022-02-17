@@ -136,6 +136,9 @@ class ErdSetup:
                 logging.info("acquisition done: abort requested")
                 break
 
+    def get_measurement_time(self):
+        pass
+
 
 def get_z_range(start, end, increment) -> List[PositionCoordinates]:
     if increment == 0:
