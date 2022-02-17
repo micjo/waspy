@@ -35,7 +35,6 @@ def is_trend_file_missing(today: str, file_stem: str, suffix: int) -> bool:
 
 def get_trend_values(configs: List[SimpleConfig]) -> Dict:
     trend_values = {}
-    print(configs)
 
     for hw in configs:
         if hw.trend:

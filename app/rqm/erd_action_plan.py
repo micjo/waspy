@@ -1,4 +1,5 @@
 import logging
+import copy
 from datetime import datetime, timedelta
 from typing import List
 
@@ -109,7 +110,7 @@ class ErdAction(RqmActionPlan):
 
     def _finish_recipe(self):
         self.serialize()
-        self._finished_recipes.append(self._active_recipe)
+        self._finished_recipes.append(copy.deepcopy(self._active_recipe))
         self._active_recipe = empty_erd_recipe_status
 
 

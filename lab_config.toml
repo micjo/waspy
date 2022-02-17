@@ -1,4 +1,8 @@
-[any.hardware]
+[any.hardware.motrona_sf6]
+type="motrona_ax350"
+title="Motrona SF6"
+url="http://127.0.0.1:22101/api/latest"
+trend = {"pressure"="counter_0_value", "temperature"="counter_1_value"}
 
 [rbs.hardware.aml_x_y]
 type="aml"

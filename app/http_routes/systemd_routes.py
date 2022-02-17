@@ -12,7 +12,8 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
     @router.post("/api/service")
     async def service(name: str, start: bool):
 
-        if not (name in hive_config.erd.hardware.__dict__ or name in hive_config.rbs.hardware.__dict__):
+        if not (name in hive_config.erd.hardware.__dict__ or name in hive_config.rbs.hardware.__dict__
+                or name in hive_config.any.hardware.__root__):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail=f'Daemon is not supported')
 
