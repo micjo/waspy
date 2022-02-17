@@ -21,9 +21,10 @@ import sys
 hide = True
 
 
-def get_data():
+def get_data(url):
     while True:
-        response = requests.get("http://169.254.150.200/hive/api/trends/" + request, timeout=10)
+        full_url = "http://169.254.150.200/hive/api/{url}/{request}".format(url=url, request=request, timeout=10)
+        response = requests.get(full_url)
         yield response.json()
 
 
@@ -104,11 +105,13 @@ def show_window():
 
 
 if __name__ == "__main__":
-    get_data()
+    url = sys.argv[3]
+
+    get_data(url)
 
     graph = Graph()
     ani = animation.FuncAnimation(graph.fig, graph,
-                                  frames=get_data(),
+                                  frames=get_data(url),
                                   interval=1200,
                                   repeat=True,
                                   cache_frame_data=False,
