@@ -140,7 +140,7 @@ class RbsDataSerializer:
         df = pd.from_dict(trends)
 
         with open(local, 'w+') as f:
-            f.write(df.to_csv())
+            f.write(df.to_csv(index=False))
         _try_copy(local, remote)
 
     def save_rqm(self, rqm: dict):
