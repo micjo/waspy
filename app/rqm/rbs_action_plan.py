@@ -74,14 +74,17 @@ class RbsAction(RqmActionPlan):
             trend_values = trend.get_values(start_time, end_time, timedelta(seconds=1))
             self._data_serializer.save_trends(trend.get_file_stem(), trend_values)
 
+        self._data_serializer.save_rqm(self.serialize())
         self._rbs_setup.resume()
         self._data_serializer.resume()
 
     def serialize(self):
         self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
         self._active_recipe.accumulated_charge_corrected = self._rbs_setup.get_corrected_total_accumulated_charge()
-        status = {"rqm": self._job, "active_recipe": self._active_recipe,
-                  "finished_recipes": self._finished_recipes, "error_state": self._error_message}
+        finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
+
+        status = {"rqm": self._job.dict(), "active_recipe": self._active_recipe.dict(),
+                  "finished_recipes": finished_recipes, "error_state": self._error_message}
         return status
 
     def abort(self):

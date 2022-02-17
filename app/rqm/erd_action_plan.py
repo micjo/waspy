@@ -69,14 +69,17 @@ class ErdAction(RqmActionPlan):
             trend_values = trend.get_values(start_time, end_time, timedelta(seconds=1))
             self._data_serializer.save_trends(trend.get_file_stem(), trend_values)
 
+        self._data_serializer.save_rqm(self.serialize())
         self._erd_setup.resume()
         self._data_serializer.resume()
 
     def serialize(self):
         self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
         self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
-        status = {"rqm": self._job, "active_recipe": self._active_recipe,
-                  "finished_recipes": self._finished_recipes, "error_state": self._error_message}
+        finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
+
+        status = {"rqm": self._job.dict(), "active_recipe": self._active_recipe.dict(),
+                  "finished_recipes": finished_recipes, "error_state": self._error_message}
         return status
 
     def abort(self):

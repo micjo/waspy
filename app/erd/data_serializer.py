@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from shutil import copy2, move
 import copy
+import pandas as pd
 from threading import Lock
 
 from app.rbs.entities import DoublePath
@@ -71,8 +72,10 @@ class ErdDataSerializer:
         file_stem = "trends_{}.txt".format(file_stem)
         local = self.data_dir.local / self._get_folder() / file_stem
         remote = self.data_dir.remote / self._get_folder() / file_stem
+        df = pd.DataFrame(trends)
+
         with open(local, 'w+') as f:
-            f.write(str(trends))
+            f.write(df.to_csv(index=False))
         _try_copy(local, remote)
 
     def save_rqm(self, rqm: dict):
@@ -81,7 +84,7 @@ class ErdDataSerializer:
         remote = self.data_dir.remote / self._get_folder() / file_stem
         with open(local, 'w+') as f:
             f.write("Running RQM:\n")
-            f.write(json.dumps(rqm, indent=4))
+            f.write(json.dumps(rqm, indent=4, default=str))
         _try_copy(local, remote)
 
     def set_sub_folder(self, sub_folder: str):

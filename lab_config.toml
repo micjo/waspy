@@ -59,5 +59,5 @@ local = "/mnt/mcaiba_nas/transfer_RBS"
 remote = "/mnt/winbe_wasp/transfer_RBS"
 
 [erd.data_dir]
-local = "/mnt/mcaiba_nas/transfer_ERD/tst"
-remote = "/mnt/winbe_wasp/transfer_ERD/tst"
+local = "/mnt/mcaiba_nas/transfer_ERD"
+remote = "/mnt/winbe_wasp/transfer_ERD"
