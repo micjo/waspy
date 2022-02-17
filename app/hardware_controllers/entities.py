@@ -10,6 +10,7 @@ class HwControllerType(str, Enum):
     caen = 'caen'
     mdrive = 'mdrive'
     mpa3 = 'mpa3'
+    motrona_ax350 = 'motrona_ax350'
 
 
 class SimpleConfig(BaseModel):
