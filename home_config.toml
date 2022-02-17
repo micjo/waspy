@@ -4,6 +4,7 @@ title="AML U V"
 url="http://localhost:30000/api/latest"
 names = ["U", "V"]
 loads = [110,20]
+trend = {"any_x"="motor_1_position", "any_y"="motor_2_position"}
 
 [rbs.hardware.aml_x_y]
 type="aml"
@@ -11,6 +12,7 @@ title="AML X Y"
 url="http://localhost:20000/api/latest"
 names = ["X", "Y"]
 loads = [110,20]
+trend = {"rbs_x"="motor_1_position", "rbs_y"="motor_2_position"}
 
 [rbs.hardware.aml_det_theta]
 type = "aml"

@@ -4,11 +4,14 @@ from typing import List, Union
 
 from pydantic import BaseModel
 
-from app.rbs import rbs_setup as rbs_lib, yield_angle_fit as fit
+from app.rbs import yield_angle_fit as fit
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.entities import RbsRqm, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsData, \
     RbsRqmMinimizeYield
+from app.rbs.rbs_setup import RbsSetup, get_positions_as_coordinate, get_sum, single_coordinate_to_string, \
+    get_positions_as_float, convert_float_to_coordinate
 from app.rqm.rqm_action_plan import RqmActionPlan
+from app.trends.trend import Trend
 from hive_exception import HiveError
 
 
@@ -27,16 +30,17 @@ empty_rbs_recipe_status = RbsRecipeStatus(recipe_id="", start_time=datetime.now(
 
 class RbsAction(RqmActionPlan):
     _data_serializer: RbsDataSerializer
-    _rbs: rbs_lib.RbsSetup
+    _rbs_setup: RbsSetup
     _job: RbsRqm
     _did_error: bool
     _error_message: str
     _active_recipe: RbsRecipeStatus
     _finished_recipes: List[RbsRecipeStatus]
     _aborted: bool
+    _trends: List[Trend]
 
-    def __init__(self, job: RbsRqm, rbs_setup: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
-        self._rbs = rbs_setup
+    def __init__(self, job: RbsRqm, rbs_setup: RbsSetup, data_serializer: RbsDataSerializer, trends: List[Trend]):
+        self._rbs_setup = rbs_setup
         self._data_serializer = data_serializer
         self._job = job
         self._did_error = False
@@ -45,12 +49,14 @@ class RbsAction(RqmActionPlan):
         self._active_recipe = empty_rbs_recipe_status
         self._finished_recipes = []
         self._aborted = False
+        self._trends = trends
 
     def execute(self):
         self._data_serializer.set_base_folder(self._job.rqm_number)
-        self._rbs.set_active_detectors(self._job.detectors)
+        self._rbs_setup.set_active_detectors(self._job.detectors)
+        start_time = datetime.now()
 
-        logging.info("[RQM] RQM Start: '" + str(self._job) + "'")
+        logging.info("[RQM RBS] RQM Start: '" + str(self._job) + "'")
         for recipe in self._job.recipes:
             if self._aborted:
                 break
@@ -63,21 +69,26 @@ class RbsAction(RqmActionPlan):
             finally:
                 self._finish_recipe()
 
-        self._rbs.resume()
+        end_time = datetime.now()
+        for trend in self._trends:
+            trend_values = trend.get_values(start_time, end_time, timedelta(seconds=1))
+            self._data_serializer.save_trends(trend.get_file_stem(), trend_values)
+
+        self._rbs_setup.resume()
         self._data_serializer.resume()
 
     def serialize(self):
         self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
-        self._active_recipe.accumulated_charge_corrected = self._rbs.get_corrected_total_accumulated_charge()
+        self._active_recipe.accumulated_charge_corrected = self._rbs_setup.get_corrected_total_accumulated_charge()
         status = {"rqm": self._job, "active_recipe": self._active_recipe,
                   "finished_recipes": self._finished_recipes, "error_state": self._error_message}
         return status
 
     def abort(self):
-        logging.info("[RQM] RQM abort")
+        logging.info("[RQM RBS] RQM abort")
         self._aborted = True
         self._error_message = str("Aborted RQM")
-        self._rbs.abort()
+        self._rbs_setup.abort()
         self._data_serializer.abort()
 
     def completed(self) -> bool:
@@ -91,14 +102,14 @@ class RbsAction(RqmActionPlan):
         return False
 
     def _run_recipe(self, recipe):
-        self._rbs.charge_offset = 0
+        self._rbs_setup.charge_offset = 0
         self._active_recipe.start_time = datetime.now()
         self._active_recipe.recipe_id = recipe.file_stem
         self._active_recipe.accumulated_charge_target = _get_total_counts(recipe)
         if recipe.type == RecipeType.random:
-            run_random(recipe, self._rbs, self._data_serializer)
+            run_random(recipe, self._rbs_setup, self._data_serializer)
         if recipe.type == RecipeType.channeling:
-            run_channeling(recipe, self._rbs, self._data_serializer)
+            run_channeling(recipe, self._rbs_setup, self._data_serializer)
 
     def _finish_recipe(self):
         self.serialize()
@@ -106,11 +117,11 @@ class RbsAction(RqmActionPlan):
         self._active_recipe = empty_rbs_recipe_status
 
 
-def run_random(recipe: RbsRqmRandom, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer, clear_offset=True):
+def run_random(recipe: RbsRqmRandom, rbs: RbsSetup, data_serializer: RbsDataSerializer, clear_offset=True):
     if clear_offset:
         rbs.clear_total_accumulated_charge()
     rbs.move(recipe.start_position)
-    positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
+    positions = get_positions_as_coordinate(recipe.vary_coordinate)
     rbs.prepare_counting(recipe.charge_total / len(positions))
     rbs.prepare_data_acquisition()
 
@@ -124,7 +135,7 @@ def run_random(recipe: RbsRqmRandom, rbs: rbs_lib.RbsSetup, data_serializer: Rbs
     return rbs_data
 
 
-def run_channeling(recipe: RbsRqmChanneling, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
+def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: RbsDataSerializer):
     rbs.clear_total_accumulated_charge()
     rbs.move(recipe.start_position)
 
@@ -141,7 +152,7 @@ def run_channeling(recipe: RbsRqmChanneling, rbs: rbs_lib.RbsSetup, data_seriali
     data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
 
 
-def _run_fixed(self, recipe: RbsRqmFixed, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
+def _run_fixed(self, recipe: RbsRqmFixed, rbs: RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
     rbs.prepare_counting(recipe.charge_total)
     rbs.prepare_data_acquisition()
     rbs.count()
@@ -153,9 +164,9 @@ def _run_fixed(self, recipe: RbsRqmFixed, rbs: rbs_lib.RbsSetup, data_serializer
     return rbs_data
 
 
-def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: rbs_lib.RbsSetup, data_serializer: RbsDataSerializer):
+def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer: RbsDataSerializer):
     rbs.move(recipe.start_position)
-    positions = rbs_lib.get_positions_as_coordinate(recipe.vary_coordinate)
+    positions = get_positions_as_coordinate(recipe.vary_coordinate)
     rbs.prepare_counting(recipe.total_charge / len(positions))
 
     detector_optimize = rbs.get_detectors()[recipe.optimize_detector_index]
@@ -167,18 +178,18 @@ def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: rbs_lib.RbsSetup, data_ser
         rbs.stop_data_acquisition()
 
         data = rbs.get_packed_histogram(detector_optimize)
-        integrated_energy_yield = rbs_lib.get_sum(data, recipe.integration_window)
+        integrated_energy_yield = get_sum(data, recipe.integration_window)
         energy_yields.append(integrated_energy_yield)
 
         rbs_data = rbs.get_status(True)
-        file_stem = recipe.file_stem + "_" + rbs_lib.single_coordinate_to_string(position, recipe.vary_coordinate)
+        file_stem = recipe.file_stem + "_" + single_coordinate_to_string(position, recipe.vary_coordinate)
         data_serializer.save_histograms(rbs_data, file_stem, recipe.sample_id)
         data_serializer.plot_histograms(rbs_data, file_stem)
 
-    angles = rbs_lib.get_positions_as_float(recipe.vary_coordinate)
+    angles = get_positions_as_float(recipe.vary_coordinate)
     smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
     min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
-    min_position = rbs_lib.convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
+    min_position = convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
 
     data_serializer.store_yields(recipe.file_stem, angles, energy_yields)
     data_serializer.plot_energy_yields(recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)

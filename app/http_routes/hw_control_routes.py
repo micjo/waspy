@@ -12,6 +12,23 @@ from app.hardware_controllers.hw_action import get_caen_histogram, pack
 from app.setup.config import HiveConfig
 
 
+def build_api_endpoints(http_router, any_hardware: AnyHardware):
+    for key, daemon in any_hardware.__root__.items():
+        build_get_redirect(http_router, daemon.proxy, daemon.url, ["ANY API"])
+        build_post_redirect(http_router, daemon.proxy, daemon.url, ["ANY API"])
+        if daemon.type == 'caen':
+            build_histogram_redirect(http_router, daemon.proxy, daemon.url, ["ANY API"])
+            build_packed_histogram(http_router, daemon.proxy, daemon.url, ["ANY API"])
+        if daemon.type == 'mpa3':
+            build_mpa3_histogram_redirect(http_router, daemon.proxy, daemon.url, ["ANY API"])
+
+
+def build_conf_endpoint(http_router, hive_config: HiveConfig):
+    @http_router.get("/api/hive_config")
+    async def api_get_hive_config():
+        return hive_config
+
+
 def build_histogram_redirect(some_router, from_url, to_url, tags):
     @some_router.get(from_url + "/histogram/{board}/{channel}", tags=tags)
     async def histogram(response: Response, board_id: str, channel: int):
@@ -72,9 +89,6 @@ def build_get_redirect(some_router, from_url, to_url, tags):
         return resp
 
 
-router = APIRouter()
-
-
 def build_mpa3_histogram_redirect(some_router, from_url, to_url, tags):
     @some_router.get(from_url + "/histogram", tags=tags)
     async def histogram(response: Response):
@@ -84,22 +98,3 @@ def build_mpa3_histogram_redirect(some_router, from_url, to_url, tags):
         return resp
 
 
-def build_api_endpoints(any_hardware: AnyHardware):
-    @router.get("/api/some_number")
-    async def get_random_number():
-        return random.randint(0,20)
-
-    for key, daemon in any_hardware.__root__.items():
-        build_get_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
-        build_post_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
-        if daemon.type == 'caen':
-            build_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
-            build_packed_histogram(router, daemon.proxy, daemon.url, ["ANY API"])
-        if daemon.type == 'mpa3':
-            build_mpa3_histogram_redirect(router, daemon.proxy, daemon.url, ["ANY API"])
-
-
-def build_conf_endpoint(hive_config: HiveConfig):
-    @router.get("/api/hive_config")
-    async def api_get_hive_config():
-        return hive_config

@@ -10,10 +10,10 @@ from typing import List, Dict
 import numpy as np
 import json
 
-
 from app.rbs.entities import DoublePath, RbsData, CaenDetectorModel, RbsRqm
 from matplotlib import pyplot as plt
 import matplotlib
+
 matplotlib.use('Agg')
 
 
@@ -133,13 +133,21 @@ class RbsDataSerializer:
             for file in files_to_move:
                 move(file, full_subdir)
 
+    def save_trends(self, file_stem: str, trends: dict):
+        file_stem = "trends_{}.txt".format(file_stem)
+        local = self.data_dir.local / self._get_folder() / file_stem
+        remote = self.data_dir.remote / self._get_folder() / file_stem
+        with open(local, 'w+') as f:
+            f.write(str(trends))
+        _try_copy(local, remote)
+
     def save_rqm(self, rqm: dict):
         file_stem = "active_rqm.txt"
         local = self.data_dir.local / self._get_folder() / file_stem
-        remote = self.data_dir.remote /self._get_folder() / file_stem
+        remote = self.data_dir.remote / self._get_folder() / file_stem
         with open(local, 'w+') as f:
             f.write("Running RQM:\n")
-            f.write(json.dumps(rqm,indent=4))
+            f.write(json.dumps(rqm, indent=4))
         _try_copy(local, remote)
 
     def set_sub_folder(self, sub_folder: str):
