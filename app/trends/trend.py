@@ -35,6 +35,7 @@ def is_trend_file_missing(today: str, file_stem: str, suffix: int) -> bool:
 
 def get_trend_values(configs: List[SimpleConfig]) -> Dict:
     trend_values = {}
+    print(configs)
 
     for hw in configs:
         if hw.trend:
@@ -113,6 +114,8 @@ class Trend(Thread):
         while True:
             time.sleep(1)
             trend_values = get_trend_values(self._to_trend)
+            if trend_values == {}:
+                continue
             title = get_title(trend_values)
 
             today = datetime.now().strftime("%Y-%m-%d")
@@ -152,6 +155,9 @@ class Trend(Thread):
             day = d.strftime("%Y-%m-%d")
             suffix = get_existing_suffix(day, self._file_stem)
             valid_days.extend([get_path(day, self._file_stem, x) for x in range(suffix + 1)])
+
+        if not valid_days:
+            return ""
 
         with self._lock:
             dataframes = [pd.read_csv(day) for day in valid_days]
