@@ -27,7 +27,7 @@ url = "http://127.0.0.1:22002/api/latest"
 names = ["Detector", "Theta"]
 loads = [170.0, -180.5]
 
-[rbs.hardware.motrona]
+[rbs.hardware.motrona_charge]
 type = "motrona"
 title = "Motrona"
 url = "http://127.0.0.1:22100/api/latest"
