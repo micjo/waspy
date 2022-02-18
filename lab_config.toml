@@ -29,7 +29,7 @@ loads = [170.0, -180.5]
 
 [rbs.hardware.motrona_charge]
 type = "motrona"
-title = "Motrona"
+title = "Motrona Charge"
 url = "http://127.0.0.1:22100/api/latest"
 trend = {"rbs_current"="current(nA)"}
 
