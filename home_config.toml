@@ -28,9 +28,9 @@ url = "http://localhost:20000/api/latest"
 names = ["Phi", "Zeta"]
 loads = [0, -1]
 
-[rbs.hardware.motrona]
+[rbs.hardware.motrona_charge]
 type = "motrona"
-title = "Motrona"
+title = "Motrona Charge"
 url = "http://localhost:20100/api/latest"
 
 [rbs.hardware.caen]

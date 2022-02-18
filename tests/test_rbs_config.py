@@ -30,7 +30,7 @@ def test_make_rbs_config():
     assert (rbs.aml_x_y.title == "AML X Y")
     assert (rbs.aml_det_theta.title == "AML Detector Theta")
     assert (rbs.aml_phi_zeta.title == "AML Phi Zeta")
-    assert (rbs.motrona.title == "Motrona RBS")
+    assert (rbs.motrona_charge.title == "Motrona RBS")
     assert (rbs.caen.title == "Caen RBS")
 
 

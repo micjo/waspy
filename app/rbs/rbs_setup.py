@@ -102,7 +102,7 @@ class RbsSetup:
             self._counting = True
         while True:
             time.sleep(1)
-            if http.get_json(self.hw.motrona.url)["status"] == "Done":
+            if http.get_json(self.hw.motrona_charge.url)["status"] == "Done":
                 break
             if self.aborted():
                 break
@@ -114,9 +114,9 @@ class RbsSetup:
         if self.aborted():
             return
         logging.info("acquiring till target")
-        hw_action.clear_start_motrona_count(generate_request_id(), self.hw.motrona.url)
+        hw_action.clear_start_motrona_count(generate_request_id(), self.hw.motrona_charge.url)
         self._wait_for_count_finished()
-        motrona = requests.get(self.hw.motrona.url, timeout=10).json()
+        motrona = requests.get(self.hw.motrona_charge.url, timeout=10).json()
         self._acquisition_accumulated_charge += float(motrona["charge(nC)"])
         self.charge_offset += float(motrona["target_charge(nC)"])
 
@@ -129,7 +129,7 @@ class RbsSetup:
         increment = 0
         with self._lock:
             if self._counting:
-                motrona = requests.get(self.hw.motrona.url, timeout=10).json()
+                motrona = requests.get(self.hw.motrona_charge.url, timeout=10).json()
                 charge = float(motrona["charge(nC)"])
                 target_charge = float(motrona["target_charge(nC)"])
                 if charge < target_charge:
@@ -155,7 +155,7 @@ class RbsSetup:
         aml_x_y = requests.get(self.hw.aml_x_y.url, timeout=10).json()
         aml_phi_zeta = requests.get(self.hw.aml_det_theta.url, timeout=10).json()
         aml_det_theta = requests.get(self.hw.aml_phi_zeta.url, timeout=10).json()
-        motrona = requests.get(self.hw.motrona.url, timeout=10).json()
+        motrona = requests.get(self.hw.motrona_charge.url, timeout=10).json()
         caen = requests.get(self.hw.caen.url, timeout=10).json()
         histograms = []
         if get_histograms:
@@ -188,8 +188,8 @@ class RbsSetup:
         if self.aborted():
             return
         logging.info("pause counting and set target")
-        hw_action.pause_motrona_count(generate_request_id() + "_pause", self.hw.motrona.url)
-        hw_action.set_motrona_target_charge(generate_request_id() + "_set_target_charge", self.hw.motrona.url,
+        hw_action.pause_motrona_count(generate_request_id() + "_pause", self.hw.motrona_charge.url)
+        hw_action.set_motrona_target_charge(generate_request_id() + "_set_target_charge", self.hw.motrona_charge.url,
                                             target)
         logging.info("pause counting and set target done")
 

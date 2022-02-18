@@ -40,7 +40,7 @@ class RbsHardware(BaseModel):
     aml_phi_zeta: AmlConfig
     aml_det_theta: AmlConfig
     caen: SimpleConfig
-    motrona: SimpleConfig
+    motrona_charge: SimpleConfig
 
 
 class RbsConfig(BaseModel):
