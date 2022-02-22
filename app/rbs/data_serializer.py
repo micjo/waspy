@@ -8,6 +8,7 @@ import copy
 from threading import Lock
 from typing import List, Dict
 import numpy as np
+import pandas as pd
 import json
 
 from app.rbs.entities import DoublePath, RbsData, CaenDetectorModel, RbsRqm
@@ -137,7 +138,7 @@ class RbsDataSerializer:
         file_stem = "trends_{}.txt".format(file_stem)
         local = self.data_dir.local / self._get_folder() / file_stem
         remote = self.data_dir.remote / self._get_folder() / file_stem
-        df = pd.from_dict(trends)
+        df = pd.DataFrame.from_dict(trends)
 
         with open(local, 'w+') as f:
             f.write(df.to_csv(index=False))

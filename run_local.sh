@@ -5,5 +5,5 @@ export env_state="dev"
 export trend_store="/tmp/trends/"
 
 source venv/bin/activate
-uvicorn --reload --factory hive:create_app --log-level warning --host="localhost" --port=8000
-#uvicorn --factory hive:create_app --log-level warning --host="localhost" --port=8000
+#uvicorn --reload --factory hive:create_app --log-level warning --host="localhost" --port=8000
+uvicorn --factory hive:create_app --log-level warning --host="localhost" --port=8000

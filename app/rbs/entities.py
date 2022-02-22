@@ -13,9 +13,6 @@ class InputDir(BaseModel):
     watch: Path
 
 
-# split this up. data should be in another class
-# ongoing/done/failed is for rqm dispatcher
-# data is for recipe_list_runner
 class OutputDir(BaseModel):
     ongoing: Path
     done: Path
