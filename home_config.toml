@@ -32,6 +32,7 @@ loads = [0, -1]
 type = "motrona"
 title = "Motrona Charge"
 url = "http://localhost:20100/api/latest"
+trend = {"current"="current(nA)"}
 
 [rbs.hardware.caen]
 type = "caen"
