@@ -41,9 +41,15 @@ def get_trend_values(configs: List[SimpleConfig]) -> Dict:
             for key, item in hw.trend.items():
                 try:
                     json_response = requests.get(hw.url, timeout=0.5).json()
+                    error_message = json_response["error"]
+
                     for nestedKey in item.split('.'):
                         json_response = json_response[nestedKey]
-                    trend_values[key] = json_response
+
+                    if error_message == "Success" or error_message == "No error":
+                        trend_values[key] = json_response
+                    else:
+                        trend_values[key] = ""
                 except Exception as e:
                     trend_values[key] = ""
 
