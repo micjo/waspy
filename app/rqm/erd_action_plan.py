@@ -129,7 +129,7 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: 
         erd_setup.wait_for(wait_time)
 
     erd_setup.wait_for_acquisition_done()
-    erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
+    # erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
 
 
 
