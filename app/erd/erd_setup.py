@@ -127,7 +127,9 @@ class ErdSetup:
     def convert_data_to_ascii(self):
         if self._aborted():
             return ""
+        logging.info("Request conversion to ascii")
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "convert": True})
+        logging.info("Conversion to ascii done")
 
     def _aborted(self):
         with self._lock:
@@ -146,7 +148,8 @@ class ErdSetup:
                 break
 
     def get_measurement_time(self):
-        pass
+        mpa3 = requests.get(self.hw.mpa3.url, timeout=10).json()
+        return mpa3["acquisition_status"]["run_time"]
 
 
 def get_z_range(start, end, increment) -> List[PositionCoordinates]:
