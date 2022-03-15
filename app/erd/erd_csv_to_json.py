@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
-from app.erd.entities import ErdRqm
+from app.erd.entities import ErdJobModel
 
 
 def get_sections(csv_text: str):
@@ -39,9 +39,9 @@ def parse_recipes(list_section: str) -> List[Dict]:
     return drop_nan(df.to_dict('records'))
 
 
-def parse_rqm(csv_text: str) -> ErdRqm:
+def parse_rqm(csv_text: str) -> ErdJobModel:
     logging.info("parse_rqm")
     [rqm_section, recipes_section] = get_sections(csv_text)
     erd_rqm_json = parse_rqm_number(rqm_section)
     erd_rqm_json["recipes"] = parse_recipes(recipes_section)
-    return ErdRqm.parse_obj(erd_rqm_json)
+    return ErdJobModel.parse_obj(erd_rqm_json)

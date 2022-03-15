@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-class RqmActionPlan:
+class Job:
     def execute(self) -> None:
         raise NotImplementedError("")
 
@@ -18,7 +18,7 @@ class RqmActionPlan:
         raise NotImplementedError("")
 
 
-class EmptyRqmActionPlan(RqmActionPlan):
+class EmptyJob(Job):
     def execute(self):
         pass
 
@@ -35,4 +35,4 @@ class EmptyRqmActionPlan(RqmActionPlan):
         return True
 
 
-empty_action_plan = EmptyRqmActionPlan()
+empty_job = EmptyJob()

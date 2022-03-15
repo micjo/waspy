@@ -6,20 +6,20 @@ from typing import List
 from fastapi import APIRouter, UploadFile, Response, File, status
 
 from app.erd.data_serializer import ErdDataSerializer
-from app.erd.entities import ErdRqm, ErdHardware
+from app.erd.entities import ErdJobModel, ErdHardware
 from app.erd.erd_setup import ErdSetup
 from app.http_routes.hw_control_routes import build_get_redirect, build_post_redirect, build_mpa3_histogram_redirect
 import app.erd.erd_csv_to_json as csv_convert
-from app.rqm.erd_action_plan import ErdAction
-from app.rqm.rqm_runner import RqmRunner
+from app.rqm.erd_job import ErdJob
+from app.rqm.job_runner import JobRunner
 from app.trends.trend import Trend
 
 
-def build_api_endpoints(http_server, rqm_runner: RqmRunner, data_serializer: ErdDataSerializer, erd_setup: ErdSetup,
+def build_api_endpoints(http_server, rqm_runner: JobRunner, data_serializer: ErdDataSerializer, erd_setup: ErdSetup,
                         erd_hardware: ErdHardware, trends: List[Trend]):
     @http_server.post("/api/erd/run", tags=["ERD API"], summary="Run an ERD experiment")
-    async def run_erd(job: ErdRqm):
-        erd_action = ErdAction(job, erd_setup, data_serializer, trends)
+    async def run_erd(job: ErdJobModel):
+        erd_action = ErdJob(job, erd_setup, data_serializer, trends)
         rqm_runner.add_rqm_to_queue(erd_action)
 
     @http_server.get("/api/erd/state", tags=["ERD API"], summary="Get the state of the active rqm")

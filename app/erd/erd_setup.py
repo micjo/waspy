@@ -13,7 +13,6 @@ import logging
 from threading import Lock
 from app.setup.config import GlobalConfig
 
-
 env_conf = GlobalConfig()
 faker = env_conf.FAKER
 
@@ -31,6 +30,7 @@ def fakeable(func):
             return lambda *args, **kw: fake_call(func, args, kw)
         else:
             return func
+
     return wrap_func()
 
 
@@ -70,7 +70,6 @@ class ErdSetup:
         with self._lock:
             self._abort = False
 
-
     def wait_for(self, seconds):
         sleep_time = 0
         while sleep_time < seconds:
@@ -79,6 +78,10 @@ class ErdSetup:
             time.sleep(1)
             sleep_time += 1
 
+    def parse_acquisition_data(self):
+        if self._aborted():
+            return
+        convert_data(http.generate_request_id(), self.hw.mpa3.url)
 
     @fakeable
     def wait_for_acquisition_done(self):
@@ -120,6 +123,12 @@ class ErdSetup:
             return ""
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "start": True})
 
+    @fakeable
+    def convert_data_to_ascii(self):
+        if self._aborted():
+            return ""
+        http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "convert": True})
+
     def _aborted(self):
         with self._lock:
             return copy.deepcopy(self._abort)
@@ -144,7 +153,7 @@ def get_z_range(start, end, increment) -> List[PositionCoordinates]:
     if increment == 0:
         return [PositionCoordinates(z=start)]
     coordinate_range = np.arange(start, end + increment, increment)
-    logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " +str(increment))
+    logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " + str(increment))
     numpy_z_steps = np.around(coordinate_range, decimals=2)
     positions = [PositionCoordinates(z=float(z_step)) for z_step in numpy_z_steps]
     return positions
@@ -180,4 +189,3 @@ def acquisition_started(url):
         if response["acquisition_status"]["acquiring"]:
             logging.info("Acquisition has started")
             break
-

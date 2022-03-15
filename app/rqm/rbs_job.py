@@ -1,5 +1,6 @@
 import logging
 import copy
+import traceback
 from datetime import datetime, timedelta
 from typing import List, Union
 
@@ -7,11 +8,11 @@ from pydantic import BaseModel
 
 from app.rbs import yield_angle_fit as fit
 from app.rbs.data_serializer import RbsDataSerializer
-from app.rbs.entities import RbsRqm, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsData, \
+from app.rbs.entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsData, \
     RbsRqmMinimizeYield
 from app.rbs.rbs_setup import RbsSetup, get_positions_as_coordinate, get_sum, single_coordinate_to_string, \
     get_positions_as_float, convert_float_to_coordinate
-from app.rqm.rqm_action_plan import RqmActionPlan
+from app.rqm.job import Job
 from app.trends.trend import Trend
 from hive_exception import HiveError
 
@@ -29,48 +30,51 @@ empty_rbs_recipe_status = RbsRecipeStatus(recipe_id="", start_time=datetime.now(
                                           accumulated_charge_target=0)
 
 
-class RbsAction(RqmActionPlan):
+class RbsJob(Job):
     _data_serializer: RbsDataSerializer
     _rbs_setup: RbsSetup
-    _job: RbsRqm
+    _job_model: RbsJobModel
     _did_error: bool
     _error_message: str
-    _active_recipe: RbsRecipeStatus
+    _active_recipe_status: RbsRecipeStatus
     _finished_recipes: List[RbsRecipeStatus]
     _aborted: bool
     _trends: List[Trend]
 
-    def __init__(self, job: RbsRqm, rbs_setup: RbsSetup, data_serializer: RbsDataSerializer, trends: List[Trend]):
+    def __init__(self, job_model: RbsJobModel, rbs_setup: RbsSetup, data_serializer: RbsDataSerializer,
+                 trends: List[Trend]):
         self._rbs_setup = rbs_setup
         self._data_serializer = data_serializer
-        self._job = job
+        self._job_model = job_model
         self._did_error = False
         self._error_message = "No Error"
         self._run_time = timedelta(0)
-        self._active_recipe = empty_rbs_recipe_status
+        self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
         self._finished_recipes = []
         self._aborted = False
         self._trends = trends
 
     def execute(self):
-        self._data_serializer.set_base_folder(self._job.rqm_number)
-        self._rbs_setup.set_active_detectors(self._job.detectors)
+        self._data_serializer.set_base_folder(self._job_model.rqm_number)
+        self._rbs_setup.set_active_detectors(self._job_model.detectors)
         start_time = datetime.now()
 
-        logging.info("[RQM RBS] RQM Start: '" + str(self._job) + "'")
-        for recipe in self._job.recipes:
+        logging.info("[RBS] Job Start: '" + str(self._job_model) + "'")
+        for recipe in self._job_model.recipes:
             if self._aborted:
                 break
             try:
                 self._run_recipe(recipe)
-            except HiveError as e:
+            except Exception as e:
+                logging.error("[RBS] Recipe: {" + str(recipe) + "}\nfailed with message: " + str(e))
                 self._did_error = True
                 self._error_message = str(e)
-                break
-            finally:
-                self._finish_recipe()
+                logging.error(traceback.format_exc())
+                self._finished_recipes = []
+            self._finish_recipe()
 
         end_time = datetime.now()
+
         for trend in self._trends:
             trend_values = trend.get_values(start_time, end_time, timedelta(seconds=1))
             self._data_serializer.save_trends(trend.get_file_stem(), trend_values)
@@ -80,20 +84,19 @@ class RbsAction(RqmActionPlan):
         self._data_serializer.resume()
 
     def serialize(self):
-        self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
-        self._active_recipe.accumulated_charge_corrected = self._rbs_setup.get_corrected_total_accumulated_charge()
+        self._update_active_recipe()
         finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
-
-        status = {"rqm": self._job.dict(), "active_recipe": self._active_recipe.dict(),
+        status = {"rqm": self._job_model.dict(), "active_recipe": self._active_recipe_status.dict(),
                   "finished_recipes": finished_recipes, "error_state": self._error_message}
         return status
 
     def abort(self):
-        logging.info("[RQM RBS] RQM abort")
+        logging.info("[RBS] Recipe" + str(self._active_recipe_status) + "aborted")
         self._aborted = True
         self._error_message = str("Aborted RQM")
         self._rbs_setup.abort()
         self._data_serializer.abort()
+        self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
 
     def completed(self) -> bool:
         if self._did_error:
@@ -105,20 +108,29 @@ class RbsAction(RqmActionPlan):
     def empty(self):
         return False
 
+    def _update_active_recipe(self):
+        if self._active_recipe_status != empty_rbs_recipe_status:
+            self._active_recipe_status.run_time = datetime.now() - self._active_recipe_status.start_time
+            try:
+                self._active_recipe_status.accumulated_charge_corrected = self._rbs_setup.get_corrected_total_accumulated_charge()
+            except Exception as e:
+                self._did_error = True
+                self._error_message = str(e)
+
     def _run_recipe(self, recipe):
         self._rbs_setup.charge_offset = 0
-        self._active_recipe.start_time = datetime.now()
-        self._active_recipe.recipe_id = recipe.file_stem
-        self._active_recipe.accumulated_charge_target = _get_total_counts(recipe)
+        self._active_recipe_status.start_time = datetime.now()
+        self._active_recipe_status.recipe_id = recipe.file_stem
+        self._active_recipe_status.accumulated_charge_target = _get_total_counts(recipe)
         if recipe.type == RecipeType.random:
             run_random(recipe, self._rbs_setup, self._data_serializer)
         if recipe.type == RecipeType.channeling:
             run_channeling(recipe, self._rbs_setup, self._data_serializer)
 
     def _finish_recipe(self):
-        self.serialize()
-        self._finished_recipes.append(copy.deepcopy(self._active_recipe))
-        self._active_recipe = empty_rbs_recipe_status
+        self._update_active_recipe()
+        self._finished_recipes.append(copy.deepcopy(self._active_recipe_status))
+        self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
 
 
 def run_random(recipe: RbsRqmRandom, rbs: RbsSetup, data_serializer: RbsDataSerializer, clear_offset=True):

@@ -5,21 +5,21 @@ from fastapi import APIRouter, UploadFile, File, Response, status
 from app.http_routes.hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram
 from app.rbs.data_serializer import RbsDataSerializer
-from app.rbs.entities import RbsRqm, RbsHardware
-from app.rqm.rbs_action_plan import RbsAction
+from app.rbs.entities import RbsJobModel, RbsHardware
+from app.rqm.rbs_job import RbsJob
 from app.rbs.rbs_setup import RbsSetup
 import logging
 import traceback
 import app.rbs.random_csv_to_json as csv_convert
-from app.rqm.rqm_runner import RqmRunner
+from app.rqm.job_runner import JobRunner
 from app.trends.trend import Trend
 
 
-def build_api_endpoints(http_server, rqm_dispatcher: RqmRunner, data_serializer: RbsDataSerializer, rbs_setup: RbsSetup,
+def build_api_endpoints(http_server, rqm_dispatcher: JobRunner, data_serializer: RbsDataSerializer, rbs_setup: RbsSetup,
                         rbs_hardware: RbsHardware, trends: List[Trend]):
     @http_server.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
-    async def run_rbs(job: RbsRqm):
-        rqm_action = RbsAction(job, rbs_setup, data_serializer, trends)
+    async def run_rbs(job: RbsJobModel):
+        rqm_action = RbsJob(job, rbs_setup, data_serializer, trends)
         rqm_dispatcher.add_rqm_to_queue(rqm_action)
 
     @http_server.get("/api/rbs/state", tags=["RBS API"], summary="Get the state of the active rqm")
@@ -43,8 +43,8 @@ def build_api_endpoints(http_server, rqm_dispatcher: RqmRunner, data_serializer:
             settings = csv_convert.parse_top_settings(top_section)
             settings["detectors"] = csv_convert.parse_list_settings(detectors_section)
             settings["recipes"] = csv_convert.parse_recipes(recipes_section)
-            RbsRqm.validate_recipes(settings)
-            rbs_rqm = RbsRqm.parse_obj(settings)
+            RbsJobModel.validate_recipes(settings)
+            rbs_rqm = RbsJobModel.parse_obj(settings)
             rbs_setup.verify_caen_boards(settings["detectors"])
             return rbs_rqm
         except Exception as e:
@@ -53,7 +53,7 @@ def build_api_endpoints(http_server, rqm_dispatcher: RqmRunner, data_serializer:
             return str(e)
 
     @http_server.post("/api/rbs/dry_run", tags=["RBS API"], summary="Verify an RBS experiment")
-    async def dry_run_rbs(rbs_experiment: RbsRqm):
+    async def dry_run_rbs(rbs_experiment: RbsJobModel):
         return {"Verification": "Passed"}
 
     for key, daemon in rbs_hardware.dict().items():

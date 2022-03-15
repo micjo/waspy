@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import json
 
-from app.rbs.entities import DoublePath, RbsData, CaenDetectorModel, RbsRqm
+from app.rbs.entities import DoublePath, RbsData, CaenDetectorModel, RbsJobModel
 from matplotlib import pyplot as plt
 import matplotlib
 

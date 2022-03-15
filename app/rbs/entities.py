@@ -214,7 +214,7 @@ class RbsRqmFixed(BaseModel):
     charge_total: int
 
 
-class RbsRqm(BaseModel):
+class RbsJobModel(BaseModel):
     recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
     rqm_number: str
     detectors: List[CaenDetectorModel]
@@ -273,7 +273,7 @@ class RbsRqm(BaseModel):
         }
 
 
-empty_rbs_rqm = RbsRqm(recipes=[], rqm_number="", detectors=[])
+empty_rbs_rqm = RbsJobModel(recipes=[], rqm_number="", detectors=[])
 
 
 class ActiveRecipe(BaseModel):
@@ -293,7 +293,7 @@ empty_rqm_status = RbsRqmStatus(run_status=StatusModel.Idle, active_rqm_status=[
 
 class ExperimentStateModel(BaseModel):
     status: StatusModel
-    experiment: RbsRqm
+    experiment: RbsJobModel
 
     class Config:
         use_enum_values = True
