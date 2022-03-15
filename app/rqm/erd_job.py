@@ -1,14 +1,15 @@
 import logging
 import copy
+import traceback
 from datetime import datetime, timedelta
 from typing import List
 
 from pydantic import BaseModel
 
 from app.erd.data_serializer import ErdDataSerializer
-from app.erd.entities import ErdRqm, ErdRecipe, PositionCoordinates
+from app.erd.entities import ErdJobModel, ErdStandardRecipe, PositionCoordinates, RecipeType, ErdDepletionRecipe
 from app.erd.erd_setup import ErdSetup, get_z_range
-from app.rqm.rqm_action_plan import RqmActionPlan
+from app.rqm.job import Job
 from app.trends.trend import Trend
 from hive_exception import HiveError
 
@@ -25,10 +26,12 @@ empty_erd_recipe_status = ErdRecipeStatus(recipe_id="", start_time=datetime.now(
                                           measurement_time=0, measurement_time_target=0)
 
 
-class ErdAction(RqmActionPlan):
+
+
+class ErdJob(Job):
     _data_serializer: ErdDataSerializer
     _erd_setup: ErdSetup
-    _job : ErdRqm
+    _job_model : ErdJobModel
     _did_error: bool
     _error_message: str
     _active_recipe: ErdRecipeStatus
@@ -36,10 +39,10 @@ class ErdAction(RqmActionPlan):
     _aborted: bool
     _trends: List[Trend]
 
-    def __init__(self, job: ErdRqm, erd_setup: ErdSetup, data_serializer: ErdDataSerializer, trends:List[Trend]):
+    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, data_serializer: ErdDataSerializer, trends:List[Trend]):
         self._erd_setup = erd_setup
         self._data_serializer = data_serializer
-        self._job = job
+        self._job_model = job_model
         self._did_error = False
         self._error_message = "No Error"
         self._run_time = timedelta(0)
@@ -49,21 +52,22 @@ class ErdAction(RqmActionPlan):
         self._trends = trends
 
     def execute(self):
-        self._data_serializer.set_base_folder(self._job.rqm_number)
+        self._data_serializer.set_base_folder(self._job_model.rqm_number)
         start_time=datetime.now()
 
-        logging.info("[RQM ERD] RQM Start: '" + str(self._job) + "'")
-        for recipe in self._job.recipes:
+        logging.info("[RQM ERD] RQM Start: '" + str(self._job_model) + "'")
+        for recipe in self._job_model.recipes:
             if self._aborted:
                 break
             try:
                 self._run_recipe(recipe)
-            except HiveError as e:
+            except Exception as e:
+                logging.error("[RBS] Recipe: {" + str(recipe) + "}\nfailed with message: " + str(e))
                 self._did_error = True
                 self._error_message = str(e)
-                break
-            finally:
-                self._finish_recipe()
+                logging.error(traceback.format_exc())
+                self._finished_recipes = []
+            self._finish_recipe()
 
         end_time = datetime.now()
         for trend in self._trends:
@@ -79,7 +83,7 @@ class ErdAction(RqmActionPlan):
         self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
         finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
 
-        status = {"rqm": self._job.dict(), "active_recipe": self._active_recipe.dict(),
+        status = {"rqm": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
                   "finished_recipes": finished_recipes, "error_state": self._error_message}
         return status
 
@@ -106,7 +110,10 @@ class ErdAction(RqmActionPlan):
         self._active_recipe.run_time = timedelta(0)
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec
-        run_erd_recipe(recipe, self._erd_setup, self._data_serializer)
+        if recipe.type == RecipeType.standard:
+            run_standard_erd_recipe(recipe, self._erd_setup, self._data_serializer)
+        if recipe.type == RecipeType.depletion:
+            run_depletion_erd_recipe(recipe, self._erd_setup, self._data_serializer)
 
     def _finish_recipe(self):
         self.serialize()
@@ -114,7 +121,7 @@ class ErdAction(RqmActionPlan):
         self._active_recipe = empty_erd_recipe_status
 
 
-def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
+def run_standard_erd_recipe(recipe: ErdStandardRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
     erd_setup.wait_for_arrival()
     erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.file_stem)
@@ -129,11 +136,15 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: 
         erd_setup.wait_for(wait_time)
 
     erd_setup.wait_for_acquisition_done()
-    # erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
+    erd_setup.convert_data_to_ascii()
+    erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
 
 
-
-
+def run_depletion_erd_recipe(recipe: ErdDepletionRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
+    # todo:
+    # z_start = 10 , z_end = 15, z_increment = 1, time = 3600, z_repeat = 2
+    # z_range : [10,11,12,13,14,15,10,11,12,13,14,15], wait for 3600/12 each time
+    print("running depletion erd recipe")
 
 
 

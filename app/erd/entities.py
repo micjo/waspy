@@ -1,6 +1,6 @@
 from datetime import timedelta
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union, Literal
 from pydantic import BaseModel, validator, Field
 from pathlib import Path
 
@@ -23,7 +23,13 @@ class ErdConfig(BaseModel):
     data_dir: DoublePath
 
 
-class ErdRecipe(BaseModel):
+class RecipeType(str, Enum):
+    standard = "standard"
+    depletion = "depletion"
+
+
+class ErdStandardRecipe(BaseModel):
+    type: Literal[RecipeType.standard]
     measuring_time_sec: int
     sample_id: str
     file_stem: str
@@ -33,14 +39,28 @@ class ErdRecipe(BaseModel):
     z_increment: float
 
 
+class ErdDepletionRecipe(BaseModel):
+    type: Literal[RecipeType.depletion]
+    measuring_time_sec: int
+    sample_id: str
+    file_stem: str
+    theta: float
+    z_start: float
+    z_end: float
+    z_increment: float
+    z_repeat: int = Field(
+        description="The recipe will run from z_start to z_end, for z_repeat times."
+    )
+
+
 class PositionCoordinates(BaseModel):
     z: Optional[float]
     theta: Optional[float]
 
 
-class ErdRqm(BaseModel):
+class ErdJobModel(BaseModel):
     rqm_number: str
-    recipes: List[ErdRecipe]
+    recipes: List[Union[ErdDepletionRecipe, ErdStandardRecipe]]
 
     class Config:
         use_enum_value = True
@@ -48,23 +68,24 @@ class ErdRqm(BaseModel):
         schema_extra = {
             'example':
                 {
+                    "rqm_number":"some_rqm",
                     "recipes": [
                         {
-                            "rqm_number": "test_1", "measuring_time_sec": 30, "file_stem": "test_001",
-                            "sample_id": "something_1", "theta": 40.00, "z_start": 1.00, "z_end": 5.00,
-                            "z_increment": 0.50
+                            "type": "standard", "rqm_number": "test_1", "measuring_time_sec": 30,
+                            "file_stem": "test_001", "sample_id": "something_1", "theta": 40.00, "z_start": 1.00,
+                            "z_end": 5.00, "z_increment": 0.50
                         },
                         {
-                            "rqm_number": "test_2", "measuring_time_sec": 30, "file_stem": "test_002",
-                            "sample_id": "something_2", "theta": 70.05, "z_start": 5.00, "z_end": 50.00,
-                            "z_increment": 10.00
+                            "type": "standard", "rqm_number": "test_2", "measuring_time_sec": 30,
+                            "file_stem": "test_002", "sample_id": "something_2", "theta": 70.05, "z_start": 5.00,
+                            "z_end": 50.00, "z_increment": 10.00
                         },
                     ]
                 }
         }
 
 
-empty_erd_rqm = ErdRqm(recipes=[], rqm_number="")
+empty_erd_rqm = ErdJobModel(recipes=[], rqm_number="")
 
 
 class ActiveRecipe(BaseModel):

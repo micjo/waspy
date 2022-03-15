@@ -15,7 +15,7 @@ from app.http_routes import hw_control_routes, rbs_routes, erd_routes
 from app.http_routes.systemd_routes import build_systemd_endpoints
 from app.http_routes.trend_routes import build_trend_routes
 from app.rbs.data_serializer import RbsDataSerializer
-from app.rqm.rqm_runner import RqmRunner
+from app.rqm.job_runner import JobRunner
 from app.setup.config import GlobalConfig, make_hive_config, HiveConfig
 from app.trends.trend import Trend
 
@@ -101,7 +101,7 @@ def build_trending(router, hive_config: HiveConfig):
 
 
 def build_rqm_listener(router, hive_config: HiveConfig, rbs_trends: List[Trend], erd_trends: List[Trend]):
-    rqm_runner = RqmRunner()
+    rqm_runner = JobRunner()
     rbs_setup = rbs_lib.RbsSetup(hive_config.rbs.hardware)
     rbs_data_serializer = RbsDataSerializer(hive_config.rbs.data_dir)
     rbs_routes.build_api_endpoints(router, rqm_runner, rbs_data_serializer, rbs_setup, hive_config.rbs.hardware,
