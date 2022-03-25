@@ -53,6 +53,7 @@ class ErdJob(Job):
 
     def execute(self):
         self._data_serializer.set_base_folder(self._job_model.rqm_number)
+        self._erd_setup.reupload_config()
         start_time=datetime.now()
 
         logging.info("[RQM ERD] RQM Start: '" + str(self._job_model) + "'")
@@ -67,6 +68,7 @@ class ErdJob(Job):
                 self._error_message = str(e)
                 logging.error(traceback.format_exc())
                 self._finished_recipes = []
+                break
             self._finish_recipe()
 
         end_time = datetime.now()
@@ -81,6 +83,7 @@ class ErdJob(Job):
     def serialize(self):
         self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
         self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
+
         finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
 
         status = {"rqm": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
@@ -128,6 +131,8 @@ def run_standard_erd_recipe(recipe: ErdStandardRecipe, erd_setup: ErdSetup, erd_
     erd_setup.start_acquisition()
     erd_setup.wait_for_acquisition_started()
     z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
+    if len(z_range) == 0:
+        raise HiveError("Invalid z range")
     wait_time = recipe.measuring_time_sec / len(z_range)
     logging.info("testing positions: " + str(z_range) + "wait_time_sec between steps: " + str(
         wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))

@@ -71,6 +71,7 @@ class RbsJob(Job):
                 self._error_message = str(e)
                 logging.error(traceback.format_exc())
                 self._finished_recipes = []
+                break
             self._finish_recipe()
 
         end_time = datetime.now()

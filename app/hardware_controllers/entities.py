@@ -11,6 +11,7 @@ class HwControllerType(str, Enum):
     mdrive = 'mdrive'
     mpa3 = 'mpa3'
     motrona_ax350 = 'motrona_ax350'
+    mirion_g64 = 'mirion_g64'
 
 
 class SimpleConfig(BaseModel):
@@ -25,13 +26,11 @@ class SimpleConfig(BaseModel):
 
 
 class MdriveConfig(SimpleConfig):
-    load: float
     proxy: Optional[str]
 
 
 class AmlConfig(SimpleConfig):
     names: List[str]
-    loads: List[float]
 
 
 class AnyHardware(BaseModel):
