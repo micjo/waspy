@@ -78,11 +78,6 @@ class ErdSetup:
             time.sleep(1)
             sleep_time += 1
 
-    def parse_acquisition_data(self):
-        if self._aborted():
-            return
-        convert_data(http.generate_request_id(), self.hw.mpa3.url)
-
     @fakeable
     def wait_for_acquisition_done(self):
         if self._aborted():
