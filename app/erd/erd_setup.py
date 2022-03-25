@@ -87,6 +87,7 @@ class ErdSetup:
     def wait_for_acquisition_done(self):
         if self._aborted():
             return
+        logging.info("Wait for acquisition completed")
         self._acquisition_done(self.hw.mpa3.url)
         logging.info("Acquisition completed")
 
@@ -117,6 +118,13 @@ class ErdSetup:
             "set_filename": spectrum_filename
         })
 
+
+    @fakeable
+    def reupload_config(self):
+        if self._aborted():
+            return ""
+        http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "reupload_mpa3_cnf": True})
+
     @fakeable
     def start_acquisition(self):
         if self._aborted():
@@ -130,6 +138,10 @@ class ErdSetup:
         logging.info("Request conversion to ascii")
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "convert": True})
         logging.info("Conversion to ascii done")
+
+    def get_measurement_time(self):
+        mpa3 = requests.get(self.hw.mpa3.url, timeout=10).json()
+        return mpa3["acquisition_status"]["real_time"]
 
     def _aborted(self):
         with self._lock:
@@ -147,9 +159,6 @@ class ErdSetup:
                 logging.info("acquisition done: abort requested")
                 break
 
-    def get_measurement_time(self):
-        mpa3 = requests.get(self.hw.mpa3.url, timeout=10).json()
-        return mpa3["acquisition_status"]["run_time"]
 
 
 def get_z_range(start, end, increment) -> List[PositionCoordinates]:
