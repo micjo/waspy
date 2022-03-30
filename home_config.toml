@@ -34,6 +34,7 @@ title = "Motrona Charge"
 url = "http://localhost:20100/api/latest"
 trend = {"current"="current(nA)"}
 
+
 [rbs.hardware.caen]
 type = "caen"
 title = "Caen"
