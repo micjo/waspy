@@ -14,6 +14,7 @@ from app.rbs.rbs_setup import RbsSetup, get_positions_as_coordinate, get_sum, si
     get_positions_as_float, convert_float_to_coordinate
 from app.rqm.job import Job
 from app.trends.trend import Trend
+import requests
 from hive_exception import HiveError
 
 
@@ -57,6 +58,8 @@ class RbsJob(Job):
     def execute(self):
         self._data_serializer.set_base_folder(self._job_model.rqm_number)
         self._rbs_setup.set_active_detectors(self._job_model.detectors)
+        logging.info(" >>>> posting to logbook")
+        requests.post("http://localhost:8001/log_rbs_start?rbs_name=" + self._job_model.rqm_number)
         start_time = datetime.now()
 
         logging.info("[RBS] Job Start: '" + str(self._job_model) + "'")
