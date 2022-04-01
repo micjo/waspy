@@ -5,4 +5,4 @@ export env_state="prod"
 export trend_store="/root/trends/"
 
 source venv/bin/activate
-uvicorn --factory hive:create_app --root-path /hive --log-level warning --host="0.0.0.0"
+uvicorn --factory service_job:create_app --root-path /hive --log-level warning --host="0.0.0.0"
