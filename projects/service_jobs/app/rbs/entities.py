@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pathlib import Path
 from enum import Enum
 from typing import List, Optional, Union, Literal, Dict
@@ -218,6 +218,12 @@ class RbsJobModel(BaseModel):
     recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
     rqm_number: str
     detectors: List[CaenDetectorModel]
+    # job_id: Optional[str]
+    #
+    # @root_validator
+    # def validate_date(cls, values):
+    #     values['job_id'] = str(datetime.now()) + values['rqm_number']
+    #     return values
 
     @classmethod
     def validate_recipes(cls, rbs_rqm):
@@ -273,7 +279,7 @@ class RbsJobModel(BaseModel):
         }
 
 
-empty_rbs_rqm = RbsJobModel(recipes=[], rqm_number="", detectors=[])
+empty_rbs_job = RbsJobModel(recipes=[], rqm_number="", detectors=[])
 
 
 class ActiveRecipe(BaseModel):
