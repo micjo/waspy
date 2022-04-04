@@ -14,8 +14,9 @@ from app.hardware_controllers.entities import SimpleConfig
 from app.http_routes import hw_control_routes, rbs_routes, erd_routes
 from app.http_routes.systemd_routes import build_systemd_endpoints
 from app.http_routes.trend_routes import build_trend_routes
+from app.job.logbook_post import LogBookDb
 from app.rbs.data_serializer import RbsDataSerializer
-from app.rqm.job_runner import JobRunner
+from app.job.job_runner import JobRunner
 from app.setup.config import GlobalConfig, make_hive_config, HiveConfig
 from app.trends.trend import Trend
 
@@ -43,7 +44,9 @@ def create_app():
     any_trender = build_trend(app, "any",
                               [SimpleConfig.parse_obj(y) for y in hive_config.any.hardware.__root__.values()])
 
-    build_rqm_listener(app, hive_config, [rbs_trender, any_trender], [erd_trender, any_trender])
+    logbook_db = LogBookDb(env_conf.LOGBOOK_URL)
+
+    build_rqm_listener(app, hive_config, logbook_db, [rbs_trender, any_trender], [erd_trender, any_trender])
     build_systemd_endpoints(app, hive_config)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
@@ -100,12 +103,12 @@ def build_trending(router, hive_config: HiveConfig):
     build_trend_routes(router, any_trender)
 
 
-def build_rqm_listener(router, hive_config: HiveConfig, rbs_trends: List[Trend], erd_trends: List[Trend]):
+def build_rqm_listener(router, hive_config: HiveConfig, logbook_db: LogBookDb, rbs_trends: List[Trend], erd_trends: List[Trend]):
     rqm_runner = JobRunner()
     rbs_setup = rbs_lib.RbsSetup(hive_config.rbs.hardware)
     rbs_data_serializer = RbsDataSerializer(hive_config.rbs.data_dir)
     rbs_routes.build_api_endpoints(router, rqm_runner, rbs_data_serializer, rbs_setup, hive_config.rbs.hardware,
-                                   rbs_trends)
+                                   logbook_db, rbs_trends)
 
     erd_setup = ErdSetup(hive_config.erd.hardware)
     erd_data_serializer = ErdDataSerializer(hive_config.erd.data_dir)
