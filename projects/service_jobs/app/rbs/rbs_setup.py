@@ -109,6 +109,7 @@ class RbsSetup:
         with self._lock:
             self._counting = False
 
+    @fake_counter
     def count(self):
         if self.aborted():
             return
@@ -181,6 +182,7 @@ class RbsSetup:
         self._acquisition_run_time = time.time() - self._start_time
         hw_action.stop_caen_acquisition(generate_request_id(), self.hw.caen.url)
 
+    @fakeable
     def prepare_counting(self, target):
         if self.aborted():
             return

@@ -4,22 +4,24 @@ from fastapi import APIRouter, UploadFile, File, Response, status
 
 from app.http_routes.hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram
+from app.job.logbook_post import LogBookDb
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.entities import RbsJobModel, RbsHardware
-from app.rqm.rbs_job import RbsJob
+from app.job.rbs_job import RbsJob
 from app.rbs.rbs_setup import RbsSetup
 import logging
 import traceback
 import app.rbs.random_csv_to_json as csv_convert
-from app.rqm.job_runner import JobRunner
+from app.job.job_runner import JobRunner
 from app.trends.trend import Trend
 
 
+# TODO: Refactoring ( should use a factory for jobs to reduce the number of parameters to this function)
 def build_api_endpoints(http_server, rqm_dispatcher: JobRunner, data_serializer: RbsDataSerializer, rbs_setup: RbsSetup,
-                        rbs_hardware: RbsHardware, trends: List[Trend]):
+                        rbs_hardware: RbsHardware, logbook_db: LogBookDb, trends: List[Trend]):
     @http_server.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
     async def run_rbs(job: RbsJobModel):
-        rqm_action = RbsJob(job, rbs_setup, data_serializer, trends)
+        rqm_action = RbsJob(job, rbs_setup, data_serializer, logbook_db, trends)
         rqm_dispatcher.add_rqm_to_queue(rqm_action)
 
     @http_server.get("/api/rbs/state", tags=["RBS API"], summary="Get the state of the active rqm")

@@ -1,0 +1,4 @@
+trend =  [
+#    ["x_position","http://localhost:8000/api/rbs/aml_x_y", "motor_1_position"],
+    ["y_position","http://localhost:8000/api/rbs/aml_x_y", "motor_2_position"],
+]

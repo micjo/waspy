@@ -4,7 +4,7 @@ from collections import deque
 from threading import Thread, Lock
 from typing import List, Dict
 
-from app.rqm.job import Job, EmptyJob, empty_job
+from app.job.job import Job, EmptyJob, empty_job
 
 
 class JobRunner(Thread):
