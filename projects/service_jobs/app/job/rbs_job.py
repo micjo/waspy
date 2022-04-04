@@ -6,13 +6,14 @@ from typing import List, Union
 
 from pydantic import BaseModel
 
+from app.job.logbook_post import LogBookDb
 from app.rbs import yield_angle_fit as fit
 from app.rbs.data_serializer import RbsDataSerializer
 from app.rbs.entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsData, \
     RbsRqmMinimizeYield
 from app.rbs.rbs_setup import RbsSetup, get_positions_as_coordinate, get_sum, single_coordinate_to_string, \
     get_positions_as_float, convert_float_to_coordinate
-from app.rqm.job import Job
+from app.job.job import Job
 from app.trends.trend import Trend
 import requests
 from hive_exception import HiveError
@@ -41,9 +42,10 @@ class RbsJob(Job):
     _finished_recipes: List[RbsRecipeStatus]
     _aborted: bool
     _trends: List[Trend]
+    _log_book_db: LogBookDb
 
     def __init__(self, job_model: RbsJobModel, rbs_setup: RbsSetup, data_serializer: RbsDataSerializer,
-                 trends: List[Trend]):
+                 log_book_db: LogBookDb, trends: List[Trend]):
         self._rbs_setup = rbs_setup
         self._data_serializer = data_serializer
         self._job_model = job_model
@@ -54,14 +56,13 @@ class RbsJob(Job):
         self._finished_recipes = []
         self._aborted = False
         self._trends = trends
+        self._log_book_db = log_book_db
 
     def execute(self):
         self._data_serializer.set_base_folder(self._job_model.rqm_number)
         self._rbs_setup.set_active_detectors(self._job_model.detectors)
-        logging.info(" >>>> posting to logbook")
-        requests.post("http://localhost:8001/log_rbs_start?rbs_name=" + self._job_model.rqm_number)
+        self._log_book_db.rbs_start(self._job_model)
         start_time = datetime.now()
-
         logging.info("[RBS] Job Start: '" + str(self._job_model) + "'")
         for recipe in self._job_model.recipes:
             if self._aborted:
@@ -86,6 +87,7 @@ class RbsJob(Job):
         self._data_serializer.save_rqm(self.serialize())
         self._rbs_setup.resume()
         self._data_serializer.resume()
+        self._log_book_db.rbs_end(self._job_model)
 
     def serialize(self):
         self._update_active_recipe()
@@ -130,6 +132,8 @@ class RbsJob(Job):
             run_random(recipe, self._rbs_setup, self._data_serializer)
         if recipe.type == RecipeType.channeling:
             run_channeling(recipe, self._rbs_setup, self._data_serializer)
+
+        self._log_book_db.rbs_recipe_finish(self._job_model.rqm_number, recipe)
 
     def _finish_recipe(self):
         self._update_active_recipe()
