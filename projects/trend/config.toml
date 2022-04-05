@@ -1,4 +1,18 @@
 trend =  [
-#    ["x_position","http://localhost:8000/api/rbs/aml_x_y", "motor_1_position"],
-    ["y_position","http://localhost:8000/api/rbs/aml_x_y", "motor_2_position"],
+    ["rbs_x","http://127.0.0.1:20000/api/latest", "motor_1_position"],
+    ["rbs_y","http://127.0.0.1:20000/api/latest", "motor_2_position"],
+    ["rbs_phi","http://127.0.0.1:20000/api/latest", "motor_1_position"],
+    ["rbs_zeta","http://127.0.0.1:20000/api/latest", "motor_2_position"],
+    ["rbs_current","http://127.0.0.1:20100/api/latest", "current(nA)"],
+    ["rbs_current","http://127.0.0.1:20100/api/latest", "current(nA)"],
+    ["erd_ad1_count_rate","http://127.0.0.1:22400/api/latest", "ad1.total_rate"],
+    ["erd_ad2_count_rate","http://127.0.0.1:22400/api/latest", "ad2.total_rate"],
 ]
+
+
+#TODO:
+# verify trending works for all these values
+# remove trending functionality from rbs_service project
+# cleanup (flatten folder structure + factories) the rbs_service project
+# write keithley daemon + add trending
+# add sql table for erd service (other items ?)
