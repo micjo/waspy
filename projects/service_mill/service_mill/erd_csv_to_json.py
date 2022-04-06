@@ -29,8 +29,8 @@ def drop_nan(data: Dict) -> List[Dict]:
 
 def parse_rqm_number(top_section: str) -> Dict:
     df = pd.read_csv(StringIO(top_section))
-    rqm_number = str(df["rqm_number"][0])
-    top_settings = {"rqm_number": rqm_number}
+    job_id = str(df["job_id"][0])
+    top_settings = {"job_id": job_id}
     return top_settings
 
 

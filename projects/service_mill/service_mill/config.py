@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseSettings, BaseModel
 
 from erd_entities import ErdConfig
-from hw_entities import AnyConfig
+from entities import AnyConfig
 from rbs_entities import RbsConfig
 import logging
 import tomli

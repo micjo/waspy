@@ -2,17 +2,15 @@ import logging
 import copy
 import traceback
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel
 
 from erd_data_serializer import ErdDataSerializer
-from erd_entities import ErdJobModel, ErdStandardRecipe, PositionCoordinates, RecipeType, ErdDepletionRecipe
+from erd_entities import ErdJobModel, ErdRecipe, PositionCoordinates
 from erd_setup import ErdSetup, get_z_range
 from job import Job
-# from app.trends.trend import Trend
 from hive_exception import HiveError
-from logbook_db import LogBookDb
 
 
 class ErdRecipeStatus(BaseModel):
@@ -30,15 +28,14 @@ empty_erd_recipe_status = ErdRecipeStatus(recipe_id="", start_time=datetime.now(
 class ErdJob(Job):
     _data_serializer: ErdDataSerializer
     _erd_setup: ErdSetup
-    _job_model : ErdJobModel
+    _job_model: ErdJobModel
     _did_error: bool
     _error_message: str
     _active_recipe: ErdRecipeStatus
     _finished_recipes: List[ErdRecipeStatus]
     _aborted: bool
-    _log_book_db: LogBookDb
 
-    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, data_serializer: ErdDataSerializer, log_book_db: LogBookDb):
+    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, data_serializer: ErdDataSerializer):
         self._erd_setup = erd_setup
         self._data_serializer = data_serializer
         self._job_model = job_model
@@ -48,12 +45,10 @@ class ErdJob(Job):
         self._active_recipe = empty_erd_recipe_status
         self._finished_recipes = []
         self._aborted = False
-        self._log_book_db = log_book_db
 
     def execute(self):
-        self._data_serializer.set_base_folder(self._job_model.rqm_number)
+        self._data_serializer.prepare_job(self._job_model)
         self._erd_setup.reupload_config()
-        start_time=datetime.now()
 
         logging.info("[RQM ERD] RQM Start: '" + str(self._job_model) + "'")
         for recipe in self._job_model.recipes:
@@ -70,17 +65,8 @@ class ErdJob(Job):
                 break
             self._finish_recipe()
 
-        end_time = datetime.now()
-
-        trends = self._log_b
-        logging.info("REPLACE TRENDING !!!")
-        # for trend in self._trends:
-        #     trend_values = trend.get_values(start_time, end_time, timedelta(seconds=1))
-        #     self._data_serializer.save_trends(trend.get_file_stem(), trend_values)
-
-        self._data_serializer.save_rqm(self.get_status())
+        self._data_serializer.finalize_job(self._job_model, self.get_status())
         self._erd_setup.resume()
-        self._data_serializer.resume()
 
     def get_status(self):
         self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
@@ -116,10 +102,7 @@ class ErdJob(Job):
         self._active_recipe.run_time = timedelta(0)
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec
-        if recipe.type == RecipeType.standard:
-            run_standard_erd_recipe(recipe, self._erd_setup, self._data_serializer)
-        if recipe.type == RecipeType.depletion:
-            run_depletion_erd_recipe(recipe, self._erd_setup, self._data_serializer)
+        run_erd_recipe(recipe, self._erd_setup, self._data_serializer)
 
     def _finish_recipe(self):
         self.get_status()
@@ -127,18 +110,17 @@ class ErdJob(Job):
         self._active_recipe = empty_erd_recipe_status
 
 
-def run_standard_erd_recipe(recipe: ErdStandardRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
+def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
     erd_setup.wait_for_arrival()
     erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.file_stem)
     erd_setup.start_acquisition()
     erd_setup.wait_for_acquisition_started()
-    z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment)
+    z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment, recipe.z_repeat)
     if len(z_range) == 0:
         raise HiveError("Invalid z range")
     wait_time = recipe.measuring_time_sec / len(z_range)
-    logging.info("testing positions: " + str(z_range) + "wait_time_sec between steps: " + str(
-        wait_time) + ", total measurement time: " + str(recipe.measuring_time_sec))
+    _log_recipe(recipe, wait_time, z_range)
     for z in z_range:
         erd_setup.move(z)
         erd_setup.wait_for(wait_time)
@@ -148,13 +130,10 @@ def run_standard_erd_recipe(recipe: ErdStandardRecipe, erd_setup: ErdSetup, erd_
     erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
 
 
-def run_depletion_erd_recipe(recipe: ErdDepletionRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
-    # todo:
-    # z_start = 10 , z_end = 15, z_increment = 1, time = 3600, z_repeat = 2
-    # z_range : [10,11,12,13,14,15,10,11,12,13,14,15], wait for 3600/12 each time
-    print("running depletion erd recipe")
-
-
-
-
-
+def _log_recipe(recipe, wait_time, z_range):
+    position_list = "("
+    position_list += "; ".join([str(position.z) for position in z_range])
+    position_list += ")"
+    logging.info("Recipe: " + recipe.file_stem + ", wait_time_sec between steps: " + str(wait_time) +
+                 ", total measurement time: " + str(recipe.measuring_time_sec) +
+                 ", z-positions: \n\t" + position_list)

@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime
 from pathlib import Path
 from enum import Enum
-from typing import List, Optional, Union, Literal, Dict
+from typing import List, Optional, Union, Literal, Dict, Annotated
 
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
-from hw_entities import AmlConfig, SimpleConfig
+from entities import AmlConfig, SimpleConfig, DoublePath
 
 
 class InputDir(BaseModel):
@@ -18,11 +18,6 @@ class OutputDir(BaseModel):
     done: Path
     failed: Path
     data: Path
-
-
-class DoublePath(BaseModel):
-    local: Path
-    remote: Path
 
 
 class DispatcherConfig(BaseModel):
@@ -215,30 +210,10 @@ class RbsRqmFixed(BaseModel):
 
 
 class RbsJobModel(BaseModel):
-    recipes: List[Union[RbsRqmChanneling, RbsRqmRandom]]
+    recipes: List[Annotated[Union[RbsRqmChanneling, RbsRqmRandom], Field(discriminator='type')]]
     job_id: str
     type = "rbs"
     detectors: List[CaenDetectorModel]
-
-    @classmethod
-    def validate_recipes(cls, rbs_rqm):
-        '''
-        As of yet (2021 06), pydantic doesnt provide nice errors when using a Union. A PR is ongoing
-        (https://github.com/samuelcolvin/pydantic/pull/2336) to make this better in the union definition itself.
-        Consider switching to this approach when it gets released. As a temporary measure, validation of recipes now
-        happens separately before creating the RbsRqm instance
-        '''
-
-        if "recipes" not in rbs_rqm:
-            raise AttributeError("type object 'RbsRqm', has no attribute 'recipes'")
-
-        for recipe in rbs_rqm["recipes"]:
-            if "type" not in recipe:
-                raise AttributeError("type object 'Recipes', has no attribute 'type'")
-            if recipe["type"] == "random":
-                RbsRqmRandom.parse_obj(recipe)
-            if recipe["type"] == "channeling":
-                RbsRqmChanneling.parse_obj(recipe)
 
     class Config:
         use_enum_values = True

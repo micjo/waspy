@@ -1,15 +1,8 @@
 from datetime import timedelta
-from enum import Enum
-from typing import List, Optional, Union, Literal
-from pydantic import BaseModel, validator, Field
-from pathlib import Path
+from typing import List, Optional
+from pydantic import BaseModel, Field
 
-from hw_entities import SimpleConfig, MdriveConfig
-
-
-class DoublePath(BaseModel):
-    local: Path
-    remote: Path
+from entities import SimpleConfig, MdriveConfig, DoublePath
 
 
 class ErdHardware(BaseModel):
@@ -23,13 +16,7 @@ class ErdConfig(BaseModel):
     data_dir: DoublePath
 
 
-class RecipeType(str, Enum):
-    standard = "standard"
-    depletion = "depletion"
-
-
-class ErdStandardRecipe(BaseModel):
-    type: Literal[RecipeType.standard]
+class ErdRecipe(BaseModel):
     measuring_time_sec: int
     sample_id: str
     file_stem: str
@@ -37,20 +24,7 @@ class ErdStandardRecipe(BaseModel):
     z_start: float
     z_end: float
     z_increment: float
-
-
-class ErdDepletionRecipe(BaseModel):
-    type: Literal[RecipeType.depletion]
-    measuring_time_sec: int
-    sample_id: str
-    file_stem: str
-    theta: float
-    z_start: float
-    z_end: float
-    z_increment: float
-    z_repeat: int = Field(
-        description="The recipe will run from z_start to z_end, for z_repeat times."
-    )
+    z_repeat: int = Field(1, description="The recipe will run from z_start to z_end, for z_repeat times.")
 
 
 class PositionCoordinates(BaseModel):
@@ -59,8 +33,8 @@ class PositionCoordinates(BaseModel):
 
 
 class ErdJobModel(BaseModel):
-    rqm_number: str
-    recipes: List[Union[ErdDepletionRecipe, ErdStandardRecipe]]
+    job_id: str
+    recipes: List[ErdRecipe]
     type = "erd"
 
     class Config:
@@ -86,7 +60,7 @@ class ErdJobModel(BaseModel):
         }
 
 
-empty_erd_rqm = ErdJobModel(recipes=[], rqm_number="")
+empty_erd_rqm = ErdJobModel(recipes=[], job_id="")
 
 
 class ActiveRecipe(BaseModel):

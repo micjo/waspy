@@ -1,9 +1,5 @@
-import logging
-import traceback
+import io
 from datetime import datetime
-from pathlib import Path
-from shutil import copy2, move
-import os
 import copy
 from threading import Lock
 from typing import List, Dict, Union
@@ -11,6 +7,7 @@ import numpy as np
 import pandas as pd
 import json
 
+from data_serializer import DataSerializer
 from logbook_db import LogBookDb
 from rbs_entities import DoublePath, RbsData, CaenDetectorModel, RbsJobModel, RbsRqmRandom, RbsRqmChanneling
 from matplotlib import pyplot as plt
@@ -19,18 +16,13 @@ import matplotlib
 matplotlib.use('Agg')
 
 
-# remote copy functionality could be a decorator
 class RbsDataSerializer:
-    data_dir: DoublePath
-    base_folder: Path
-    sub_folder: Path
+    _data_store: DataSerializer
     _db: LogBookDb
     _time_loaded: datetime
 
-    def __init__(self, data_dir: DoublePath, db: LogBookDb):
-        self.data_dir = data_dir
-        self.sub_folder = Path("")
-        self._make_folders()
+    def __init__(self, data_serializer: DataSerializer, db: LogBookDb):
+        self._data_store = data_serializer
         self._lock = Lock()
         self._abort = False
         self._db = db
@@ -47,72 +39,36 @@ class RbsDataSerializer:
         with self._lock:
             return copy.deepcopy(self._abort)
 
-    def _make_folders(self):
-        Path.mkdir(self.data_dir.local, parents=True, exist_ok=True)
-        Path.mkdir(self.data_dir.remote, parents=True, exist_ok=True)
-
-    def clear_sub_folder(self):
-        self.sub_folder = Path("")
-
-    def prepare_output(self, job: RbsJobModel):
-        self.base_folder = Path(job.job_id)
-        Path.mkdir(self.data_dir.local / self.base_folder, exist_ok=True)
-        Path.mkdir(self.data_dir.remote / self.base_folder, exist_ok=True)
-        subdir = "old_" + datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
-        self.move_files(self.data_dir.local, subdir)
-        self.move_files(self.data_dir.remote, subdir)
-        self._db.start_rbs_job(job)
+    def prepare_job(self, job: RbsJobModel):
+        self._data_store.set_base_folder(job.job_id)
+        self._db.job_start(job)
         self._time_loaded = datetime.now()
 
-    def _in_local_path(self, file_stem: str):
-        return self.data_dir.local / self.base_folder / self.sub_folder / file_stem
-
-    def _in_remote_path(self, file_stem: str):
-        return self.data_dir.remote / self.base_folder / self.sub_folder / file_stem
-
-    def save_job_result(self, job_model: RbsJobModel, job_result: Dict):
-        trends = self._db.get_rbs_trends(str(self._time_loaded), str(datetime.now()))
-        df = pd.DataFrame.from_dict(trends)
-        filename = "trends_{}.csv".format(job_model.job_id)
-        _write_to_file(self._in_local_path(filename), df.to_csv(index=False))
-        _try_copy(self._in_local_path(filename), self._in_remote_path(filename))
-        filename = "active_rqm.json"
-        _write_to_file(self._in_local_path(filename), json.dumps(job_result, indent=4, default=str))
-        _try_copy(self._in_local_path(filename), self._in_remote_path(filename))
-        self._db.rbs_end(job_model)
+    def finalize_job(self, job_model: RbsJobModel, job_result: Dict):
+        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "rbs")
+        self._data_store.write_csv_panda_to_disk("trends.csv", trends)
+        self._data_store.write_json_to_disk("active_rqm.json", job_result)
+        self._db.job_end(job_model)
         self.resume()
 
     def save_recipe_result(self, job_id:str,  recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
         self._db.rbs_recipe_finish(job_id, recipe)
 
-    def move_files(self, base, subdir):
-        files_to_move = [x for x in (base / self.base_folder).iterdir() if not x.stem.startswith("old_")]
-        if files_to_move:
-            full_subdir = base / self.base_folder / subdir
-            logging.info("Existing files found, moving them to: '" + str(full_subdir) + "'.")
-            Path.mkdir(full_subdir, exist_ok=True)
-            for file in files_to_move:
-                move(file, full_subdir)
+    def prepare_yield_step(self, sub_folder: str):
+        self._data_store.set_sub_folder(sub_folder)
 
-    def set_sub_folder(self, sub_folder: str):
-        self.sub_folder = Path(sub_folder)
-        Path.mkdir(self.data_dir.remote / self.base_folder / self.sub_folder, exist_ok=True)
-
-    def _get_folder(self):
-        return self.base_folder / self.sub_folder
+    def finalize_yield_step(self):
+        self._data_store.set_sub_folder("")
 
     def _flush_plot(self, fig, file_stem):
         if self.aborted():
             return
         plt.subplots_adjust(hspace=0.5)
-        histogram_file = file_stem + ".png"
-        histogram_path = self.data_dir.local / self._get_folder() / histogram_file
-        Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
-        logging.info("Storing histogram plot to path: " + str(histogram_path))
-        plt.savefig(histogram_path)
-        remote_histogram_path = self.data_dir.remote / self._get_folder() / histogram_file
-        _try_copy(histogram_path, remote_histogram_path)
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        self._data_store.write_bytes_to_disk(file_stem + ".png", buf)
         plt.close(fig)
+        plt.clf()
 
     def plot_histograms(self, rbs_data: RbsData, file_stem: str):
         if self.aborted():
@@ -150,7 +106,6 @@ class RbsDataSerializer:
             ax.legend()
             ax.set_xlabel("energy level")
             ax.set_ylabel("yield")
-
         self._flush_plot(fig, file_stem)
 
     def plot_energy_yields(self, file_stem,
@@ -167,62 +122,28 @@ class RbsDataSerializer:
         plt.ylabel("yield").set_fontsize(15)
         plt.title(file_stem)
         plt.grid()
-
-        yield_plot_file = file_stem + "_yields.png"
-        yield_plot_path = self.data_dir.local / self._get_folder() / yield_plot_file
-        Path.mkdir(yield_plot_path.parent, parents=True, exist_ok=True)
-        logging.info("Storing yield plot to path: " + str(yield_plot_path))
-        plt.savefig(yield_plot_path)
-        plt.clf()
-
-        remote_yield_plot_path = self.data_dir.remote / self._get_folder() / yield_plot_file
-        _try_copy(yield_plot_path, remote_yield_plot_path)
-        plt.close(fig)
+        self._flush_plot(fig, file_stem + "_yields")
 
     def store_yields(self, file_stem, angle_values, energy_yields):
         if self.aborted():
             return
-        yields_file = file_stem + "_yields.txt"
-        yields_path = self.data_dir.local / self._get_folder() / yields_file
 
-        with open(yields_path, 'w+') as f:
-            for index, angle in enumerate(angle_values):
-                f.write("{angle}, {energy_yield}\n".format(angle=angle, energy_yield=energy_yields[index]))
-
-        remote_yields_path = self.data_dir.remote / self._get_folder() / yields_file
-        _try_copy(yields_path, remote_yields_path)
+        content = ""
+        for index, angle in enumerate(angle_values):
+            content += "{angle}, {energy_yield}\n".format(angle=angle, energy_yield=energy_yields[index])
+        self._data_store.write_text_to_disk(file_stem + "_yields.txt", content)
 
     def save_histograms(self, rbs_data: RbsData, file_stem, sample_id):
         if self.aborted():
             return
+
         plt.title(file_stem)
         for index, detector in enumerate(rbs_data.detectors):
             header = _serialize_histogram_header(rbs_data, detector.identifier, file_stem, sample_id)
             formatted_data = _format_caen_histogram(rbs_data.histograms[index])
             full_data = header + "\n" + formatted_data
-            histogram_file = file_stem + "_" + detector.identifier + ".txt"
-            histogram_path = self.data_dir.local / self._get_folder() / histogram_file
-            Path.mkdir(histogram_path.parent, parents=True, exist_ok=True)
-            logging.info("Storing histogram data to path: " + str(histogram_path))
-            with open(histogram_path, 'w+') as f:
-                f.write(full_data)
 
-            remote_histogram_path = self.data_dir.remote / self._get_folder() / histogram_file
-            _try_copy(histogram_path, remote_histogram_path)
-
-
-def _write_to_file(file_path: Path, content: str):
-    with open(file_path, 'w+') as f:
-        f.write(content)
-
-
-def _try_copy(source, destination):
-    logging.info("copying {source} to {destination}".format(source=source, destination=destination))
-    try:
-        Path.mkdir(destination.parent, exist_ok=True)
-        copy2(source, destination)
-    except:
-        logging.error(traceback.format_exc())
+            self._data_store.write_text_to_disk(file_stem + "_" + detector.identifier + ".txt", full_data)
 
 
 def _serialize_histogram_header(rbs_data: RbsData, detector_id: str, file_stem: str, sample_id: str):

@@ -111,7 +111,6 @@ class ErdSetup:
             "set_filename": spectrum_filename
         })
 
-
     @fakeable
     def reupload_config(self):
         if self._aborted():
@@ -153,15 +152,18 @@ class ErdSetup:
                 break
 
 
-
-def get_z_range(start, end, increment) -> List[PositionCoordinates]:
+def get_z_range(start, end, increment, repeat=1) -> List[PositionCoordinates]:
     if increment == 0:
-        return [PositionCoordinates(z=start)]
-    coordinate_range = np.arange(start, end + increment, increment)
-    logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " + str(increment))
-    numpy_z_steps = np.around(coordinate_range, decimals=2)
-    positions = [PositionCoordinates(z=float(z_step)) for z_step in numpy_z_steps]
-    return positions
+        positions = [PositionCoordinates(z=start)]
+    else:
+        coordinate_range = np.arange(start, end + increment, increment)
+        logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " + str(increment))
+        numpy_z_steps = np.around(coordinate_range, decimals=2)
+        positions = [PositionCoordinates(z=float(z_step)) for z_step in numpy_z_steps]
+
+    repeated_positions = []
+    [repeated_positions.extend(positions) for _ in range(repeat)]
+    return repeated_positions
 
 
 def move_mdrive(request_id, url: str, position: float):

@@ -6,7 +6,7 @@ from pydantic import create_model
 from pydantic.generics import GenericModel
 
 import http_helper as http
-from hw_entities import AnyHardware
+from entities import AnyHardware
 from hw_action import get_caen_histogram, pack
 from config import HiveConfig
 
