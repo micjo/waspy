@@ -54,7 +54,7 @@ class RbsJob(Job):
         self._aborted = False
 
     def execute(self):
-        self._data_serializer.prepare_output(self._job_model)
+        self._data_serializer.prepare_job(self._job_model)
         self._rbs_setup.initialize(self._job_model.detectors)
         logging.info("[RBS] Job Start: '" + str(self._job_model) + "'")
 
@@ -72,7 +72,7 @@ class RbsJob(Job):
                 break
             self._finish_recipe()
 
-        self._data_serializer.save_job_result(self._job_model, self.get_status())
+        self._data_serializer.finalize_job(self._job_model, self.get_status())
         self._rbs_setup.finish()
 
     def get_status(self):
@@ -148,9 +148,9 @@ def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: Rbs
     for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
         yield_recipe = _make_minimize_yield_recipe(recipe, vary_coordinate)
         yield_recipe.file_stem = recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name)
-        data_serializer.set_sub_folder(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
+        data_serializer.prepare_yield_step(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
         _minimize_yield(yield_recipe, rbs, data_serializer)
-    data_serializer.clear_sub_folder()
+    data_serializer.finalize_yield_step()
 
     fixed_histograms = _run_fixed(_make_fixed_recipe(recipe), rbs, data_serializer).histograms
     random_histograms = run_random(_make_random_recipe(recipe), rbs, data_serializer).histograms

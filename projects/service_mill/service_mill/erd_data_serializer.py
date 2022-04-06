@@ -1,14 +1,16 @@
-import json
 import logging
 import traceback
 from datetime import datetime
 from pathlib import Path
 from shutil import copy2, move
 import copy
-import pandas as pd
+from typing import Dict
+
 from threading import Lock
 
-from rbs_entities import DoublePath
+from data_serializer import DataSerializer
+from erd_entities import ErdJobModel
+from logbook_db import LogBookDb
 
 
 def _try_copy(source, destination):
@@ -21,16 +23,15 @@ def _try_copy(source, destination):
 
 
 class ErdDataSerializer:
-    data_dir: DoublePath
-    base_folder: Path
-    sub_folder: Path
+    _data_store: DataSerializer
+    _db: LogBookDb
+    _time_loaded: datetime
 
-    def __init__(self, data_dir: DoublePath):
-        self.data_dir = data_dir
-        self.sub_folder = Path("")
-        self._make_folders()
+    def __init__(self, data_store: DataSerializer, log_book_db: LogBookDb):
+        self._data_store = data_store
         self._lock = Lock()
         self._abort = False
+        self._db = log_book_db
 
     def abort(self):
         with self._lock:
@@ -44,62 +45,19 @@ class ErdDataSerializer:
         with self._lock:
             return copy.deepcopy(self._abort)
 
-    def _make_folders(self):
-        Path.mkdir(self.data_dir.local, parents=True, exist_ok=True)
-        Path.mkdir(self.data_dir.remote, parents=True, exist_ok=True)
+    def prepare_job(self, job: ErdJobModel):
+        self._data_store.set_base_folder(job.job_id)
+        self._db.job_start(job)
+        self._time_loaded = datetime.now()
 
-    def clear_sub_folder(self):
-        self.sub_folder = Path("")
-
-    def set_base_folder(self, base_folder: str):
-        self.base_folder = Path(base_folder)
-        Path.mkdir(self.data_dir.local / self.base_folder, exist_ok=True)
-        Path.mkdir(self.data_dir.remote / self.base_folder, exist_ok=True)
-        subdir = "old_" + datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
-        self.move_files(self.data_dir.local, subdir)
-        self.move_files(self.data_dir.remote, subdir)
-
-    def move_files(self, base, subdir):
-        files_to_move = [x for x in (base / self.base_folder).iterdir() if not x.stem.startswith("old_")]
-        if files_to_move:
-            full_subdir = base / self.base_folder / subdir
-            logging.info("Existing files found, moving them to: '" + str(full_subdir) + "'.")
-            Path.mkdir(full_subdir, exist_ok=True)
-            for file in files_to_move:
-                move(file, full_subdir)
-
-    def save_trends(self, file_stem: str, trends: dict):
-        file_stem = "trends_{}.txt".format(file_stem)
-        local = self.data_dir.local / self._get_folder() / file_stem
-        remote = self.data_dir.remote / self._get_folder() / file_stem
-        df = pd.DataFrame(trends)
-
-        with open(local, 'w+') as f:
-            f.write(df.to_csv(index=False))
-        _try_copy(local, remote)
-
-    def save_rqm(self, rqm: dict):
-        file_stem = "active_rqm.txt"
-        local = self.data_dir.local / self._get_folder() / file_stem
-        remote = self.data_dir.remote / self._get_folder() / file_stem
-        with open(local, 'w+') as f:
-            f.write("Running RQM:\n")
-            f.write(json.dumps(rqm, indent=4, default=str))
-        _try_copy(local, remote)
-
-    def set_sub_folder(self, sub_folder: str):
-        self.sub_folder = Path(sub_folder)
-        Path.mkdir(self.data_dir.remote / self.base_folder / self.sub_folder, exist_ok=True)
-
-    def _get_folder(self):
-        return self.base_folder / self.sub_folder
+    def finalize_job(self, job_model: ErdJobModel, job_result: Dict):
+        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "erd")
+        self._data_store.write_csv_panda_to_disk("trends.csv", trends)
+        self._data_store.write_json_to_disk("active_rqm.json", job_result)
+        self._db.job_end(job_model)
+        self.resume()
 
     def save_histogram(self, histogram: str, file_stem):
         if self.aborted():
             return
-        file_stem += ".flt"
-        local = self.data_dir.local / self._get_folder() / file_stem
-        remote = self.data_dir.remote / self._get_folder() / file_stem
-        with open(local, 'w+') as f:
-            f.write(histogram)
-        _try_copy(local, remote)
+        self._data_store.write_text_to_disk(file_stem + ".flt", histogram)

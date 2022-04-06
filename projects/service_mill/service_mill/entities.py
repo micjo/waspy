@@ -2,6 +2,7 @@ from typing import List, Union, Dict, Optional
 
 from pydantic.generics import BaseModel
 from enum import Enum
+from pathlib import Path
 
 
 class HwControllerType(str, Enum):
@@ -45,3 +46,9 @@ class AnyHardware(BaseModel):
 
 class AnyConfig(BaseModel):
     hardware: AnyHardware
+
+
+class DoublePath(BaseModel):
+    local: Path
+    remote: Path
+
