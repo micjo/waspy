@@ -103,6 +103,7 @@ class ErdJob(Job):
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec
         run_erd_recipe(recipe, self._erd_setup, self._data_serializer)
+        self._data_serializer.save_recipe_result(self._job_model.job_id, recipe)
 
     def _finish_recipe(self):
         self.get_status()

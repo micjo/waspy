@@ -9,7 +9,7 @@ from typing import Dict
 from threading import Lock
 
 from data_serializer import DataSerializer
-from erd_entities import ErdJobModel
+from erd_entities import ErdJobModel, ErdRecipe
 from logbook_db import LogBookDb
 
 
@@ -56,6 +56,9 @@ class ErdDataSerializer:
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
         self._db.job_end(job_model)
         self.resume()
+
+    def save_recipe_result(self, job_id:str,  recipe: ErdRecipe):
+        self._db.erd_recipe_finish(job_id, recipe)
 
     def save_histogram(self, histogram: str, file_stem):
         if self.aborted():
