@@ -71,7 +71,7 @@ class SqliteDb:
         return df
 
     def _exec(self, query):
-        logging.info("executing sql query: {" + query + "}")
+        logging.debug("executing sql query: {" + query + "}")
         con = sqlite3.connect(self._sqlite_file)
         cur = con.cursor()
         answer = cur.execute(query)
