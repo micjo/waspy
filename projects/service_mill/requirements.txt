@@ -1,0 +1,13 @@
+uvicorn
+pandas
+matplotlib
+numpy
+requests
+pydantic
+scipy
+fastapi
+pytest
+aiofiles
+python-multipart
+tomli
+
