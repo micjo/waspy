@@ -18,7 +18,7 @@ class GlobalConfig(BaseSettings):
     CONFIG_FILE = "../config.toml"
     LOGBOOK_URL = "http://localhost:8001"
     LOG_TO: LogOption = "stdout"
-    FILE_PATH: Path = "../trends.txt"
+    FILE_PATH: Path = "trends.txt"
 
 
 def trend(trend_list):
