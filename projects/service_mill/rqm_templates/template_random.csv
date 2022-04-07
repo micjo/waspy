@@ -1,0 +1,11 @@
+rqm_number,,,,,,,,
+hello,,,,,,,,
+,,,,,,,,
+board,channel,identifier,bins_min,bins_max,bins_width,,,
+6,0,d01,0,8192,1024,,,
+6,1,d02,0,8192,1024,,,
+,,,,,,,,
+type,sample_id,file_stem,charge_total,x,y,phi,zeta,det
+random,AE007607_D02_A,RBS21_071_01B,1000,10,22,,,
+random,AE007607_D18_A,RBS21_071_03B,1000,22,55,,,
+random,AE007607_D20_A,RBS21_071_05B,1000,22,66,,,
