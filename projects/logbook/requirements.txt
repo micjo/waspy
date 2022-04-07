@@ -1,0 +1,4 @@
+-e ../../lib/restapi
+-e ../../lib/hardware_control
+uvicorn
+pandas
