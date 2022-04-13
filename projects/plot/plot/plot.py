@@ -13,11 +13,6 @@ import json
 import ctypes
 from pydantic import BaseSettings
 
-# needed for older python versions
-from pandas.plotting import register_matplotlib_converters
-
-register_matplotlib_converters()
-
 request = "minutes"
 import sys
 
