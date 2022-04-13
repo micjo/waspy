@@ -13,14 +13,16 @@ import json
 import ctypes
 from pydantic import BaseSettings
 
+from pandas.plotting import register_matplotlib_converters
+
+register_matplotlib_converters()
+
 request = "minutes"
 import sys
 
-hide = True
-
 
 class GlobalConfig(BaseSettings):
-    LOGBOOK_URL = "http://localhost:8001"
+    LOGBOOK_URL = "http://169.254.150.200:8001"
 
 
 env_config = GlobalConfig()
@@ -30,7 +32,7 @@ class Graph:
     def __init__(self):
         self._request_interval = 'minutes'
         self._log_scale = False
-        self._hide_term = False
+        self._hide_term = True
 
         self.fig = plt.figure(sys.argv[2])
         self.fig.set_figheight(3.2)
@@ -55,7 +57,7 @@ class Graph:
         self.min_button = widgets.Button(plt.axes([0.94, 0.01, 0.05, 0.060]), 'min')
         self.min_button.on_clicked(lambda _: self._set_request_interval("minutes"))
         self.terminal_button = widgets.Button(plt.axes([0.01, 0.01, 0.075, 0.060]), 'Term.')
-        self.terminal_button.on_clicked(lambda _: self._toggle_show())
+        self.terminal_button.on_clicked(lambda _: self.toggle_show())
         self.b_log = widgets.Button(plt.axes([0.01, 0.94, 0.075, 0.060]), 'lin/log')
         self.b_log.on_clicked(lambda _: self._toggle_lin_log())
 
@@ -122,7 +124,7 @@ class Graph:
     def _toggle_lin_log(self):
         self._log_scale = not self._log_scale
 
-    def _toggle_show(self):
+    def toggle_show(self):
         kernel32 = ctypes.WinDLL('kernel32')
         user32 = ctypes.WinDLL('user32')
         hWnd = kernel32.GetConsoleWindow()
@@ -142,5 +144,5 @@ if __name__ == "__main__":
                                   repeat=True,
                                   cache_frame_data=False,
                                   blit=False)
-
+    graph.toggle_show()
     plt.show()
