@@ -31,17 +31,24 @@ def fakeable(func):
             return func
     return wrap_func()
 
+
+def fake_count():
+    value = 0
+    for i in range(0, 10):
+        time.sleep(0.1)
+        str_value = str(round(value, 2))
+        print("fake-counter: " + str_value + " -> 10")
+        data = {"charge(nC)": str_value, "target_charge(nC)": 10}
+        value += 1.05
+
+
 def fake_counter(func):
     def wrap_func(*args, **kwargs):
-        value = 0
-        for i in range(0, 10):
-            time.sleep(0.1)
-            str_value = str(round(value, 2))
-            print("fake-counter: " + str_value + " -> 10")
-            data = {"charge(nC)": str_value, "target_charge(nC)": 10}
-            value += 1.05
-
-    return wrap_func
+        if faker:
+            return fake_count
+        else:
+            return func
+    return wrap_func()
 
 
 class RbsSetup:
