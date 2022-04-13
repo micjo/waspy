@@ -39,8 +39,8 @@ class SqliteDb:
         """.format(id=row_id, erd=erd, recipe=recipe_name))
 
     def log_trend(self, trends: dict):
-        columns = ",".join(list(trends.keys()))
-        surround_values = ",".join(["'" + str(values) + "'" for values in trends.values()])
+        columns = ",".join([str(key) for key, value in trends.items() if str(value) != ""])
+        surround_values = ",".join([str(value) for value in trends.values() if str(value) != ""])
         self._exec("INSERT INTO trend ({columns}) VALUES ({values});".format(columns=columns, values=surround_values))
 
     def get_trending(self) -> List[str]:
