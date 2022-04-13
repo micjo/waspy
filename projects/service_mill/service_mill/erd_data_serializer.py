@@ -52,7 +52,9 @@ class ErdDataSerializer:
 
     def finalize_job(self, job_model: ErdJobModel, job_result: Dict):
         trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "erd")
-        self._data_store.write_csv_panda_to_disk("trends.csv", trends)
+        self._data_store.write_csv_panda_to_disk("erd_trends.csv", trends)
+        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "any")
+        self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
         self._db.job_end(job_model)
         self.resume()

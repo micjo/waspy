@@ -1,15 +1,15 @@
 [Unit]
-Description=Hive middle layer - python abstractions
+Description=Hive service mill layer - Runs rbs and erd experiments and exposes hardware controllers
 After=wait_eth_up.service
 Requires=wait_eth_up.service
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root/wasp-hive
-ExecStart=/root/wasp-hive/run.sh
+WorkingDirectory=/root/wasp-hive/projects/service_mill
+ExecStart=/root/wasp-hive/projects/service_mill/run_service_mill.sh
 Restart=on-failure
-SyslogIdentifier=hive
+SyslogIdentifier=hive-service
 
 [Install]
 WantedBy=multi-user.target
