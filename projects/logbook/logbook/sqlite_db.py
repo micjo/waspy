@@ -48,6 +48,15 @@ class SqliteDb:
         column_list = [''.join(item) for item in response]
         return column_list
 
+    def get_log_messages(self) -> List[str]:
+        return self._exec("SELECT * FROM log_book;")
+
+    def get_rbs_service_log(self) -> List[str]:
+        return self._exec("SELECT * FROM rbs_service_log;")
+
+    def get_erd_service_log(self) -> List[str]:
+        return self._exec("SELECT * FROM erd_service_log;")
+
     def get_trend(self, start: str, end: str, id: str, step: int):
         dataframe = self._exec_panda("""
            select datetime(utc, 'localtime') as timestamp, {id} from trend where datetime(utc, 'localtime') between '{start}' and '{end}'
