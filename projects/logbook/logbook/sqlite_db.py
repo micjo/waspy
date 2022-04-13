@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from typing import List
 import pandas as pd
+import numpy as np
 
 logging.basicConfig(
     format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
@@ -48,20 +49,21 @@ class SqliteDb:
         return column_list
 
     def get_trend(self, start: str, end: str, id: str, step: int):
-        return self._exec("""
+        dataframe = self._exec_panda("""
            select datetime(utc, 'localtime') as timestamp, {id} from trend where datetime(utc, 'localtime') between '{start}' and '{end}'
            and strftime("%S", utc) % '{step}' == 0
         """.format(id=id, start=start, end=end, step=step))
+        dataframe.replace({np.nan: None}, inplace=True)
+        return dataframe.to_dict(orient='list')
 
     def get_trend_starts_with(self, start: str, end: str, starts_with: str, step: int):
         filtered_columns = [column for column in self.get_trending() if column.startswith(starts_with)]
         filtered_columns_text = ','.join(filtered_columns)
-
         dataframe = self._exec_panda("""
            select datetime(utc, 'localtime') as timestamp, {column_list} from trend where datetime(utc, 'localtime') between '{start}' and '{end}'
            and strftime("%S", utc) % '{step}' == 0
         """.format(column_list=filtered_columns_text, start=start, end=end, step=step))
-
+        dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 
     def _exec_panda(self, query):

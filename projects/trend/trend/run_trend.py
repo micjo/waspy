@@ -89,7 +89,11 @@ if __name__ == "__main__":
                 f.write(timestamp + "," + values + "\n")
 
         if env_conf.LOG_TO == LogOption.logbook:
-            requests.post(env_conf.LOGBOOK_URL + "/log_trend", json=trends)
+            try:
+                requests.post(env_conf.LOGBOOK_URL + "/log_trend", json=trends)
+            except Exception as e:
+                print("Could not reach the logbook api. Retrying")
+
 
         time.sleep(1)
 
