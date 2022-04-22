@@ -10,4 +10,6 @@ pytest
 aiofiles
 python-multipart
 tomli
+-e ../../lib/restapi
+-e ../../lib/hardware_control
 

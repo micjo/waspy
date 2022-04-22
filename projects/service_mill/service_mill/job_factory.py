@@ -1,13 +1,13 @@
 from erd_data_serializer import ErdDataSerializer
 from erd_entities import ErdJobModel
 from erd_job import ErdJob
-from erd_setup import ErdSetup
+from hive.hardware_control.erd_setup import ErdSetup
 from rbs_data_serializer import RbsDataSerializer
 from rbs_entities import RbsJobModel
 from rbs_job import RbsJob
 import rbs_random_csv_to_json
 import erd_csv_to_json
-from rbs_setup import RbsSetup
+from hive.hardware_control.rbs_setup import RbsSetup
 
 
 class RbsJobFactory:

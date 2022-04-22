@@ -2,13 +2,13 @@ import logging
 import traceback
 from datetime import datetime
 from pathlib import Path
-from shutil import copy2, move
+from shutil import copy2
 import copy
 from typing import Dict
 
 from threading import Lock
 
-from data_serializer import DataSerializer
+from hive.hardware_control.data_serializer import DataSerializer
 from erd_entities import ErdJobModel, ErdRecipe
 from logbook_db import LogBookDb
 

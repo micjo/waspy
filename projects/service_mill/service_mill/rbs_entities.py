@@ -1,43 +1,57 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 from pathlib import Path
 from enum import Enum
-from typing import List, Optional, Union, Literal, Dict, Annotated
+from typing import List, Optional, Union, Literal, Annotated
 
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
-from entities import AmlConfig, SimpleConfig, DoublePath
-
-
-class InputDir(BaseModel):
-    watch: Path
-
-
-class OutputDir(BaseModel):
-    ongoing: Path
-    done: Path
-    failed: Path
-    data: Path
-
-
-class DispatcherConfig(BaseModel):
-    watch: Path
-    ongoing: DoublePath
-    failed: DoublePath
-    done: DoublePath
+from entities import SimpleConfig
+from hive.hardware_control.rbs_entities import CaenDetectorModel, PositionCoordinates
 
 
 class RbsHardware(BaseModel):
-    aml_x_y: AmlConfig
-    aml_phi_zeta: AmlConfig
-    aml_det_theta: AmlConfig
+    aml_x_y: SimpleConfig
+    aml_phi_zeta: SimpleConfig
+    aml_det_theta: SimpleConfig
     caen: SimpleConfig
     motrona_charge: SimpleConfig
 
 
 class RbsConfig(BaseModel):
-    data_dir: DoublePath
+    local_dir: Path
+    remote_dir: Path
     hardware: RbsHardware
+
+
+class CoordinateEnum(str, Enum):
+    zeta = "zeta"
+    theta = "theta"
+    phi = "phi"
+
+
+class VaryCoordinate(BaseModel):
+    name: CoordinateEnum
+    start: float
+    end: float
+    increment: float
+
+    class Config:
+        use_enum_values = True
+
+    @validator('increment')
+    def increment_must_be_positive_and_non_zero(cls, increment):
+        if not increment >= 0:
+            raise ValueError('increment must be positive')
+        return increment
+
+    @validator('end')
+    def start_must_be_smaller_than_end(cls, end, values):
+        if 'start' not in values:
+            return
+        if not values['start'] <= end:
+            raise ValueError('end must be larger than or equal to start')
+        return end
 
 
 class Window(BaseModel):
@@ -65,77 +79,11 @@ class Window(BaseModel):
         return end
 
 
-class PositionCoordinates(BaseModel):
-    x: Optional[float]
-    y: Optional[float]
-    phi: Optional[float]
-    zeta: Optional[float]
-    detector: Optional[float]
-    theta: Optional[float]
-
-    def __str__(self):
-        return "position_{x}_{y}_{phi}_{zeta}_{det}_{theta}".format(x=self.x, y=self.y, phi=self.phi, zeta=self.zeta,
-                                                                    det=self.detector, theta=self.theta)
-
-
-class CoordinateEnum(str, Enum):
-    zeta = "zeta"
-    theta = "theta"
-    phi = "phi"
-
-
 class RecipeType(str, Enum):
     channeling = "channeling"
     random = "random"
     minimize_yield = "minimize_yield"
     fixed = "fixed"
-
-
-class VaryCoordinate(BaseModel):
-    name: CoordinateEnum
-    start: float
-    end: float
-    increment: float
-
-    class Config:
-        use_enum_values = True
-
-    @validator('increment')
-    def increment_must_be_positive_and_non_zero(cls, increment):
-        if not increment >= 0:
-            raise ValueError('increment must be positive')
-        return increment
-
-    @validator('end')
-    def start_must_be_smaller_than_end(cls, end, values):
-        if 'start' not in values:
-            return
-        if not values['start'] <= end:
-            raise ValueError('end must be larger than or equal to start')
-        return end
-
-
-class CaenDetectorModel(BaseModel):
-    board: str
-    channel: int
-    identifier: str = Field(
-        description="This will be used in the filenames for storage and in the plots for titles")
-    bins_min: int
-    bins_max: int
-    bins_width: int = Field(
-        description="The range between min and max will be rescaled to this value, The bins are combined with integer sized bin intervals. values on the maximum side are potentially discared")
-
-
-class RbsData(BaseModel):
-    aml_x_y: Dict
-    aml_phi_zeta: Dict
-    aml_det_theta: Dict
-    caen: Dict
-    motrona: Dict
-    detectors: List[CaenDetectorModel]
-    histograms: List[List[int]]
-    measuring_time_msec: str
-    accumulated_charge: str
 
 
 class PositionModel(BaseModel):

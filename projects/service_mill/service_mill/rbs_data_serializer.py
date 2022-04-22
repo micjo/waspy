@@ -4,14 +4,16 @@ import copy
 from threading import Lock
 from typing import List, Dict, Union
 import numpy as np
-import pandas as pd
-import json
 
-from data_serializer import DataSerializer
+from hive.hardware_control.data_serializer import DataSerializer
+from hive.hardware_control.hw_action import format_caen_histogram
 from logbook_db import LogBookDb
-from rbs_entities import DoublePath, RbsData, CaenDetectorModel, RbsJobModel, RbsRqmRandom, RbsRqmChanneling
+from rbs_entities import RbsJobModel, RbsRqmRandom, RbsRqmChanneling
+from hive.hardware_control.rbs_entities import CaenDetectorModel, HistogramData, RbsHistogramGraphData, \
+    RbsHistogramGraphDataSet, RbsData
 from matplotlib import pyplot as plt
 import matplotlib
+from hive.hardware_control.plot import plot_rbs_histograms, plot_compare_rbs_histograms
 
 matplotlib.use('Agg')
 
@@ -53,7 +55,7 @@ class RbsDataSerializer:
         self._db.job_end(job_model)
         self.resume()
 
-    def save_recipe_result(self, job_id:str,  recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
+    def save_recipe_result(self, job_id: str, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
         self._db.rbs_recipe_finish(job_id, recipe)
 
     def prepare_yield_step(self, sub_folder: str):
@@ -65,49 +67,33 @@ class RbsDataSerializer:
     def _flush_plot(self, fig, file_stem):
         if self.aborted():
             return
-        plt.subplots_adjust(hspace=0.5)
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        self._data_store.write_bytes_to_disk(file_stem + ".png", buf)
-        plt.close(fig)
-        plt.clf()
+        self._data_store.write_matplotlib_fig_to_disk(file_stem + ".png", fig)
 
     def plot_histograms(self, rbs_data: RbsData, file_stem: str):
         if self.aborted():
             return
-        data = rbs_data.histograms
-        fig, axs = plt.subplots(len(data))
-        fig.suptitle(file_stem)
 
-        for index, ax in enumerate(axs):
-            ax.plot(data[index], label=rbs_data.detectors[index].identifier)
-            ax.grid(which='major')
-            ax.grid(which='minor', linestyle=":")
-            ax.minorticks_on()
-            ax.legend()
-            ax.set_xlabel("energy level")
-            ax.set_ylabel("yield")
+        rbs_histogram_graph_data = RbsHistogramGraphData(graph_title=file_stem, histograms=rbs_data.histograms)
+        fig = plot_rbs_histograms(rbs_histogram_graph_data)
         self._flush_plot(fig, file_stem)
 
-    def plot_compare(self, detectors: List[CaenDetectorModel], fixed_data: List[List[int]],
-                     random_data: List[List[int]], file_stem):
+    def plot_compare(self, fixed_data: List[HistogramData], random_data: List[HistogramData], file_stem):
         if self.aborted():
             return
 
-        nr_of_histograms = len(fixed_data)
-        fixed_labels = [detector.identifier + "_fixed" for detector in detectors]
-        random_labels = [detector.identifier + "_random" for detector in detectors]
-        fig, axs = plt.subplots(nr_of_histograms)
+        histograms = []
 
-        for index, ax in enumerate(axs):
-            ax.plot(fixed_data[index], label=fixed_labels[index])
-            ax.plot(random_data[index], label=random_labels[index])
-            ax.grid(which='major')
-            ax.grid(which='minor', linestyle=":")
-            ax.minorticks_on()
-            ax.legend()
-            ax.set_xlabel("energy level")
-            ax.set_ylabel("yield")
+        for (random, fixed) in zip(random_data, fixed_data):
+            random.title += "_random"
+            fixed.title += "_fixed"
+            histograms.append([random, fixed])
+
+        rbs_histogram_graph_data_set = RbsHistogramGraphDataSet(graph_title=file_stem,
+                                                                histograms=histograms,
+                                                                x_label="energy level",
+                                                                y_label="yield")
+
+        fig = plot_compare_rbs_histograms(rbs_histogram_graph_data_set)
         self._flush_plot(fig, file_stem)
 
     def plot_energy_yields(self, file_stem,
@@ -140,15 +126,15 @@ class RbsDataSerializer:
             return
 
         plt.title(file_stem)
-        for index, detector in enumerate(rbs_data.detectors):
-            header = _serialize_histogram_header(rbs_data, detector.identifier, file_stem, sample_id)
-            formatted_data = _format_caen_histogram(rbs_data.histograms[index])
+        for histogram_data in rbs_data.histograms:
+            header = _serialize_histogram_header(rbs_data, histogram_data.title, file_stem, sample_id)
+            formatted_data = format_caen_histogram(histogram_data.data)
             full_data = header + "\n" + formatted_data
 
-            self._data_store.write_text_to_disk(file_stem + "_" + detector.identifier + ".txt", full_data)
+            self._data_store.write_text_to_disk(file_stem + "_" + histogram_data.title + ".txt", full_data)
 
 
-def _serialize_histogram_header(rbs_data: RbsData, detector_id: str, file_stem: str, sample_id: str):
+def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str):
     header = """ % Comments
  % Title                 := {title}
  % Section := <raw_data>
@@ -180,7 +166,7 @@ def _serialize_histogram_header(rbs_data: RbsData, detector_id: str, file_stem: 
  *
  % Section :=  </raw_data>
  % End comments""".format(
-        title=file_stem + "_" + detector_id,
+        title=file_stem + "_" + data_title,
         filename=file_stem,
         date=datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
         measure_time_sec=rbs_data.measuring_time_msec,
@@ -193,15 +179,6 @@ def _serialize_histogram_header(rbs_data: RbsData, detector_id: str, file_stem: 
         sample_zeta=rbs_data.aml_phi_zeta["motor_2_position"],
         sample_det=rbs_data.aml_det_theta["motor_1_position"],
         sample_theta=rbs_data.aml_det_theta["motor_2_position"],
-        det_name=detector_id
+        det_name=data_title
     )
     return header
-
-
-def _format_caen_histogram(data: List[int]):
-    index = 0
-    data_string = ""
-    for energy_level in data:
-        data_string += str(index) + ", " + str(energy_level) + "\n"
-        index += 1
-    return data_string

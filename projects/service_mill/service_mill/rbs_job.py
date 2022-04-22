@@ -6,17 +6,14 @@ from typing import List, Union
 
 from pydantic import BaseModel
 
-from logbook_db import LogBookDb
 import rbs_yield_angle_fit as fit
+from hive.hardware_control.rbs_entities import RbsData, PositionCoordinates
 from rbs_data_serializer import RbsDataSerializer
-from rbs_entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsData, \
-    RbsRqmMinimizeYield
-from rbs_setup import RbsSetup, get_positions_as_coordinate, get_sum, single_coordinate_to_string, \
-    get_positions_as_float, convert_float_to_coordinate
+from rbs_entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsRqmMinimizeYield, \
+    VaryCoordinate, Window
+from hive.hardware_control.rbs_setup import RbsSetup
 from job import Job
-
-
-# from app.trends.trend import Trend
+import numpy as np
 
 
 class RbsRecipeStatus(BaseModel):
@@ -129,8 +126,8 @@ class RbsJob(Job):
 def run_random(recipe: RbsRqmRandom, rbs: RbsSetup, data_serializer: RbsDataSerializer):
     rbs.move(recipe.start_position)
     positions = get_positions_as_coordinate(recipe.vary_coordinate)
-    rbs.prepare_counting(recipe.charge_total / len(positions))
-    rbs.prepare_data_acquisition()
+    rbs.prepare_counting_with_target(recipe.charge_total / len(positions))
+    rbs.start_data_acquisition()
 
     for index, position in enumerate(positions):
         rbs.move_and_count(position)
@@ -154,13 +151,12 @@ def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: Rbs
 
     fixed_histograms = _run_fixed(_make_fixed_recipe(recipe), rbs, data_serializer).histograms
     random_histograms = run_random(_make_random_recipe(recipe), rbs, data_serializer).histograms
-    detectors = rbs.get_detectors()
-    data_serializer.plot_compare(detectors, fixed_histograms, random_histograms, recipe.file_stem)
+    data_serializer.plot_compare(fixed_histograms, random_histograms, recipe.file_stem)
 
 
 def _run_fixed(recipe: RbsRqmFixed, rbs: RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
-    rbs.prepare_counting(recipe.charge_total)
-    rbs.prepare_data_acquisition()
+    rbs.prepare_counting_with_target(recipe.charge_total)
+    rbs.start_data_acquisition()
     rbs.count()
     rbs.stop_data_acquisition()
 
@@ -173,13 +169,13 @@ def _run_fixed(recipe: RbsRqmFixed, rbs: RbsSetup, data_serializer: RbsDataSeria
 def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer: RbsDataSerializer):
     rbs.move(recipe.start_position)
     positions = get_positions_as_coordinate(recipe.vary_coordinate)
-    rbs.prepare_counting(recipe.total_charge / len(positions))
+    rbs.prepare_counting_with_target(recipe.total_charge / len(positions))
 
     detector_optimize = rbs.get_detectors()[recipe.optimize_detector_index]
     energy_yields = []
 
     for position in positions:
-        rbs.prepare_data_acquisition()
+        rbs.start_data_acquisition()
         rbs.move_and_count(position)
         rbs.stop_data_acquisition()
 
@@ -240,3 +236,31 @@ def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
         return _get_total_counts_channeling(recipe)
     if recipe.type == RecipeType.random:
         return _get_total_counts_random(recipe)
+
+
+def single_coordinate_to_string(position: PositionCoordinates, coordinate: VaryCoordinate) -> str:
+    position_value = position.dict()[coordinate.name]
+    return coordinate.name[0] + "_" + str(position_value)
+
+
+def get_positions_as_coordinate(vary_coordinate: VaryCoordinate) -> List[PositionCoordinates]:
+    angles = get_positions_as_float(vary_coordinate)
+    positions = [PositionCoordinates.parse_obj({vary_coordinate.name: angle}) for angle in angles]
+    return positions
+
+
+def get_positions_as_float(vary_coordinate: VaryCoordinate) -> List[float]:
+    if vary_coordinate.increment == 0:
+        return [vary_coordinate.start]
+    coordinate_range = np.arange(vary_coordinate.start, vary_coordinate.end + vary_coordinate.increment,
+                                 vary_coordinate.increment)
+    numpy_array = np.around(coordinate_range, decimals=2)
+    return [float(x) for x in numpy_array]
+
+
+def convert_float_to_coordinate(coordinate_name: str, position: float) -> PositionCoordinates:
+    return PositionCoordinates.parse_obj({coordinate_name: position})
+
+
+def get_sum(data: List[int], window: Window) -> int:
+    return sum(data[window.start:window.end])

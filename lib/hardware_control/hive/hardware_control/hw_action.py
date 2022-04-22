@@ -3,7 +3,8 @@ from typing import List, Any
 
 import logging
 import time
-import http_helper as http
+from hive.hardware_control import http_helper as http
+from hive.hardware_control.rbs_entities import CaenDetectorModel
 
 
 def set_motrona_target_charge(request_id, url, target_charge):
@@ -25,11 +26,6 @@ def move_aml_both(request_id, url, positions):
     aml_request = {"request_id": request_id, "set_m1_target_position": positions[0],
                    "set_m2_target_position": positions[1]}
     http.post_request(url, aml_request)
-
-
-def move_mdrive(request_id, url: str, position: float):
-    mdrive_request = {"request_id": request_id, "set_motor_target_position": position}
-    http.post_request(url, mdrive_request)
 
 
 def clear_start_motrona_count(request_id, url):
@@ -59,6 +55,18 @@ def stop_clear_and_arm_caen_acquisition(request_id, url):
     _start_caen_acquisition(request_id + "_start", url)
 
 
+def set_caen_registry(request_id: str, url: str, board_id: str, registry_filename: str):
+    stop_caen_acquisition(request_id + "_stop", url)
+    request = {
+        "request_id": request_id,
+        "upload_registry": {
+            "board_id": board_id,
+            "filename": registry_filename
+        }
+    }
+    http.post_request(url, request)
+
+
 def _start_caen_acquisition(request_id, url):
     request = {'request_id': request_id, 'start': True}
     http.post_request(url, request)
@@ -74,6 +82,12 @@ def stop_caen_acquisition(request_id, url):
     http.post_request(url, request)
 
 
+def get_packed_histogram(base_url, detector: CaenDetectorModel):
+    resp_code, data = get_caen_histogram(base_url, detector.board, detector.channel)
+    packed_data = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
+    return resp_code, packed_data
+
+
 def get_caen_histogram(base_url, board: str, channel: int) -> tuple[Any, List[int]]:
     url = base_url + "/histogram/" + str(board) + "/" + str(channel)
     resp_code, raw_data = http.get_text_with_response_code(url)
@@ -81,6 +95,15 @@ def get_caen_histogram(base_url, board: str, channel: int) -> tuple[Any, List[in
     raw_data.pop()
     data = [int(x) for x in raw_data]
     return resp_code, data
+
+
+def format_caen_histogram(data: List[int]):
+    index = 0
+    data_string = ""
+    for energy_level in data:
+        data_string += str(index) + ", " + str(energy_level) + "\n"
+        index += 1
+    return data_string
 
 
 def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
@@ -93,3 +116,33 @@ def pack(data: List[int], channel_min, channel_max, channel_width) -> List[int]:
     return packed_data
 
 
+def move_mdrive(request_id, url: str, position: float):
+    mdrive_request = {"request_id": request_id, "set_motor_target_position": position}
+    http.post_request(url, mdrive_request)
+
+
+def move_mdrive_done(url):
+    while True:
+        time.sleep(1)
+        response = http.get_json(url)
+        if not response["moving_to_target"]:
+            logging.info("Motor '" + url + "' has arrived ")
+            break
+
+
+def acquisition_done(url):
+    while True:
+        time.sleep(1)
+        response = http.get_json(url)
+        if not response["acquisition_status"]["acquiring"]:
+            logging.info("Acquisition has completed")
+            break
+
+
+def acquisition_started(url):
+    while True:
+        time.sleep(1)
+        response = http.get_json(url)
+        if response["acquisition_status"]["acquiring"]:
+            logging.info("Acquisition has started")
+            break

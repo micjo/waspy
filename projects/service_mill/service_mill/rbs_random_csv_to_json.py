@@ -1,6 +1,8 @@
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
+
+import hive.hardware_control.rbs_entities
 import rbs_entities as rbs
 
 
@@ -39,7 +41,7 @@ def parse_list_settings(list_section: str) -> List[Dict]:
 
 
 def convert_coordinates_to_position(position_key, setting):
-    setting[position_key] = rbs.PositionCoordinates.parse_obj(setting).dict()
+    setting[position_key] = hive.hardware_control.rbs_entities.PositionCoordinates.parse_obj(setting).dict()
     setting.pop("x", None)
     setting.pop("y", None)
     setting.pop("phi", None)
