@@ -27,7 +27,7 @@ url = "http://127.0.0.1:22002/api/latest"
 names = ["Detector", "Theta"]
 
 [rbs.hardware.motrona_charge]
-type = "motrona"
+type = "motrona_dx350"
 title = "Motrona Charge"
 url = "http://127.0.0.1:22100/api/latest"
 
@@ -51,10 +51,10 @@ type = "mpa3"
 title = "MPA 3"
 url = "http://169.254.155.94:25000/api/latest"
 
-[rbs.data_dir]
-local = "/mnt/mcaiba_nas/transfer_RBS"
-remote = "/mnt/winbe_wasp/transfer_RBS"
+[rbs]
+local_dir = "/mnt/mcaiba_nas/transfer_RBS"
+remote_dir = "/mnt/winbe_wasp/transfer_RBS"
 
-[erd.data_dir]
-local = "/mnt/mcaiba_nas/transfer_ERD"
-remote = "/mnt/winbe_wasp/transfer_ERD"
+[erd]
+local_dir = "/mnt/mcaiba_nas/transfer_ERD"
+remote_dir = "/mnt/winbe_wasp/transfer_ERD"

@@ -29,7 +29,7 @@ names = ["Phi", "Zeta"]
 loads = [0, -1]
 
 [rbs.hardware.motrona_charge]
-type = "motrona"
+type = "motrona_dx350"
 title = "Motrona Charge"
 url = "http://localhost:20100/api/latest"
 trend = {"current"="current(nA)"}
@@ -69,10 +69,10 @@ failed.remote = "/tmp/ACQ/REM/3_failed"
 done.local = "/tmp/ACQ/4_done"
 done.remote = "/tmp/ACQ/REM/4_done"
 
-[rbs.data_dir]
-local = "/tmp/ACQ/5_data"
-remote = "/tmp/ACQ/REM/_05_data"
+[rbs]
+local_dir = "/tmp/ACQ/5_data"
+remote_dir = "/tmp/ACQ/REM/_05_data"
 
-[erd.data_dir]
-local = "/tmp/ACQ/ERD/5_data"
-remote = "/tmp/ACQ/ERD/REM/_05_data"
+[erd]
+local_dir = "/tmp/ACQ/ERD/5_data"
+remote_dir = "/tmp/ACQ/ERD/REM/_05_data"

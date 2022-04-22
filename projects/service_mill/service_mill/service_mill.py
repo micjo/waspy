@@ -6,13 +6,15 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redi
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-import rbs_setup as rbs_lib
-from data_serializer import DataSerializer
+from hive.hardware_control import rbs_setup as rbs_lib
+from hive.hardware_control.data_serializer import DataSerializer
 from erd_data_serializer import ErdDataSerializer
-from erd_setup import ErdSetup
+from hive.hardware_control.erd_entities import ErdHardwareRoute
+from hive.hardware_control.erd_setup import ErdSetup
 import rbs_routes
 import hw_control_routes
 import erd_routes
+from hive.hardware_control.rbs_entities import RbsHardwareRoute
 from job_factory import RbsJobFactory, ErdJobFactory
 from systemd_routes import build_systemd_endpoints
 from logbook_db import LogBookDb
@@ -69,14 +71,17 @@ def create_app():
 def build_rqm_listener(router, hive_config: HiveConfig, logbook_db: LogBookDb):
     rqm_runner = JobRunner()
 
-    rbs_setup = rbs_lib.RbsSetup(hive_config.rbs.hardware)
-    rbs_data_serializer = RbsDataSerializer(DataSerializer(hive_config.rbs.data_dir), logbook_db)
+    rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
+    rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
+    rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
     rbs_factory = RbsJobFactory(rbs_setup, rbs_data_serializer)
+
     rbs_routes.build_job_endpoints(router, rqm_runner, rbs_factory)
     rbs_routes.build_hw_endpoints(router, hive_config.rbs.hardware)
 
-    erd_setup = ErdSetup(hive_config.erd.hardware)
-    erd_data_serializer = ErdDataSerializer(DataSerializer(hive_config.erd.data_dir), logbook_db)
+    erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
+    erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
+    erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
     erd_factory = ErdJobFactory(erd_setup, erd_data_serializer)
 
     erd_routes.build_api_endpoints(router, rqm_runner, erd_factory)

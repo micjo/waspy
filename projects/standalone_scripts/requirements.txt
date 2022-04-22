@@ -1,0 +1,6 @@
+-e ../../lib/hardware_control
+matplotlib
+pydantic
+requests
+pandas
+

@@ -1,14 +1,16 @@
 import logging
 import copy
 import traceback
+import numpy as np
 from datetime import datetime, timedelta
-from typing import List, Union
+from typing import List
 
 from pydantic import BaseModel
 
 from erd_data_serializer import ErdDataSerializer
-from erd_entities import ErdJobModel, ErdRecipe, PositionCoordinates
-from erd_setup import ErdSetup, get_z_range
+from erd_entities import ErdJobModel, ErdRecipe
+from hive.hardware_control.erd_setup import ErdSetup, PositionCoordinates
+
 from job import Job
 from hive_exception import HiveError
 
@@ -138,3 +140,17 @@ def _log_recipe(recipe, wait_time, z_range):
     logging.info("Recipe: " + recipe.file_stem + ", wait_time_sec between steps: " + str(wait_time) +
                  ", total measurement time: " + str(recipe.measuring_time_sec) +
                  ", z-positions: \n\t" + position_list)
+
+
+def get_z_range(start, end, increment, repeat=1) -> List[PositionCoordinates]:
+    if increment == 0:
+        positions = [PositionCoordinates(z=start)]
+    else:
+        coordinate_range = np.arange(start, end + increment, increment)
+        logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " + str(increment))
+        numpy_z_steps = np.around(coordinate_range, decimals=2)
+        positions = [PositionCoordinates(z=float(z_step)) for z_step in numpy_z_steps]
+
+    repeated_positions = []
+    [repeated_positions.extend(positions) for _ in range(repeat)]
+    return repeated_positions

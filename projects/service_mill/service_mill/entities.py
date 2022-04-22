@@ -1,13 +1,13 @@
-from typing import List, Union, Dict, Optional
+from enum import Enum
+from typing import Union, Dict, Optional, List
 
 from pydantic.generics import BaseModel
-from enum import Enum
 from pathlib import Path
 
 
 class HwControllerType(str, Enum):
     aml = 'aml'
-    motrona = 'motrona'
+    motrona_dx350 = 'motrona_dx350'
     caen = 'caen'
     mdrive = 'mdrive'
     mpa3 = 'mpa3'
@@ -17,25 +17,16 @@ class HwControllerType(str, Enum):
 
 class SimpleConfig(BaseModel):
     type: HwControllerType
-    title: str
+    title: Optional[str]
     url: str
     proxy: Optional[str]
-    trend: Optional[Dict]
 
     class Config:
         use_enum_values = True
 
 
-class MdriveConfig(SimpleConfig):
-    proxy: Optional[str]
-
-
-class AmlConfig(SimpleConfig):
-    names: List[str]
-
-
 class AnyHardware(BaseModel):
-    __root__: Dict[str, Union[AmlConfig, SimpleConfig]]
+    __root__: Dict[str, SimpleConfig]
 
     def __iter__(self):
         return iter(self.__root__)
@@ -46,9 +37,3 @@ class AnyHardware(BaseModel):
 
 class AnyConfig(BaseModel):
     hardware: AnyHardware
-
-
-class DoublePath(BaseModel):
-    local: Path
-    remote: Path
-

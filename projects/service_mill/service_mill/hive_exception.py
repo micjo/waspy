@@ -3,11 +3,6 @@ class HiveError(Exception):
     pass
 
 
-class HardwareError(HiveError):
-    """ An exception for any hardware related requests"""
-    pass
-
-
 class InvalidDaemonError(HiveError):
     """ An exception for any hardware related requests"""
     pass
