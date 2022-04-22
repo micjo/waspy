@@ -3,7 +3,11 @@ from datetime import datetime
 from typing import Dict
 
 import requests
-import hive_exception
+
+
+class HardwareError(Exception):
+    """ An exception for any hardware related requests"""
+    pass
 
 
 def get_text_with_response_code(url):
@@ -47,7 +51,7 @@ def wait_for_request_done(url, request):
             if response['request_finished'] and response["request_id"] == str(request["request_id"]):
                 break
         else:
-            raise hive_exception.HardwareError(url + ": " + error_message)
+            raise HardwareError(url + ": " + error_message)
 
 
 def post_request(url, request):

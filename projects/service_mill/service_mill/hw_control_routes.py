@@ -5,10 +5,11 @@ from fastapi import status, Response
 from pydantic import create_model
 from pydantic.generics import GenericModel
 
-import http_helper as http
+from hive.hardware_control import http_helper as http
 from entities import AnyHardware
-from hw_action import get_caen_histogram, pack
+from hive.hardware_control.hw_action import get_caen_histogram, pack, get_packed_histogram
 from config import HiveConfig
+from hive.hardware_control.rbs_entities import CaenDetectorModel
 
 
 def build_api_endpoints(http_router, any_hardware: AnyHardware):
@@ -39,11 +40,12 @@ def build_histogram_redirect(some_router, from_url, to_url, tags):
 def build_packed_histogram(some_router, from_url, to_url, tags):
     @some_router.get(from_url + "/histogram/{board}/{channel}/pack/{start}-{end}-{width}", tags=tags)
     async def histogram(response: Response, board: str, channel: int, start: int, end: int, width: int):
-        if width > end-start:
+        if width > end - start:
             response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
             return {}
-        resp_code, data = get_caen_histogram(to_url, board, channel)
-        packed_data = pack(data, start, end, width)
+        detector = CaenDetectorModel(board=board, channel=channel, identifier="", bins_min=start, bins_max=end,
+                                     bins_width=width)
+        resp_code, packed_data = get_packed_histogram(to_url, detector)
         response.status_code = resp_code
         return packed_data
 
@@ -95,5 +97,3 @@ def build_mpa3_histogram_redirect(some_router, from_url, to_url, tags):
         url = to_url + "/histogram"
         response.status_code, resp = http.get_text_with_response_code(url)
         return resp
-
-

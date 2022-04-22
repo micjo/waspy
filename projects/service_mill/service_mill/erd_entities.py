@@ -1,19 +1,21 @@
 from datetime import timedelta
-from typing import List, Optional
+from pathlib import Path
+from typing import List
 from pydantic import BaseModel, Field
 
-from entities import SimpleConfig, MdriveConfig, DoublePath
+from entities import SimpleConfig
 
 
 class ErdHardware(BaseModel):
-    mdrive_z: MdriveConfig
-    mdrive_theta: MdriveConfig
+    mdrive_z: SimpleConfig
+    mdrive_theta: SimpleConfig
     mpa3: SimpleConfig
 
 
 class ErdConfig(BaseModel):
     hardware: ErdHardware
-    data_dir: DoublePath
+    local_dir: Path
+    remote_dir: Path
 
 
 class ErdRecipe(BaseModel):
@@ -25,11 +27,6 @@ class ErdRecipe(BaseModel):
     z_end: float
     z_increment: float
     z_repeat: int = Field(1, description="The recipe will run from z_start to z_end, for z_repeat times.")
-
-
-class PositionCoordinates(BaseModel):
-    z: Optional[float]
-    theta: Optional[float]
 
 
 class ErdJobModel(BaseModel):
