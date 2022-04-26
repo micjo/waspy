@@ -6,14 +6,14 @@ from typing import List, Optional, Union, Literal, Annotated
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
-from entities import SimpleConfig
+from entities import SimpleConfig, AmlConfig
 from hive.hardware_control.rbs_entities import CaenDetectorModel, PositionCoordinates
 
 
 class RbsHardware(BaseModel):
-    aml_x_y: SimpleConfig
-    aml_phi_zeta: SimpleConfig
-    aml_det_theta: SimpleConfig
+    aml_x_y: AmlConfig
+    aml_phi_zeta: AmlConfig
+    aml_det_theta: AmlConfig
     caen: SimpleConfig
     motrona_charge: SimpleConfig
 
