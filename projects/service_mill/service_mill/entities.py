@@ -25,6 +25,10 @@ class SimpleConfig(BaseModel):
         use_enum_values = True
 
 
+class AmlConfig(SimpleConfig):
+    names: List[str]
+
+
 class AnyHardware(BaseModel):
     __root__: Dict[str, SimpleConfig]
 
