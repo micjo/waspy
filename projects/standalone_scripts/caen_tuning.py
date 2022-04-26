@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 from pathlib import Path
 
 from matplotlib import pyplot as plt
@@ -9,6 +10,12 @@ from hive.hardware_control.hw_action import format_caen_histogram
 from hive.hardware_control.plot import plot_rbs_histograms
 from hive.hardware_control.rbs_entities import RbsHardwareRoute, CaenDetectorModel, RbsHistogramGraphData
 from hive.hardware_control.rbs_setup import RbsSetup
+
+log_format = "%(levelname)s %(asctime)s - %(message)s"
+logging.basicConfig(filename="logfile.log",
+                    filemode="w",
+                    format=log_format,
+                    level=logging.ERROR)
 
 
 def setup_rbs() -> RbsSetup:
@@ -63,13 +70,20 @@ if __name__ == "__main__":
         rbs.set_registry("33", registry)
         rbs.prepare_counting_with_target(10000)
         rbs.start_data_acquisition()
-        # rbs.count()
+        rbs.count()
         time.sleep(5)
         rbs.stop_data_acquisition()
         rbs_data = rbs.get_status(get_histograms=True)
+
+        logging.info("------")
+        logging.info("Testing registry: " + registry)
+        logging.info("Status: " + str(rbs_data))
+        logging.info("------")
+        logging.info("")
+
         for histogram_data in rbs_data.histograms:
             text_filename = Path(registry).stem + "_" + histogram_data.title + ".txt"
             fig_filename = Path(registry).stem + "_" + histogram_data.title + ".png"
             data_serializer.write_text_to_disk(text_filename, format_caen_histogram(histogram_data.data))
-            fig = plot_rbs_histograms(RbsHistogramGraphData(graph_title=registry, histograms =[histogram_data]))
+            fig = plot_rbs_histograms(RbsHistogramGraphData(graph_title=registry, histograms=[histogram_data]))
             data_serializer.write_matplotlib_fig_to_disk(fig_filename, fig)
