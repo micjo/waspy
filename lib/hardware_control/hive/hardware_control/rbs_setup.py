@@ -12,7 +12,7 @@ from hive.hardware_control.rbs_entities import CaenDetectorModel, RbsData, Posit
     RbsHardwareRoute, HistogramData
 from hive.hardware_control.hw_action import move_aml_first, move_aml_second, clear_start_motrona_count, \
     stop_clear_and_arm_caen_acquisition, stop_caen_acquisition, pause_motrona_count, set_motrona_target_charge, \
-    get_packed_histogram, set_caen_registry
+    get_packed_histogram, caen_set_registry
 
 
 def fake_call(func, *args, **kw):
@@ -197,7 +197,10 @@ class RbsSetup:
         return packed
 
     def set_registry(self, board_id, registry_file):
-        set_caen_registry(generate_request_id(), self.hw.caen.url, board_id, registry_file)
+        caen_set_registry(generate_request_id(), self.hw.caen.url, board_id, registry_file)
+
+    def get_registry_value(self, board_id:str, hex_register_address:str):
+
 
     def verify_caen_boards(self, detectors: List[CaenDetectorModel]):
         for detector in detectors:

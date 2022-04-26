@@ -55,7 +55,18 @@ def stop_clear_and_arm_caen_acquisition(request_id, url):
     _start_caen_acquisition(request_id + "_start", url)
 
 
-def set_caen_registry(request_id: str, url: str, board_id: str, registry_filename: str):
+def caen_read_single_register(request_id: str, url:str, board_id:str, hex_register_address:str):
+    request = {
+        "request_id": request_id,
+        "read_register": {
+            "board_id": board_id,
+            "filename": hex_register_address
+        }
+    }
+    http.post_request(url, request)
+
+
+def caen_set_registry(request_id: str, url: str, board_id: str, registry_filename: str):
     stop_caen_acquisition(request_id + "_stop", url)
     request = {
         "request_id": request_id,
