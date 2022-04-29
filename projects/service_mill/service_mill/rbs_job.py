@@ -75,7 +75,7 @@ class RbsJob(Job):
     def get_status(self):
         self._update_active_recipe()
         finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
-        status = {"rqm": self._job_model.dict(), "active_recipe": self._active_recipe_status.dict(),
+        status = {"job": self._job_model.dict(), "active_recipe": self._active_recipe_status.dict(),
                   "finished_recipes": finished_recipes, "error_state": self._error_message}
         return status
 
