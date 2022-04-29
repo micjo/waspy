@@ -113,7 +113,7 @@ class RbsRqmChanneling(BaseModel):
     type: Literal[RecipeType.channeling]
     sample_id: str
     file_stem: str
-    start_position: Optional[PositionCoordinates]
+    start_position: PositionCoordinates
     yield_charge_total: int
     yield_vary_coordinates: List[VaryCoordinate]
     yield_integration_window: Window
@@ -131,7 +131,7 @@ class RbsRqmMinimizeYield(BaseModel):
     to the position with minimum yield """
     type: Literal[RecipeType.minimize_yield]
     sample_id: str
-    start_position: Optional[PositionCoordinates]
+    start_position: PositionCoordinates
     file_stem: str
     total_charge: int
     vary_coordinate: VaryCoordinate
@@ -144,7 +144,7 @@ class RbsRqmRandom(BaseModel):
     type: Literal[RecipeType.random]
     sample_id: str
     file_stem: str
-    start_position: Optional[PositionCoordinates]
+    start_position: PositionCoordinates
     charge_total: int
     vary_coordinate: VaryCoordinate
 

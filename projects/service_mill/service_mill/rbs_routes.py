@@ -9,12 +9,11 @@ import traceback
 from job_runner import JobRunner
 
 
-# TODO: Refactoring ( should use a factory for jobs to reduce the number of parameters to this function)
-def build_job_endpoints(http_server, job_dispatcher: JobRunner, job_factory: RbsJobFactory):
+def build_rbs_job_endpoints(http_server, job_dispatcher: JobRunner, job_factory: RbsJobFactory):
     @http_server.post("/api/rbs/run", tags=["RBS API"], summary="Run an rbs experiment")
     async def run_rbs(job: RbsJobModel):
         rqm_action = job_factory.make_job(job)
-        job_dispatcher.add_rqm_to_queue(rqm_action)
+        job_dispatcher.add_job_to_queue(rqm_action)
 
     @http_server.get("/api/rbs/state", tags=["RBS API"], summary="Get the state of the active rqm")
     async def get_rqm_state():

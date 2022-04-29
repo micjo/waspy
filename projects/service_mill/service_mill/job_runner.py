@@ -36,16 +36,16 @@ class JobRunner(Thread):
 
     def get_state(self) -> Dict:
         with self._lock:
-            rqms = _get_rqm_list_status(self._scheduled_jobs)
-            past_rqms = _get_rqm_list_status(list(self._done_jobs))
-            failed_rqms = _get_rqm_list_status(list(self._failed_jobs))
-            active_rqm = self._active_job.get_status()
-        state = {"run_status": self._run_status, "schedule": rqms, "active_rqm": active_rqm, "done": past_rqms,
-                 "failed": failed_rqms}
+            scheuled_jobs = _get_rqm_list_status(self._scheduled_jobs)
+            past_jobs = _get_rqm_list_status(list(self._done_jobs))
+            failed_jobs = _get_rqm_list_status(list(self._failed_jobs))
+            active_job = self._active_job.get_status()
+        state = {"run_status": self._run_status, "schedule": scheuled_jobs, "active_job": active_job, "done": past_jobs,
+                 "failed": failed_jobs}
         return state
 
-    def add_rqm_to_queue(self, rqm: Job):
-        logging.info("adding rqm to queue")
+    def add_job_to_queue(self, rqm: Job):
+        logging.info("adding job to queue")
         with self._lock:
             self._scheduled_jobs.append(rqm)
 
