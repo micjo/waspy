@@ -15,11 +15,12 @@ import rbs_routes
 import hw_control_routes
 import erd_routes
 from hive.hardware_control.rbs_entities import RbsHardwareRoute
-from job_factory import RbsJobFactory, ErdJobFactory
+from job_factory import RbsJobFactory, ErdJobFactory, JobFactory
 from systemd_routes import build_systemd_endpoints
 from logbook_db import LogBookDb
 from rbs_data_serializer import RbsDataSerializer
 from job_runner import JobRunner
+from job_routes import build_job_routes
 from config import GlobalConfig, make_hive_config, HiveConfig
 
 
@@ -40,7 +41,10 @@ def create_app():
 
     logbook_db = LogBookDb(env_conf.LOGBOOK_URL)
 
-    build_rqm_listener(app, hive_config, logbook_db)
+    build_job_and_hw_routes(app, hive_config, logbook_db)
+
+
+
     build_systemd_endpoints(app, hive_config)
 
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
@@ -68,24 +72,22 @@ def create_app():
     return app
 
 
-def build_rqm_listener(router, hive_config: HiveConfig, logbook_db: LogBookDb):
-    rqm_runner = JobRunner()
+def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBookDb):
+    job_runner = JobRunner()
 
     rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
     rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
     rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
-    rbs_factory = RbsJobFactory(rbs_setup, rbs_data_serializer)
-
-    rbs_routes.build_job_endpoints(router, rqm_runner, rbs_factory)
-    rbs_routes.build_hw_endpoints(router, hive_config.rbs.hardware)
 
     erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
     erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
     erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
-    erd_factory = ErdJobFactory(erd_setup, erd_data_serializer)
-
-    erd_routes.build_api_endpoints(router, rqm_runner, erd_factory)
+    
+    factory = JobFactory(rbs_setup, rbs_data_serializer, erd_setup, erd_data_serializer)
+    
+    build_job_routes(router, job_runner, factory)
+    rbs_routes.build_hw_endpoints(router, hive_config.rbs.hardware)
     erd_routes.build_hw_endpoints(router, hive_config.erd.hardware)
 
-    rqm_runner.daemon = True
-    rqm_runner.start()
+    job_runner.daemon = True
+    job_runner.start()

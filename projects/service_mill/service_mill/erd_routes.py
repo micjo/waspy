@@ -8,11 +8,11 @@ from job_factory import ErdJobFactory
 from job_runner import JobRunner
 
 
-def build_api_endpoints(http_server, job_dispatcher: JobRunner, job_factory: ErdJobFactory):
+def build_erd_job_routes(http_server, job_dispatcher: JobRunner, job_factory: ErdJobFactory):
     @http_server.post("/api/erd/run", tags=["ERD API"], summary="Run an ERD experiment")
     async def run_erd(job: ErdJobModel):
         erd_job = job_factory.make_job(job)
-        job_dispatcher.add_rqm_to_queue(erd_job)
+        job_dispatcher.add_job_to_queue(erd_job)
 
     @http_server.get("/api/erd/state", tags=["ERD API"], summary="Get the state of the active rqm")
     async def get_rqm_state():
