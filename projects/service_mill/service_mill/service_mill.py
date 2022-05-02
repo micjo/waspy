@@ -15,7 +15,7 @@ import rbs_routes
 import hw_control_routes
 import erd_routes
 from hive.hardware_control.rbs_entities import RbsHardwareRoute
-from job_factory import RbsJobFactory, ErdJobFactory, JobFactory
+from job_factory import JobFactory
 from systemd_routes import build_systemd_endpoints
 from logbook_db import LogBookDb
 from rbs_data_serializer import RbsDataSerializer
@@ -42,8 +42,6 @@ def create_app():
     logbook_db = LogBookDb(env_conf.LOGBOOK_URL)
 
     build_job_and_hw_routes(app, hive_config, logbook_db)
-
-
 
     build_systemd_endpoints(app, hive_config)
 
@@ -78,16 +76,21 @@ def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBook
     rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
     rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
     rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
+    rbs_setup.fake()
 
     erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
     erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
     erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
-    
+    erd_setup.fake()
+
     factory = JobFactory(rbs_setup, rbs_data_serializer, erd_setup, erd_data_serializer)
-    
     build_job_routes(router, job_runner, factory)
+
     rbs_routes.build_hw_endpoints(router, hive_config.rbs.hardware)
+    rbs_routes.build_setup_endpoints(router, rbs_setup)
+
     erd_routes.build_hw_endpoints(router, hive_config.erd.hardware)
+    erd_routes.build_setup_endpoints(router, erd_setup)
 
     job_runner.daemon = True
     job_runner.start()
