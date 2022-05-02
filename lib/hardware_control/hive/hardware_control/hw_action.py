@@ -78,7 +78,12 @@ def caen_set_registry(request_id: str, url: str, board_id: str, registry_filenam
     http.post_request(url, request)
 
 
-def load_motor(request_id, url):
+def load_aml(request_id, url):
+    request = {'request_id': request_id, 'm1_load': True, 'm2_load': True}
+    http.post_request(url, request)
+
+
+def load_mdrive(request_id, url):
     request = {'request_id': request_id, 'load': True}
     http.post_request(url, request)
 
