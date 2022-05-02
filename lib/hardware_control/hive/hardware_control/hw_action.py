@@ -60,7 +60,7 @@ def caen_read_single_register(request_id: str, url:str, board_id:str, hex_regist
         "request_id": request_id,
         "read_register": {
             "board_id": board_id,
-            "filename": hex_register_address
+            "register_address": hex_register_address
         }
     }
     http.post_request(url, request)
