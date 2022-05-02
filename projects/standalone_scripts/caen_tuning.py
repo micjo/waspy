@@ -13,18 +13,18 @@ from hive.hardware_control.rbs_setup import RbsSetup
 
 log_format = "%(levelname)s %(asctime)s - %(message)s"
 logging.basicConfig(filename="logfile.log",
-                    filemode="w",
+                    filemode="a",
                     format=log_format,
-                    level=logging.ERROR)
+                    level=logging.INFO)
 
 
 def setup_rbs() -> RbsSetup:
     config = {
-        "aml_x_y": {"url": "http://localhost:20000/api/latest"},
-        "aml_phi_zeta": {"url": "http://localhost:20000/api/latest"},
-        "aml_det_theta": {"url": "http://localhost:20000/api/latest"},
-        "caen": {"url": "http://localhost:20200/api/latest"},
-        "motrona_charge": {"url": "http://localhost:20100/api/latest"},
+        "aml_x_y": {"url": "http://169.254.150.200:8000/api/rbs/aml_x_y"},
+        "aml_phi_zeta": {"url": "http://169.254.150.200:8000/api/rbs/aml_phi_zeta"},
+        "aml_det_theta": {"url": "http://169.254.150.200:8000/api/rbs/aml_det_theta"},
+        "caen": {"url": "http://169.254.150.200:8000/api/rbs/caen"},
+        "motrona_charge": {"url": "http://169.254.150.200:8000/api/rbs/motrona_charge"},
     }
 
     detectors = [
@@ -41,7 +41,7 @@ def setup_rbs() -> RbsSetup:
     rbs_hw = RbsHardwareRoute.parse_obj(config)
     rbs_setup = RbsSetup(rbs_hw)
     rbs_setup.initialize(detectors)
-    rbs_setup.fake()
+    # rbs_setup.fake()
     return rbs_setup
 
 
@@ -68,16 +68,16 @@ if __name__ == "__main__":
 
     for registry in registry_list:
         rbs.set_registry("33", registry)
-        rbs.prepare_counting_with_target(10000)
+        rbs.prepare_counting_with_target(1000)
+        rbs.get_registry_value("33", "0x105c")
         rbs.start_data_acquisition()
         rbs.count()
-        time.sleep(5)
         rbs.stop_data_acquisition()
         rbs_data = rbs.get_status(get_histograms=True)
 
         logging.info("------")
         logging.info("Testing registry: " + registry)
-        logging.info("Status: " + str(rbs_data))
+        logging.info("Status: " + str(rbs_data.caen))
         logging.info("------")
         logging.info("")
 
