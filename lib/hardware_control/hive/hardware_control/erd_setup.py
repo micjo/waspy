@@ -10,7 +10,7 @@ import logging
 from threading import Lock
 
 from hive.hardware_control.http_helper import get_json
-from hive.hardware_control.hw_action import acquisition_started, move_mdrive_done, move_mdrive, load_motor
+from hive.hardware_control.hw_action import acquisition_started, move_mdrive_done, move_mdrive, load_mdrive
 
 
 class GlobalConfig(BaseSettings):
@@ -57,8 +57,8 @@ class ErdSetup:
             move_mdrive(http.generate_request_id(), self.hw.mdrive_z.url, position.z)
 
     def load(self):
-        load_motor(http.generate_request_id(), self.hw.mdrive_z.url)
-        load_motor(http.generate_request_id(), self.hw.mdrive_theta.url)
+        load_mdrive(http.generate_request_id(), self.hw.mdrive_z.url)
+        load_mdrive(http.generate_request_id(), self.hw.mdrive_theta.url)
 
     def get_status(self):
         mdrive_z = get_json(self.hw.mdrive_z.url)

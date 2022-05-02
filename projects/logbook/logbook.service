@@ -1,0 +1,17 @@
+[Unit]
+Description=Logbook - SQL database with data
+After=wait_eth_up.service
+Requires=wait_eth_up.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/wasp-hive/projects/logbook
+ExecStart=/root/wasp-hive/projects/logbook/run_logbook.sh
+Restart=on-failure
+SyslogIdentifier=logbook
+
+[Install]
+WantedBy=multi-user.target
+
+
