@@ -21,10 +21,11 @@ class ErdRecipeStatus(BaseModel):
     run_time: timedelta
     measurement_time: float
     measurement_time_target: float
+    progress: str
 
 
 empty_erd_recipe_status = ErdRecipeStatus(recipe_id="", start_time=datetime.now(), run_time=0,
-                                          measurement_time=0, measurement_time_target=0)
+                                          measurement_time=0, measurement_time_target=0, progress="0.0%")
 
 
 class ErdJob(Job):
@@ -71,14 +72,21 @@ class ErdJob(Job):
         self._erd_setup.resume()
 
     def get_status(self):
-        self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
-        self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
-
+        self._update_active_recipe()
         finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
-
-        status = {"rqm": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
+        status = {"job": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
                   "finished_recipes": finished_recipes, "error_state": self._error_message}
         return status
+
+    def _update_active_recipe(self):
+        self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
+        self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
+        if self._active_recipe.measurement_time_target != 0:
+            progress = self._active_recipe.measurement_time / self._active_recipe.measurement_time_target * 100
+            self._active_recipe.progress = "{:.2f}%".format(progress)
+        else:
+            self._active_recipe.progress = "0.00%"
+
 
     def abort(self):
         logging.info("[RQM ERD] RQM abort")
@@ -108,7 +116,7 @@ class ErdJob(Job):
         self._data_serializer.save_recipe_result(self._job_model.job_id, recipe)
 
     def _finish_recipe(self):
-        self.get_status()
+        self._update_active_recipe()
         self._finished_recipes.append(copy.deepcopy(self._active_recipe))
         self._active_recipe = empty_erd_recipe_status
 

@@ -12,7 +12,7 @@ from hive.hardware_control.rbs_entities import CaenDetectorModel, RbsData, Posit
     RbsHardwareRoute, HistogramData
 from hive.hardware_control.hw_action import move_aml_first, move_aml_second, clear_start_motrona_count, \
     stop_clear_and_arm_caen_acquisition, stop_caen_acquisition, pause_motrona_count, set_motrona_target_charge, \
-    get_packed_histogram, caen_set_registry, caen_read_single_register
+    get_packed_histogram, caen_set_registry, caen_read_single_register, load_motor
 
 
 def fake_call(func, *args, **kw):
@@ -60,6 +60,7 @@ class RbsSetup:
         self._abort = False
         self._lock = Lock()
         self._fake = False
+        self._fake_count = 0
 
     def fake(self):
         self._fake = True
@@ -84,6 +85,11 @@ class RbsSetup:
             move_aml_first(generate_request_id(), self.hw.aml_det_theta.url, position.detector)
         if position.theta is not None:
             move_aml_second(generate_request_id(), self.hw.aml_det_theta.url, position.theta)
+
+    def load(self):
+        load_motor(generate_request_id(), self.hw.aml_x_y.url)
+        load_motor(generate_request_id(), self.hw.aml_phi_zeta.url)
+        load_motor(generate_request_id(), self.hw.aml_det_theta.url)
 
     def abort(self):
         with self._lock:
@@ -112,6 +118,7 @@ class RbsSetup:
 
     def count(self):
         if self._fake:
+            self._fake_count = 0
             return fake_counter()
         if self.aborted():
             return
@@ -128,6 +135,9 @@ class RbsSetup:
 
     def get_corrected_total_accumulated_charge(self):
         increment = 0
+        if self._fake:
+            self._fake_count += 10
+            return self._fake_count
         with self._lock:
             if self._counting:
                 motrona = requests.get(self.hw.motrona_charge.url, timeout=10).json()
@@ -156,8 +166,8 @@ class RbsSetup:
 
     def get_status(self, get_histograms=False) -> RbsData:
         aml_x_y = get_json(self.hw.aml_x_y.url)
-        aml_phi_zeta = get_json(self.hw.aml_det_theta.url)
-        aml_det_theta = get_json(self.hw.aml_phi_zeta.url)
+        aml_phi_zeta = get_json(self.hw.aml_phi_zeta.url)
+        aml_det_theta = get_json(self.hw.aml_det_theta.url)
         motrona = get_json(self.hw.motrona_charge.url)
         caen = get_json(self.hw.caen.url)
         histograms = []

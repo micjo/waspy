@@ -5,10 +5,12 @@ import requests
 from pydantic.env_settings import BaseSettings
 
 from hive.hardware_control import http_helper as http
-from hive.hardware_control.erd_entities import PositionCoordinates, ErdHardwareRoute
+from hive.hardware_control.erd_entities import PositionCoordinates, ErdHardwareRoute, ErdData
 import logging
 from threading import Lock
-from hive.hardware_control.hw_action import acquisition_started, move_mdrive_done, move_mdrive
+
+from hive.hardware_control.http_helper import get_json
+from hive.hardware_control.hw_action import acquisition_started, move_mdrive_done, move_mdrive, load_motor
 
 
 class GlobalConfig(BaseSettings):
@@ -26,26 +28,24 @@ def fake_call(func, *args, **kw):
     return ""
 
 
-def fakeable(func):
-    def wrap_func():
-        if faker:
-            return lambda *args, **kw: fake_call(func, args, kw)
-        else:
-            return func
-
-    return wrap_func()
-
-
 class ErdSetup:
     hw: ErdHardwareRoute
+    _fake: bool
+    _fake_count: int
 
     def __init__(self, erd_hw: ErdHardwareRoute):
         self.hw = erd_hw
         self._lock = Lock()
         self._abort = False
+        self._fake = False
+        self._fake_count = 0
 
-    @fakeable
+    def fake(self):
+        self._fake = True
+
     def move(self, position: PositionCoordinates):
+        if self._fake:
+            return fake_call(self.move, position)
         if self._aborted():
             return
         if position is None:
@@ -56,8 +56,19 @@ class ErdSetup:
         if position.z is not None:
             move_mdrive(http.generate_request_id(), self.hw.mdrive_z.url, position.z)
 
-    @fakeable
+    def load(self):
+        load_motor(http.generate_request_id(), self.hw.mdrive_z.url)
+        load_motor(http.generate_request_id(), self.hw.mdrive_theta.url)
+
+    def get_status(self):
+        mdrive_z = get_json(self.hw.mdrive_z.url)
+        mdrive_theta = get_json(self.hw.mdrive_theta.url)
+        mpa3 = get_json(self.hw.mpa3.url)
+        return ErdData.parse_obj({"mdrive_z": mdrive_z, "mdrive_theta": mdrive_theta, "mpa3": mpa3})
+
     def wait_for_arrival(self):
+        if self._fake:
+            return fake_call(self.wait_for_arrival)
         if self._aborted():
             return
         move_mdrive_done(self.hw.mdrive_theta.url)
@@ -80,30 +91,34 @@ class ErdSetup:
             time.sleep(1)
             sleep_time += 1
 
-    @fakeable
     def wait_for_acquisition_done(self):
+        if self._fake:
+            return fake_call(self.wait_for_acquisition_done)
         if self._aborted():
             return
         logging.info("Wait for acquisition completed")
         self._acquisition_done(self.hw.mpa3.url)
         logging.info("Acquisition completed")
 
-    @fakeable
     def wait_for_acquisition_started(self):
+        if self._fake:
+            return fake_call(self.wait_for_acquisition_started)
         if self._aborted():
             return
         acquisition_started(self.hw.mpa3.url)
         logging.info("Acquisition Started")
 
-    @fakeable
     def get_histogram(self):
+        if self._fake:
+            return fake_call(self.get_histogram)
         logging.info("get histogram")
         if self._aborted():
             return ""
         return requests.get(self.hw.mpa3.url + "/histogram", timeout=10).text
 
-    @fakeable
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
+        if self._fake:
+            return fake_call(self.configure_acquisition)
         if self._aborted():
             return ""
         http.post_request(self.hw.mpa3.url, {
@@ -115,20 +130,24 @@ class ErdSetup:
             "set_filename": spectrum_filename
         })
 
-    @fakeable
     def reupload_config(self):
+        if self._fake:
+            return fake_call(self.reupload_config)
         if self._aborted():
             return ""
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "reupload_mpa3_cnf": True})
 
-    @fakeable
     def start_acquisition(self):
+        if self._fake:
+            self._fake_count = 0
+            return fake_call(self.start_acquisition)
         if self._aborted():
             return ""
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "start": True})
 
-    @fakeable
     def convert_data_to_ascii(self):
+        if self._fake:
+            return fake_call(self.convert_data_to_ascii)
         if self._aborted():
             return ""
         logging.info("Request conversion to ascii")
@@ -136,6 +155,11 @@ class ErdSetup:
         logging.info("Conversion to ascii done")
 
     def get_measurement_time(self):
+        if self._fake:
+            fake_call(self.get_measurement_time)
+            self._fake_count += 10
+            return self._fake_count
+
         mpa3 = requests.get(self.hw.mpa3.url, timeout=10).json()
         return mpa3["acquisition_status"]["real_time"]
 
@@ -154,7 +178,3 @@ class ErdSetup:
             if self._aborted():
                 logging.info("acquisition done: abort requested")
                 break
-
-
-
-

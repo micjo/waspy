@@ -23,7 +23,7 @@ class EmptyJob(Job):
         pass
 
     def get_status(self):
-        return ""
+        return {}
 
     def abort(self):
         pass

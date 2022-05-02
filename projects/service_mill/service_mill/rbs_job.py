@@ -22,11 +22,12 @@ class RbsRecipeStatus(BaseModel):
     run_time: timedelta
     accumulated_charge_corrected: float
     accumulated_charge_target: float
+    progress: str
 
 
 empty_rbs_recipe_status = RbsRecipeStatus(recipe_id="", start_time=datetime.now(), run_time=0,
                                           accumulated_charge_corrected=0,
-                                          accumulated_charge_target=0)
+                                          accumulated_charge_target=0, progress="0.0%")
 
 
 class RbsJob(Job):
@@ -102,7 +103,15 @@ class RbsJob(Job):
             self._active_recipe_status.run_time = datetime.now() - self._active_recipe_status.start_time
             try:
                 self._active_recipe_status.accumulated_charge_corrected = self._rbs_setup.get_corrected_total_accumulated_charge()
+                active_recipe = self._active_recipe_status
+
+                if active_recipe.accumulated_charge_target != 0:
+                    progress = active_recipe.accumulated_charge_corrected / active_recipe.accumulated_charge_target * 100
+                    self._active_recipe_status.progress = "{:.2f}%".format(progress)
+                else:
+                    self._active_recipe_status.progress = "0.00%"
             except Exception as e:
+                logging.error(traceback.format_exc())
                 self._did_error = True
                 self._error_message = str(e)
 
