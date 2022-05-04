@@ -8,6 +8,12 @@ from pathlib import Path
 from pydantic import BaseSettings
 
 
+logging.basicConfig(
+    format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
+    level=logging.INFO,
+    datefmt='%Y.%m.%d__%H:%M__%S')
+
+
 class LogOption(str, Enum):
     logbook = "logbook"
     stdout = "stdout"
@@ -16,14 +22,12 @@ class LogOption(str, Enum):
 
 class GlobalConfig(BaseSettings):
     CONFIG_FILE = "../config.toml"
-    LOGBOOK_URL = "http://localhost:8001"
+    LOGBOOK_URL = "http://127.0.0.1:8001"
     LOG_TO: LogOption = "stdout"
     FILE_PATH: Path = "trends.txt"
 
 
 def trend(trend_list):
-    logging.info("Loaded config: " + env_conf.json())
-
     trend_values = {}
     for item in trend_list:
         trend_key, status_url, status_key = item
@@ -73,6 +77,9 @@ if __name__ == "__main__":
         conf_from_file = tomli.load(f)
         trend_conf = conf_from_file['trend']
 
+    logging.info("Loaded config: " + str(env_conf))
+    logging.info("Trending daemons: " + str(trend_conf))
+
     if not write_or_check_title(trend_conf, env_conf):
         sys.exit("Invalid config. Exitting")
 
@@ -92,7 +99,7 @@ if __name__ == "__main__":
             try:
                 requests.post(env_conf.LOGBOOK_URL + "/log_trend", json=trends)
             except Exception as e:
-                print("Could not reach the logbook api. Retrying")
+                logging.info("Could not reach the logbook api. Retrying")
 
 
         time.sleep(1)
