@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
@@ -19,7 +20,7 @@ def get_sections(csv_text: str):
     return sections
 
 
-def drop_nan(data: Dict) -> List[Dict]:
+def drop_nan(data: List[Dict]) -> List[Dict]:
     dropped = []
     for setting in data:
         clean_dict = {k: v for k, v in setting.items() if pd.notnull(v)}
@@ -50,17 +51,42 @@ def convert_coordinates_to_position(position_key, setting):
     setting.pop("theta", None)
 
 
-def parse_recipes(recipe_section: str) -> [Dict]:
+def parse_random_recipes(recipe_section: List) -> [Dict]:
     '''Defaults can happen here'''
-    recipe_settings = parse_list_settings(recipe_section)
+    recipe_section = drop_nan(recipe_section)
 
-    for setting in recipe_settings:
-        if "type" not in setting:
-            raise AttributeError("type object 'recipe', has no attribute 'type'")
-        elif setting["type"] == rbs.RecipeType.random:
-            convert_coordinates_to_position("start_position", setting)
-            setting["vary_coordinate"] = rbs.VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
-        else:
-            raise AttributeError("type object 'type' is incorrect")
+    for setting in recipe_section:
+        convert_coordinates_to_position("start_position", setting)
+        setting["vary_coordinate"] = rbs.VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
 
-    return recipe_settings
+    return recipe_section
+
+
+def parse_channeling_recipes(recipe_section: List, ays_vary_section: Dict):
+    recipe_section = drop_nan(recipe_section)
+
+    for setting in recipe_section:
+        convert_coordinates_to_position("start_position", setting)
+        setting["random_vary_coordinate"] = rbs.VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
+        setting["random_fixed_charge_total"] = setting['charge_total']
+        setting.pop("charge_total")
+        setting["yield_vary_coordinates"] = [
+            {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
+            {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
+            {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
+            {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
+        ]
+        setting["yield_charge_total"] = ays_vary_section["ays_charge"]
+        setting["yield_optimize_detector_index"] = ays_vary_section["ays_detector_index"]
+        setting["random_vary_coordinate"] = {"name": "phi", "start": 0, "end": 30, "increment": 2}
+        setting["yield_integration_window"] = {}
+        setting["yield_integration_window"]["start"] = ays_vary_section["ays_window_start"]
+        setting["yield_integration_window"]["end"] = ays_vary_section["ays_window_end"]
+
+    return recipe_section
+
+
+
+
+
+
