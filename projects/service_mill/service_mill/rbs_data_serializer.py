@@ -146,7 +146,7 @@ def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: s
  *
  * ANAL.IONS(Z)          := 4.002600
  * ANAL.IONS(symb)       := He+
- * ENERGY[MeV]           := 1.5 MeV
+ * ENERGY[MeV]           := 1.523 MeV
  * Charge[nC]            := {charge}
  *
  * Sample ID             := {sample_id}
