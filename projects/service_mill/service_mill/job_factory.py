@@ -30,9 +30,13 @@ class JobFactory:
     def make_rbs_job(self, job_model: RbsJobModel):
         return RbsJob(job_model, self._rbs_setup, self._rbs_data_serializer)
 
+    def make_erd_job(self, job_model: ErdJobModel):
+        return ErdJob(job_model, self._erd_setup, self._erd_data_serializer)
+
     def make_job_model_from_csv(self, contents) -> Union[RbsJobModel, ErdJobModel]:
         sections = get_sections(contents)
-        settings = {"job_id": sections[0][0]["job_id"], "job_type": sections[0][0]["job_type"]}
+        top_section = sections[0][0]
+        settings = top_section
 
         if settings["job_type"] == "erd":
             settings["recipes"] = []
@@ -45,30 +49,16 @@ class JobFactory:
 
         elif settings["job_type"] == "rbs":
             settings["detectors"] = sections[1]
-            settings["recipes"] = []
+            self._rbs_setup.verify_caen_boards(settings["detectors"])
 
-            for section_recipe in sections[2]:
-                recipe = section_recipe
-                recipe["start_position"] = RbsPosition.parse_obj(recipe)
-                if recipe["type"] == RecipeType.random:
-                    recipe["vary_coordinate"] = VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
-                settings["recipes"].append(recipe)
-
+            if settings["job_subtype"] == "random":
+                recipes_section = sections[2]
+                settings["recipes"] = rbs_random_csv_to_json.parse_random_recipes(recipes_section)
+            elif settings["job_subtype"] == "channeling":
+                ays_vary_section = sections[2][0]
+                recipes_section = sections[3]
+                settings["recipes"] = rbs_random_csv_to_json.parse_channeling_recipes(recipes_section, ays_vary_section)
             return RbsJobModel.parse_obj(settings)
-
-    def make_rbs_job_model_from_csv(self, contents):
-        top_section, detectors_section, recipes_section = rbs_random_csv_to_json.get_sections(contents)
-        settings = rbs_random_csv_to_json.parse_top_settings(top_section)
-        settings["detectors"] = rbs_random_csv_to_json.parse_list_settings(detectors_section)
-        settings["recipes"] = rbs_random_csv_to_json.parse_recipes(recipes_section)
-        self._rbs_setup.verify_caen_boards(settings["detectors"])
-        return RbsJobModel.parse_obj(settings)
-
-    def make_erd_job(self, job_model: ErdJobModel):
-        return ErdJob(job_model, self._erd_setup, self._erd_data_serializer)
-
-    def make_erd_job_model_from_csv(self, contents):
-        return erd_csv_to_json.parse_rqm(contents)
 
 
 def convert_csv_to_dict(csv) -> Dict:
@@ -89,30 +79,6 @@ def get_sections(csv_text: str)-> List:
             section_text = ""
 
     sections.append(convert_csv_to_dict(section_text))
+
+
     return sections
-
-
-
-class RbsJobFactory:
-    def __init__(self, setup: RbsSetup, data_serializer: RbsDataSerializer):
-        self._setup = setup
-        self._data_serializer = data_serializer
-
-    def make_job(self, job_model: RbsJobModel):
-        return RbsJob(job_model, self._setup, self._data_serializer)
-
-    def make_job_model_from_csv(self, contents):
-        top_section, detectors_section, recipes_section = rbs_random_csv_to_json.get_sections(contents)
-        settings = rbs_random_csv_to_json.parse_top_settings(top_section)
-        settings["detectors"] = rbs_random_csv_to_json.parse_list_settings(detectors_section)
-        settings["recipes"] = rbs_random_csv_to_json.parse_recipes(recipes_section)
-        self._setup.verify_caen_boards(settings["detectors"])
-        return RbsJobModel.parse_obj(settings)
-
-
-class ErdJobFactory:
-    def __init__(self, setup: ErdSetup, data_serializer: ErdDataSerializer):
-        self._setup = setup
-        self._data_serializer = data_serializer
-
-
