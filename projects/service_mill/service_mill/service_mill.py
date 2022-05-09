@@ -76,12 +76,10 @@ def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBook
     rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
     rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
     rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
-    rbs_setup.fake()
 
     erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
     erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
     erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
-    erd_setup.fake()
 
     factory = JobFactory(rbs_setup, rbs_data_serializer, erd_setup, erd_data_serializer)
     build_job_routes(router, job_runner, factory)
