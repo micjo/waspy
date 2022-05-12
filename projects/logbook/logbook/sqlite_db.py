@@ -24,7 +24,8 @@ class SqliteDb:
         return self._last_rowid
 
     def log_message(self, type, message):
-        self._exec("INSERT INTO log_book (type, message) VALUES ('{type}', '{message}');".format(type=type, message=message))
+        self._exec(
+            "INSERT INTO log_book (type, message) VALUES ('{type}', '{message}');".format(type=type, message=message))
 
     def log_rbs_recipe(self, row_id: str, rbs: str, recipe_name: str):
         self._exec("""
@@ -32,11 +33,13 @@ class SqliteDb:
             VALUES ('{id}', '{rbs}', '{recipe}');
         """.format(id=row_id, rbs=rbs, recipe=recipe_name))
 
-    def log_erd_recipe(self, row_id: str, erd: str, recipe_name: str):
+    def log_erd_recipe(self, row_id: str, erd: str, recipe_name: str, beam_type: str, beam_energy_MeV: float,
+                       sample_tilt_degrees: float):
         self._exec("""
-            INSERT INTO erd_service_log (message_id, erd_name, recipe_name)
-            VALUES ('{id}', '{erd}', '{recipe}');
-        """.format(id=row_id, erd=erd, recipe=recipe_name))
+            INSERT INTO erd_service_log (message_id, erd_name, recipe_name, beam_type, beam_energy_MeV, sample_tilt_degrees)
+            VALUES ('{id}', '{erd}', '{recipe}', '{beam_type}', '{beam_energy_MeV}', '{sample_tilt_degrees}');
+        """.format(id=row_id, erd=erd, recipe=recipe_name, beam_type=beam_type, beam_energy_MeV=beam_energy_MeV,
+                   sample_tilt_degrees=sample_tilt_degrees))
 
     def log_trend(self, trends: dict):
         columns = ",".join([str(key) for key, value in trends.items() if str(value) != ""])

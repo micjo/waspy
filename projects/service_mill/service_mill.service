@@ -9,7 +9,7 @@ User=root
 WorkingDirectory=/root/wasp-hive/projects/service_mill
 ExecStart=/root/wasp-hive/projects/service_mill/run_service_mill.sh
 Restart=on-failure
-SyslogIdentifier=logbook
+SyslogIdentifier=service_mill
 
 [Install]
 WantedBy=multi-user.target
