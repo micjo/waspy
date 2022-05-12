@@ -26,13 +26,19 @@ class LogBookDb:
                       "&job_id=" + job_id +
                       "&recipe_id=" + recipe.file_stem)
 
-    def erd_recipe_finish(self, job_id: str, recipe: ErdRecipe):
+    def erd_recipe_finish(self, job_model: ErdJobModel, recipe: ErdRecipe):
         requests.post(self._logbook_url +
                       "/log_recipe_finish?"
                       "row_id=" + str(self._logbook_rowid) +
                       "&job_type=erd" +
-                      "&job_id=" + job_id +
-                      "&recipe_id=" + recipe.file_stem)
+                      "&job_id=" + job_model.job_id +
+                      "&recipe_id=" + recipe.file_stem +
+                      "&beam_type=" + job_model.beam_type +
+                      "&beam_energy_MeV=" + str(job_model.beam_energy_MeV) +
+                      "&sample_tilt_degrees=" + str(job_model.sample_tilt_degrees))
+
+    def get_job_summary(self):
+        return requests.get(self._logbook_url + "/get_erd_service_log").json()
 
     def job_end(self, job: Union[RbsJobModel, ErdJobModel]):
         requests.post(self._logbook_url + "/log_job_end?"
