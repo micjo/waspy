@@ -18,11 +18,11 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
         sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} finished'.format(job_id=job_id))
 
     @router.post("/log_recipe_finish")
-    async def log_recipe_finish(row_id: str, job_type: str, job_id: str, recipe_id: str):
+    async def log_recipe_finish(row_id: str, job_type: str, job_id: str, recipe_id: str, beam_type: str, beam_energy_MeV: float, sample_tilt_degrees: float):
         if job_type == "rbs":
             sql_db.log_rbs_recipe(row_id, job_id, recipe_id)
         if job_type == "erd":
-            sql_db.log_erd_recipe(row_id, job_id, recipe_id)
+            sql_db.log_erd_recipe(row_id, job_id, recipe_id, beam_type, beam_energy_MeV, sample_tilt_degrees)
 
     @router.post("/log_trend")
     async def log_trend(trend: dict):

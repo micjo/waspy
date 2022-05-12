@@ -26,6 +26,7 @@ class ErdDataSerializer:
     _data_store: DataSerializer
     _db: LogBookDb
     _time_loaded: datetime
+    _job: ErdJobModel
 
     def __init__(self, data_store: DataSerializer, log_book_db: LogBookDb):
         self._data_store = data_store
@@ -46,6 +47,7 @@ class ErdDataSerializer:
             return copy.deepcopy(self._abort)
 
     def prepare_job(self, job: ErdJobModel):
+        self._job = job
         self._data_store.set_base_folder(job.job_id)
         self._db.job_start(job)
         self._time_loaded = datetime.now()
@@ -56,11 +58,12 @@ class ErdDataSerializer:
         trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "any")
         self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
+        self._data_store.write_csv_panda_to_disk("service_log.csv", self._db.get_job_summary())
         self._db.job_end(job_model)
         self.resume()
 
-    def save_recipe_result(self, job_id:str,  recipe: ErdRecipe):
-        self._db.erd_recipe_finish(job_id, recipe)
+    def save_recipe_result(self, recipe: ErdRecipe):
+        self._db.erd_recipe_finish(self._job, recipe)
 
     def save_histogram(self, histogram: str, file_stem):
         if self.aborted():
