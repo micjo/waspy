@@ -63,7 +63,7 @@ class ErdDataSerializer:
         self.resume()
 
     def save_recipe_result(self, recipe: ErdRecipe):
-        self._db.erd_recipe_finish(self._job, recipe)
+        self._db.erd_recipe_finish(self._job, recipe, self._time_loaded)
 
     def save_histogram(self, histogram: str, file_stem):
         if self.aborted():

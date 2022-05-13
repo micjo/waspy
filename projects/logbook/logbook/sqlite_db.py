@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 import pandas as pd
 import numpy as np
+from entities import ErdRecipeModel
 
 logging.basicConfig(
     format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
@@ -33,13 +34,32 @@ class SqliteDb:
             VALUES ('{id}', '{rbs}', '{recipe}');
         """.format(id=row_id, rbs=rbs, recipe=recipe_name))
 
-    def log_erd_recipe(self, row_id: str, erd: str, recipe_name: str, beam_type: str, beam_energy_MeV: float,
-                       sample_tilt_degrees: float):
+    def log_erd_recipe(self, row_id: str, erd_recipe: ErdRecipeModel):
         self._exec("""
-            INSERT INTO erd_service_log (message_id, erd_name, recipe_name, beam_type, beam_energy_MeV, sample_tilt_degrees)
-            VALUES ('{id}', '{erd}', '{recipe}', '{beam_type}', '{beam_energy_MeV}', '{sample_tilt_degrees}');
-        """.format(id=row_id, erd=erd, recipe=recipe_name, beam_type=beam_type, beam_energy_MeV=beam_energy_MeV,
-                   sample_tilt_degrees=sample_tilt_degrees))
+            INSERT INTO erd_service_log 
+            (message_id, erd_name, beam_type, beam_energy_MeV, sample_tilt_degrees, sample_id, 
+            recipe_name, theta, z_start, z_end, z_increment, z_repeat, 
+            start_time, end_time, average_terminal_voltage)
+            VALUES (
+            '{id}', '{job_id}', '{beam_type}', '{beam_energy_MeV}', '{sample_tilt_degrees}', '{sample_id}', 
+            '{file_stem}', '{theta}', '{z_start}','{z_end}','{z_increment}','{z_repeat}',
+            '{start_time}','{end_time}','{avg_terminal_voltage}'
+            );
+        """.format(id=row_id,
+                   job_id=erd_recipe.job_id,
+                   beam_type=erd_recipe.beam_type,
+                   beam_energy_MeV=erd_recipe.beam_energy_MeV,
+                   sample_tilt_degrees=erd_recipe.sample_tilt_degrees,
+                   sample_id=erd_recipe.sample_id,
+                   file_stem=erd_recipe.file_stem,
+                   theta=erd_recipe.theta,
+                   z_start=erd_recipe.z_start,
+                   z_end=erd_recipe.z_end,
+                   z_increment=erd_recipe.z_increment,
+                   z_repeat=erd_recipe.z_repeat,
+                   start_time=erd_recipe.start_time,
+                   end_time=erd_recipe.end_time,
+                   avg_terminal_voltage=erd_recipe.avg_terminal_voltage))
 
     def log_trend(self, trends: dict):
         columns = ",".join([str(key) for key, value in trends.items() if str(value) != ""])
@@ -54,11 +74,23 @@ class SqliteDb:
     def get_log_messages(self) -> List[str]:
         return self._exec("SELECT * FROM log_book;")
 
+    def get_erd_service_log_title(self) -> List[str]:
+        response = self._exec("SELECT name FROM pragma_table_info('erd_service_log');")
+        column_list = [''.join(item) for item in response]
+        return column_list
+
     def get_rbs_service_log(self) -> List[str]:
         return self._exec("SELECT * FROM rbs_service_log;")
 
-    def get_erd_service_log(self) -> List[str]:
-        return self._exec("SELECT * FROM erd_service_log;")
+    def get_erd_service_log(self, row_id: int):
+        columns = ["recipe_name", "sample_id", "beam_type", "beam_energy_MeV", "sample_tilt_degrees", "theta",
+                   "z_start", "z_end", "z_increment", "z_repeat", "start_time", "end_time", "average_terminal_voltage",
+                   "erd_service_id", "message_id", "erd_name"]
+        columns = ','.join(columns)
+        dataframe = self._exec_panda("""
+           select datetime(utc, 'localtime') as timestamp, {column_list} from erd_service_log where message_id='{row_id}'
+            """.format(column_list=columns, row_id=row_id))
+        return dataframe.to_dict(orient='list')
 
     def get_trend(self, start: str, end: str, id: str, step: int):
         dataframe = self._exec_panda("""
