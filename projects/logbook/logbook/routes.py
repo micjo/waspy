@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import FastAPI
 from sqlite_db import SqliteDb
 from entities import ErdRecipeModel
@@ -18,7 +20,7 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
         sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} finished'.format(job_id=job_id))
 
     @router.post("/log_recipe_finish")
-    async def log_recipe_finish(row_id: str, job_type: str, job_id: str, recipe_id: str, beam_type: str, beam_energy_MeV: float, sample_tilt_degrees: float):
+    async def log_recipe_finish(row_id: str, job_type: str, job_id: str, recipe_id: str):
         if job_type == "rbs":
             sql_db.log_rbs_recipe(row_id, job_id, recipe_id)
 
@@ -47,7 +49,7 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
         return sql_db.get_erd_service_log(row_id)
 
     @router.get("/get_trend")
-    async def get_trend(start: str, end: str, id: str, step: int):
+    async def get_trend(start: datetime, end: datetime, id: str, step: int):
         return sql_db.get_trend(start, end, id, step)
 
     @router.get("/get_trend_starts_with")

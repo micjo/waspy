@@ -2,9 +2,11 @@ import sqlite3
 import logging
 from pathlib import Path
 from typing import List
+from datetime import datetime
 import pandas as pd
 import numpy as np
 from entities import ErdRecipeModel
+import time
 
 logging.basicConfig(
     format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s',
@@ -92,11 +94,13 @@ class SqliteDb:
             """.format(column_list=columns, row_id=row_id))
         return dataframe.to_dict(orient='list')
 
-    def get_trend(self, start: str, end: str, id: str, step: int):
+    def get_trend(self, start: datetime, end: datetime, id: str, step: int):
+        utc_start = datetime_from_local_to_utc(start)
+        utc_end = datetime_from_local_to_utc(end)
+
         dataframe = self._exec_panda("""
-           select datetime(utc, 'localtime') as timestamp, {id} from trend where datetime(utc, 'localtime') between '{start}' and '{end}'
-           and strftime("%S", utc) % '{step}' == 0
-        """.format(id=id, start=start, end=end, step=step))
+           select datetime(utc, 'localtime') as timestamp, {id} from trend where utc between '{start}' and '{end}'
+        """.format(id=id, start=utc_start, end=utc_end))
         dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 
@@ -104,15 +108,16 @@ class SqliteDb:
         filtered_columns = [column for column in self.get_trending() if column.startswith(starts_with)]
         filtered_columns_text = ','.join(filtered_columns)
         dataframe = self._exec_panda("""
-           select datetime(utc, 'localtime') as timestamp, {column_list} from trend where datetime(utc, 'localtime') between '{start}' and '{end}'
-           and strftime("%S", utc) % '{step}' == 0
+           select datetime(utc, 'localtime') as timestamp, {column_list} from trend where id between '{start}' and '{end}'
         """.format(column_list=filtered_columns_text, start=start, end=end, step=step))
         dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 
     def _exec_panda(self, query):
         con = sqlite3.connect(self._sqlite_file)
+        start_time = time.time()
         df = pd.read_sql_query(query, con)
+        print("read_sql query:  %s seconds ---" % (time.time() - start_time))
         con.close()
         return df
 
@@ -120,9 +125,25 @@ class SqliteDb:
         logging.debug("executing sql query: {" + query + "}")
         con = sqlite3.connect(self._sqlite_file)
         cur = con.cursor()
+        start_time = time.time()
         answer = cur.execute(query)
+        print("execute query:  %s seconds ---" % (time.time() - start_time))
+        start_time = time.time()
         con.commit()
+        print("commit:  %s seconds ---" % (time.time() - start_time))
         response = answer.fetchall()
         con.close()
         self._last_rowid = answer.lastrowid
         return response
+
+
+def datetime_from_utc_to_local(utc_datetime):
+    now_timestamp = time.time()
+    offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
+    return utc_datetime + offset
+
+
+def datetime_from_local_to_utc(local_datetime):
+    now_timestamp = time.time()
+    offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
+    return local_datetime - offset
