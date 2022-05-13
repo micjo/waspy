@@ -44,8 +44,6 @@ class LogBookDb:
         url = self._logbook_url + "/log_erd_recipe_finish?row_id={}".format(self._logbook_rowid)
 
         response = requests.post(url, json=recipe_result, timeout=10)
-        print(response.status_code)
-        print(response.text)
 
     def get_job_summary(self):
         return requests.get(self._logbook_url + "/get_erd_service_log?row_id={}".format(self._logbook_rowid)).json()
