@@ -31,6 +31,9 @@ class ErdRecipe(BaseModel):
 
 class ErdJobModel(BaseModel):
     job_id: str
+    beam_type: str
+    sample_tilt_degrees: float
+    beam_energy_MeV: float
     recipes: List[ErdRecipe]
     type = "erd"
 
@@ -57,7 +60,7 @@ class ErdJobModel(BaseModel):
         }
 
 
-empty_erd_rqm = ErdJobModel(recipes=[], job_id="")
+empty_erd_rqm = ErdJobModel(recipes=[], job_id="", beam_energy_MeV=0.0, beam_type="", sample_tilt_degrees=0.0)
 
 
 class ActiveRecipe(BaseModel):
