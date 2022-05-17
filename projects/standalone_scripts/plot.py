@@ -125,12 +125,12 @@ class Graph:
         self._log_scale = not self._log_scale
 
     def toggle_show(self):
-        kernel32 = ctypes.WinDLL('kernel32')
-        user32 = ctypes.WinDLL('user32')
-        hWnd = kernel32.GetConsoleWindow()
+#        kernel32 = ctypes.WinDLL('kernel32')
+#        user32 = ctypes.WinDLL('user32')
+#        hWnd = kernel32.GetConsoleWindow()
         self._hide_term = not self._hide_term
-        if hWnd:
-            user32.ShowWindow(hWnd, self._hide_term)
+#        if hWnd:
+#            user32.ShowWindow(hWnd, self._hide_term)
 
 
 if __name__ == "__main__":
