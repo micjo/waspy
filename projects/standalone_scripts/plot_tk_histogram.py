@@ -63,15 +63,17 @@ def update_frequency(new_val):
 
 
 
+
+
 update_values()
 
-outer_frame = tkinter.Frame(root, borderwidth=2, relief="groove")
-outer_frame.pack(side="bottom", fill="both", expand=True, padx=20, pady=20)
-
-tkinter.Label(outer_frame, text="Child Frame 1").pack(side='left')
-tkinter.Label(outer_frame, text="Child Frame 2").pack(side='left')
-tkinter.Label(outer_frame, text="Child Frame 3").pack(fill="both", expand=True)
-
+# outer_frame = tkinter.Frame(root, borderwidth=2, relief="groove")
+# outer_frame.pack(side="bottom", fill="both", expand=True, padx=20, pady=20)
+#
+# tkinter.Label(outer_frame, text="Child Frame 1").pack(side='left')
+# tkinter.Label(outer_frame, text="Child Frame 2").pack(side='left')
+# tkinter.Label(outer_frame, text="Child Frame 3").pack(fill="both", expand=True)
+#
 # s1 = ttk.Separator(outer_frame, orient="horizontal")
 # s2 = ttk.Separator(outer_frame, orient="horizontal")
 #
@@ -89,16 +91,13 @@ slider_update = tkinter.Scale(root, from_=1, to=5, orient=tkinter.HORIZONTAL,
 # is no space left, because the window is too small, they are not displayed.
 # The canvas is rather flexible in its size, so we pack it last which makes
 # sure the UI controls are displayed as long as possible.
-button_quit.pack(side=tkinter.BOTTOM, anchor='w')
-slider_update.pack(side=tkinter.BOTTOM)
-toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+button_quit.grid(sticky=(tkinter.N, tkinter.E, tkinter.W, tkinter.S))
+slider_update.grid()
+toolbar.grid()
+canvas.get_tk_widget().grid(sticky="NEWS")
 
-frame = tkinter.Frame(root)
-tkinter.Label(outer_frame, text="Child label 1").grid()
-
-
-
-
+root.columnconfigure(0, weight=1)
+# root.rowconfigure(0, weight=1)
+root.rowconfigure(1, weight=1)
 
 tkinter.mainloop()

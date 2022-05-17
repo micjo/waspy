@@ -95,12 +95,12 @@ class SqliteDb:
         return dataframe.to_dict(orient='list')
 
     def get_trend(self, start: datetime, end: datetime, id: str, step: int):
-        utc_start = datetime_from_local_to_utc(start)
-        utc_end = datetime_from_local_to_utc(end)
+        epoch_start = int(start.timestamp())
+        epoch_end = int(end.timestamp())
 
         dataframe = self._exec_panda("""
-           select datetime(utc, 'localtime') as timestamp, {id} from trend where utc between '{start}' and '{end}'
-        """.format(id=id, start=utc_start, end=utc_end))
+           select epoch, {id} from trend where epoch between '{start}' and '{end}'
+        """.format(id=id, start=epoch_start, end=epoch_end))
         dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 
