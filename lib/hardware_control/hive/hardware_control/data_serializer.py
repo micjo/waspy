@@ -69,6 +69,7 @@ class DataSerializer:
 
     def write_csv_panda_to_disk(self, filename: str, content: Dict):
         df = pd.DataFrame.from_dict(content)
+        print(df)
         self.write_text_to_disk(filename, df.to_csv(index=False))
 
     def write_json_to_disk(self, filename, content: Dict):

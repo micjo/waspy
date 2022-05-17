@@ -42,8 +42,6 @@ class JobFactory:
             settings["recipes"] = []
             for section_recipe in sections[1]:
                 recipe = section_recipe
-                if isnan(recipe["z_repeat"]):
-                    recipe["z_repeat"] = 1
                 settings["recipes"].append(recipe)
             return ErdJobModel.parse_obj(settings)
 
