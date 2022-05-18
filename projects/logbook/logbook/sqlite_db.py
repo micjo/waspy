@@ -27,22 +27,23 @@ class SqliteDb:
         return self._last_rowid
 
     def log_message(self, type, message):
-        self._exec(
-            "INSERT INTO log_book (mode, note) VALUES ('{type}', '{message}');".format(type=type, message=message))
-
-    def log_rbs_recipe(self, row_id: str, rbs: str, recipe_name: str):
         self._exec("""
-            INSERT INTO log_book (mode) values('rbs')
-        """)
+            INSERT INTO log_book (mode, note, epoch) VALUES ('{type}', '{message}, {epoch}');
+        """.format(type=type, message=message, epoch=int(datetime.now().timestamp())))
+
+    def log_rbs_recipe(self, job_id: str, recipe_name: str):
+        self._exec("""
+            INSERT INTO log_book (mode, epoch) values('rbs', '{epoch}')
+        """.format(epoch=int(datetime.now().timestamp())))
         self._exec("""
             INSERT INTO rbs_service (log_id, job_id, recipe_name)
-            VALUES ('{id}', '{rbs}', '{recipe}');
-        """.format(id=self._last_rowid, rbs=rbs, recipe=recipe_name))
+            VALUES ('{id}', '{job_id}', '{recipe}');
+        """.format(id=self._last_rowid, job_id=job_id, recipe=recipe_name))
 
-    def log_erd_recipe(self, row_id: str, erd_recipe: ErdRecipeModel):
+    def log_erd_recipe(self, erd_recipe: ErdRecipeModel):
         self._exec("""
-            INSERT INTO log_book (mode) values('erd')
-        """)
+            INSERT INTO log_book (mode, epoch) values('erd', '{epoch}')
+        """.format(epoch=int(datetime.now().timestamp())))
         self._exec("""
             INSERT INTO erd_service 
             (log_id, job_id, beam_type, beam_energy_MeV, sample_tilt_degrees, sample_id, 
@@ -142,7 +143,6 @@ class SqliteDb:
 
     def _exec_panda(self, query):
         con = sqlite3.connect(self._sqlite_file)
-        start_time = time.time()
         df = pd.read_sql_query(query, con)
         con.close()
         return df
