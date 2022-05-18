@@ -28,7 +28,7 @@ class SqliteDb:
 
     def log_message(self, type, message):
         self._exec("""
-            INSERT INTO log_book (mode, note, epoch) VALUES ('{type}', '{message}, {epoch}');
+            INSERT INTO log_book (mode, note, epoch) VALUES ('{type}', '{message}', '{epoch}');
         """.format(type=type, message=message, epoch=int(datetime.now().timestamp())))
 
     def log_rbs_recipe(self, job_id: str, recipe_name: str):
