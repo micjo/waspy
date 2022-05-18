@@ -28,18 +28,24 @@ class SqliteDb:
 
     def log_message(self, type, message):
         self._exec(
-            "INSERT INTO log_book (type, message) VALUES ('{type}', '{message}');".format(type=type, message=message))
+            "INSERT INTO log_book (mode, note) VALUES ('{type}', '{message}');".format(type=type, message=message))
 
     def log_rbs_recipe(self, row_id: str, rbs: str, recipe_name: str):
         self._exec("""
-            INSERT INTO rbs_service_log (message_id, rbs_name, recipe_name)
+            INSERT INTO log_book (mode) values('rbs')
+        """)
+        self._exec("""
+            INSERT INTO rbs_service_log (log_id, job_id, recipe_name)
             VALUES ('{id}', '{rbs}', '{recipe}');
-        """.format(id=row_id, rbs=rbs, recipe=recipe_name))
+        """.format(id=self._last_rowid, rbs=rbs, recipe=recipe_name))
 
     def log_erd_recipe(self, row_id: str, erd_recipe: ErdRecipeModel):
         self._exec("""
+            INSERT INTO log_book (mode) values('erd')
+        """)
+        self._exec("""
             INSERT INTO erd_service_log 
-            (message_id, erd_name, beam_type, beam_energy_MeV, sample_tilt_degrees, sample_id, 
+            (log_id, job_id, beam_type, beam_energy_MeV, sample_tilt_degrees, sample_id, 
             recipe_name, theta, z_start, z_end, z_increment, z_repeat, 
             start_time, end_time, average_terminal_voltage)
             VALUES (
@@ -47,7 +53,7 @@ class SqliteDb:
             '{file_stem}', '{theta}', '{z_start}','{z_end}','{z_increment}','{z_repeat}',
             '{start_time}','{end_time}','{avg_terminal_voltage}'
             );
-        """.format(id=row_id,
+        """.format(id=self._last_rowid,
                    job_id=erd_recipe.job_id,
                    beam_type=erd_recipe.beam_type,
                    beam_energy_MeV=erd_recipe.beam_energy_MeV,
@@ -59,8 +65,8 @@ class SqliteDb:
                    z_end=erd_recipe.z_end,
                    z_increment=erd_recipe.z_increment,
                    z_repeat=erd_recipe.z_repeat,
-                   start_time=erd_recipe.start_time,
-                   end_time=erd_recipe.end_time,
+                   start_time=erd_recipe.start_time.timestamp(),
+                   end_time=erd_recipe.end_time.timestamp(),
                    avg_terminal_voltage=erd_recipe.avg_terminal_voltage))
 
     def log_trend(self, trends: dict):
@@ -74,7 +80,26 @@ class SqliteDb:
         return column_list
 
     def get_log_messages(self) -> List[str]:
-        return self._exec("SELECT * FROM log_book;")
+        dataframe = self._exec_panda("""
+        SELECT l.epoch as epoch,
+       l.mode as mode,
+       l.note as note,
+       coalesce(e.job_id, r.job_id) as job_id,
+       coalesce(e.recipe_name, r.recipe_name) as recipe_name,
+       coalesce(e.sample_id, r.sample_id) as sample_id,
+       coalesce(e.start_time, r.start_time) as start_time,
+       coalesce(e.end_time, r.end_time) as end_time,
+       l.meta as meta
+        FROM log_book l
+        LEFT JOIN erd_service e
+        ON l.log_id= e.log_id
+        LEFT join rbs_service r
+        ON l.log_id = r.log_id;
+        """)
+
+        dataframe.sort_values("epoch", inplace=True)
+        dataframe = dataframe.fillna('')
+        return dataframe.to_dict(orient='records')
 
     def get_erd_service_log_title(self) -> List[str]:
         response = self._exec("SELECT name FROM pragma_table_info('erd_service_log');")
@@ -84,14 +109,14 @@ class SqliteDb:
     def get_rbs_service_log(self) -> List[str]:
         return self._exec("SELECT * FROM rbs_service_log;")
 
-    def get_erd_service_log(self, row_id: int):
+    def get_erd_service_log(self, job_id: str):
         columns = ["recipe_name", "sample_id", "beam_type", "beam_energy_MeV", "sample_tilt_degrees", "theta",
                    "z_start", "z_end", "z_increment", "z_repeat", "start_time", "end_time", "average_terminal_voltage",
                    "erd_service_id", "message_id", "erd_name"]
         columns = ','.join(columns)
         dataframe = self._exec_panda("""
-           select datetime(utc, 'localtime') as timestamp, {column_list} from erd_service_log where message_id='{row_id}'
-            """.format(column_list=columns, row_id=row_id))
+           select datetime(utc, 'localtime') as timestamp, {column_list} from erd_service_log where job_id='{job_id}'
+            """.format(column_list=columns, job_id=job_id))
         return dataframe.to_dict(orient='list')
 
     def get_trend(self, start: datetime, end: datetime, id: str, step: int):
@@ -117,7 +142,6 @@ class SqliteDb:
         con = sqlite3.connect(self._sqlite_file)
         start_time = time.time()
         df = pd.read_sql_query(query, con)
-        print("read_sql query:  %s seconds ---" % (time.time() - start_time))
         con.close()
         return df
 
