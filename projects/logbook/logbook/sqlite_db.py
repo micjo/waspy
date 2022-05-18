@@ -35,7 +35,7 @@ class SqliteDb:
             INSERT INTO log_book (mode) values('rbs')
         """)
         self._exec("""
-            INSERT INTO rbs_service_log (log_id, job_id, recipe_name)
+            INSERT INTO rbs_service (log_id, job_id, recipe_name)
             VALUES ('{id}', '{rbs}', '{recipe}');
         """.format(id=self._last_rowid, rbs=rbs, recipe=recipe_name))
 
@@ -44,7 +44,7 @@ class SqliteDb:
             INSERT INTO log_book (mode) values('erd')
         """)
         self._exec("""
-            INSERT INTO erd_service_log 
+            INSERT INTO erd_service 
             (log_id, job_id, beam_type, beam_energy_MeV, sample_tilt_degrees, sample_id, 
             recipe_name, theta, z_start, z_end, z_increment, z_repeat, 
             start_time, end_time, average_terminal_voltage)
@@ -102,12 +102,12 @@ class SqliteDb:
         return dataframe.to_dict(orient='records')
 
     def get_erd_service_log_title(self) -> List[str]:
-        response = self._exec("SELECT name FROM pragma_table_info('erd_service_log');")
+        response = self._exec("SELECT name FROM pragma_table_info('erd_service');")
         column_list = [''.join(item) for item in response]
         return column_list
 
     def get_rbs_service_log(self) -> List[str]:
-        return self._exec("SELECT * FROM rbs_service_log;")
+        return self._exec("SELECT * FROM rbs_service;")
 
     def get_erd_service_log(self, job_id: str):
         columns = ["recipe_name", "sample_id", "beam_type", "beam_energy_MeV", "sample_tilt_degrees", "theta",
@@ -115,7 +115,7 @@ class SqliteDb:
                    "erd_service_id", "message_id", "erd_name"]
         columns = ','.join(columns)
         dataframe = self._exec_panda("""
-           select datetime(utc, 'localtime') as timestamp, {column_list} from erd_service_log where job_id='{job_id}'
+           select datetime(utc, 'localtime') as timestamp, {column_list} from erd_service where job_id='{job_id}'
             """.format(column_list=columns, job_id=job_id))
         return dataframe.to_dict(orient='list')
 
