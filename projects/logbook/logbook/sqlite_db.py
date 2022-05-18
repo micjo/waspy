@@ -65,8 +65,8 @@ class SqliteDb:
                    z_end=erd_recipe.z_end,
                    z_increment=erd_recipe.z_increment,
                    z_repeat=erd_recipe.z_repeat,
-                   start_time=erd_recipe.start_time.timestamp(),
-                   end_time=erd_recipe.end_time.timestamp(),
+                   start_time=int(erd_recipe.start_time.timestamp()),
+                   end_time=int(erd_recipe.end_time.timestamp()),
                    avg_terminal_voltage=erd_recipe.avg_terminal_voltage))
 
     def log_trend(self, trends: dict):
