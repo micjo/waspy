@@ -113,7 +113,6 @@ class ErdJob(Job):
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec
         run_erd_recipe(recipe, self._erd_setup, self._data_serializer)
-        self._data_serializer.save_recipe_result(recipe)
 
     def _finish_recipe(self):
         self._update_active_recipe()
@@ -138,7 +137,7 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: 
 
     erd_setup.wait_for_acquisition_done()
     erd_setup.convert_data_to_ascii()
-    erd_data_serializer.save_histogram(erd_setup.get_histogram(), recipe.file_stem)
+    erd_data_serializer.save_recipe_result(erd_setup.get_status(get_histogram=True), recipe)
 
 
 def _log_recipe(recipe, wait_time, z_range):
