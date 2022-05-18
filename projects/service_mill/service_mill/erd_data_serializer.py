@@ -104,7 +104,7 @@ def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel
         title=recipe.file_stem,
         recipe_name=recipe.file_stem,
         date=datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
-        measure_time_sec=erd_data,
+        measure_time_sec=erd_data.measuring_time_sec,
         beam_energy=job_model.beam_energy_MeV,
         beam_type=job_model.beam_type,
         sample_tilt_degrees=job_model.sample_tilt_degrees,
