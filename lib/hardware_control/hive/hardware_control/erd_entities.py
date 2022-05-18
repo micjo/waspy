@@ -19,3 +19,5 @@ class ErdData(BaseModel):
     mdrive_z: Dict
     mdrive_theta: Dict
     mpa3: Dict
+    histogram: str
+    measuring_time_sec: float

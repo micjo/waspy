@@ -60,11 +60,16 @@ class ErdSetup:
         load_mdrive(http.generate_request_id(), self.hw.mdrive_z.url)
         load_mdrive(http.generate_request_id(), self.hw.mdrive_theta.url)
 
-    def get_status(self):
+    def get_status(self, get_histogram=False) -> ErdData:
         mdrive_z = get_json(self.hw.mdrive_z.url)
         mdrive_theta = get_json(self.hw.mdrive_theta.url)
         mpa3 = get_json(self.hw.mpa3.url)
-        return ErdData.parse_obj({"mdrive_z": mdrive_z, "mdrive_theta": mdrive_theta, "mpa3": mpa3})
+        histogram = ""
+        if get_histogram:
+            histogram = self.get_histogram()
+        return ErdData.parse_obj(
+            {"mdrive_z": mdrive_z, "mdrive_theta": mdrive_theta, "mpa3": mpa3, "histogram": histogram,
+             "measuring_time_sec": self.get_measurement_time()})
 
     def wait_for_arrival(self):
         if self._fake:

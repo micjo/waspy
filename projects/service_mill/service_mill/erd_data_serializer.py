@@ -10,6 +10,7 @@ from threading import Lock
 
 from hive.hardware_control.data_serializer import DataSerializer
 from erd_entities import ErdJobModel, ErdRecipe
+from hive.hardware_control.erd_entities import ErdData
 from logbook_db import LogBookDb
 
 
@@ -62,10 +63,61 @@ class ErdDataSerializer:
         self._db.job_end(job_model)
         self.resume()
 
-    def save_recipe_result(self, recipe: ErdRecipe):
-        self._db.erd_recipe_finish(self._job, recipe, self._time_loaded)
-
-    def save_histogram(self, histogram: str, file_stem):
+    def save_recipe_result(self, erd_data: ErdData, recipe: ErdRecipe):
         if self.aborted():
             return
-        self._data_store.write_text_to_disk(file_stem + ".flt", histogram)
+        self._db.erd_recipe_finish(self._job, recipe, self._time_loaded)
+        self._data_store.write_text_to_disk(recipe.file_stem + ".flt", erd_data.histogram)
+        self._data_store.write_text_to_disk(recipe.file_stem + ".meta",
+                                            _serialize_meta(erd_data, recipe, self._job, self._time_loaded))
+
+
+def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel, start_time):
+    header = """ % Comments
+ % Title                 := {title}
+ % Section := <raw_data>
+ *
+ * Recipe name           := {recipe_name}
+ * DATE/Time             := {date}
+ * MEASURING TIME[sec]   := {measure_time_sec}
+ * Job id                := {job_id}
+ *
+ * ENERGY[MeV]           := {beam_energy} MeV
+ * Beam type             := {beam_type}
+ * Sample Tilt Degrees   := {sample_tilt_degrees}
+ *
+ * Sample ID             := {sample_id}
+ * Sample Z              := {sample_z}
+ * Sample Theta          := {sample_theta}
+ * Z Start               := {z_start}
+ * Z End                 := {z_end}
+ * Z Increment           := {z_increment}
+ * Z Repeat              := {z_repeat}
+ *
+ * Start time            := {start_time}
+ * End time              := {end_time}
+ *
+ * Avg Terminal Voltage  := {average_terminal_voltage}
+ *
+ % Section :=  </raw_data>
+ % End comments""".format(
+        title=recipe.file_stem,
+        recipe_name=recipe.file_stem,
+        date=datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
+        measure_time_sec=erd_data,
+        beam_energy=job_model.beam_energy_MeV,
+        beam_type=job_model.beam_type,
+        sample_tilt_degrees=job_model.sample_tilt_degrees,
+        sample_id=recipe.sample_id,
+        sample_z=erd_data.mdrive_z["motor_position"],
+        sample_theta=erd_data.mdrive_theta["motor_position"],
+        z_start=recipe.z_start,
+        z_end=recipe.z_end,
+        z_increment=recipe.z_increment,
+        z_repeat=recipe.z_repeat,
+        start_time=start_time,
+        end_time=datetime.now(),
+        average_terminal_voltage=0,
+        job_id=job_model.job_id,
+    )
+    return header
