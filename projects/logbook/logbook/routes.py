@@ -45,8 +45,8 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
         return sql_db.get_rbs_service_log()
 
     @router.get("/get_erd_service_log")
-    async def get_erd_service_log(row_id: int):
-        return sql_db.get_erd_service_log(row_id)
+    async def get_erd_service_log(job_id: str):
+        return sql_db.get_erd_service_log(job_id)
 
     @router.get("/get_trend")
     async def get_trend(start: datetime, end: datetime, id: str, step: int):
