@@ -129,12 +129,14 @@ class SqliteDb:
         dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 
-    def get_trend_starts_with(self, start: str, end: str, starts_with: str, step: int):
+    def get_trend_starts_with(self, start: datetime, end: datetime, starts_with: str, step: int):
+        epoch_start = int(start.timestamp())
+        epoch_end = int(end.timestamp())
         filtered_columns = [column for column in self.get_trending() if column.startswith(starts_with)]
         filtered_columns_text = ','.join(filtered_columns)
         dataframe = self._exec_panda("""
-           select datetime(utc, 'localtime') as timestamp, {column_list} from trend where id between '{start}' and '{end}'
-        """.format(column_list=filtered_columns_text, start=start, end=end, step=step))
+           select epoch, {column_list} from trend where epoch between '{start}' and '{end}'
+        """.format(column_list=filtered_columns_text, start=epoch_start, end=epoch_end, step=step))
         dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 

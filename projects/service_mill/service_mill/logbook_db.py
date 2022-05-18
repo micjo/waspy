@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 from typing import Union
+
+import pandas as pd
 import requests
 from rbs_entities import RbsJobModel, RbsRqmChanneling, RbsRqmRandom
 from erd_entities import ErdJobModel, ErdRecipe
@@ -55,4 +57,7 @@ class LogBookDb:
 
     def get_trends(self, start: str, end: str, starts_with: str):
         url = self._logbook_url + f"/get_trend_starts_with?start={start}&end={end}&starts_with={starts_with}&step=1"
-        return requests.get(url).json()
+        response = requests.get(url).json()
+        df = pd.DataFrame.from_dict(response)
+        df['time'] = pd.to_datetime(df['epoch'], unit='s')
+        return df.to_dict(orient='list')
