@@ -151,12 +151,8 @@ class SqliteDb:
         logging.debug("executing sql query: {" + query + "}")
         con = sqlite3.connect(self._sqlite_file)
         cur = con.cursor()
-        start_time = time.time()
         answer = cur.execute(query)
-        print("execute query:  %s seconds ---" % (time.time() - start_time))
-        start_time = time.time()
         con.commit()
-        print("commit:  %s seconds ---" % (time.time() - start_time))
         response = answer.fetchall()
         con.close()
         self._last_rowid = answer.lastrowid
