@@ -13,11 +13,11 @@ def build_hw_endpoints(http_server, rbs_hardware):
 
 
 def build_setup_endpoints(http_server, rbs_setup:RbsSetup):
-    @http_server.get("/api/rbs/status", tags=["RBS"])
+    @http_server.get("/api/rbs/status", tags=["RBS"], summary="Retrieves the rbs status")
     def get_rbs_status():
         return rbs_setup.get_status()
 
-    @http_server.post("/api/rbs/load", tags=["RBS"])
-    def get_rbs_status(load: bool):
+    @http_server.post("/api/rbs/load", tags=["RBS"], summary="Move the rbs setup to the load/unload position")
+    def rbs_load(load: bool):
         if load:
             rbs_setup.load()
