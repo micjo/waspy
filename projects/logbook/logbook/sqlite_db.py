@@ -1,7 +1,7 @@
 import sqlite3
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from datetime import datetime
 import pandas as pd
 import numpy as np
@@ -26,10 +26,20 @@ class SqliteDb:
     def get_last_rowid(self):
         return self._last_rowid
 
-    def log_message(self, type, message):
+    def log_message(self, type, message, timestamp:Union[datetime, None]):
+        if timestamp:
+            self._exec("""
+                INSERT INTO log_book (mode, note, epoch) VALUES ('{type}', '{message}', '{epoch}');
+            """.format(type=type, message=message, epoch=int(timestamp.timestamp())))
+        else:
+            self._exec("""
+                INSERT INTO log_book (mode, note) VALUES ('{type}', '{message}');
+            """.format(type=type, message=message))
+
+    def remove_message(self, log_id):
         self._exec("""
-            INSERT INTO log_book (mode, note, epoch) VALUES ('{type}', '{message}', '{epoch}');
-        """.format(type=type, message=message, epoch=int(datetime.now().timestamp())))
+            DELETE FROM log_book where log_id='{log_id}'
+        """.format(log_id=log_id))
 
     def log_rbs_recipe(self, job_id: str, recipe_name: str):
         self._exec("""
@@ -82,15 +92,16 @@ class SqliteDb:
 
     def get_log_messages(self) -> List[str]:
         dataframe = self._exec_panda("""
-        SELECT l.epoch as epoch,
-       l.mode as mode,
-       l.note as note,
-       coalesce(e.job_id, r.job_id) as job_id,
-       coalesce(e.recipe_name, r.recipe_name) as recipe_name,
-       coalesce(e.sample_id, r.sample_id) as sample_id,
-       coalesce(e.start_time, r.start_time) as start_time,
-       coalesce(e.end_time, r.end_time) as end_time,
-       l.meta as meta
+        SELECT l.log_id as log_id,
+        l.epoch as epoch,
+        l.mode as mode,
+        l.note as note,
+        coalesce(e.job_id, r.job_id) as job_id,
+        coalesce(e.recipe_name, r.recipe_name) as recipe_name,
+        coalesce(e.sample_id, r.sample_id) as sample_id,
+        coalesce(e.start_time, r.start_time) as start_time,
+        coalesce(e.end_time, r.end_time) as end_time,
+        l.meta as meta
         FROM log_book l
         LEFT JOIN erd_service e
         ON l.log_id= e.log_id
