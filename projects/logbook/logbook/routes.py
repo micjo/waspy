@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Union
 
 from fastapi import FastAPI
 from sqlite_db import SqliteDb
@@ -7,8 +8,12 @@ from entities import ErdRecipeModel
 
 def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.post("/log_message")
-    async def log_message(message: str):
-        sql_db.log_message('message', message)
+    async def log_message(message: str, mode: str = 'note', timestamp: Union[datetime, None] = None):
+        sql_db.log_message(mode, message, timestamp)
+
+    @router.post("/remove_message")
+    async def remove_message(log_id: int):
+        sql_db.remove_message(log_id)
 
     @router.post("/log_job_start")
     async def log_job_start(job_type: str, job_id: str):
