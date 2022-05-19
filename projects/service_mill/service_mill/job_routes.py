@@ -10,17 +10,7 @@ from fastapi import UploadFile, Response, File, status
 
 
 def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory):
-    @http_server.post("/api/job/rbs", tags=["JOBS"], summary="Run an RBS experiment")
-    async def run_rbs(job: RbsJobModel):
-        job = job_factory.make_rbs_job(job)
-        job_runner.add_job_to_queue(job)
-
-    @http_server.post("/api/job/erd", tags=["JOBS"], summary="Run an ERD experiment")
-    async def run_rbs(job: ErdJobModel):
-        job = job_factory.make_erd_job(job)
-        job_runner.add_job_to_queue(job)
-
-    @http_server.post("/api/job/schedule", tags=["JOBS"], summary="Run an ERD experiment")
+    @http_server.post("/api/job/schedule", tags=["JOBS"], summary="Run an RBS or ERD experiment")
     async def run_rbs(job: Union[ErdJobModel, RbsJobModel]):
         if type(job) == ErdJobModel:
             job = job_factory.make_erd_job(job)
