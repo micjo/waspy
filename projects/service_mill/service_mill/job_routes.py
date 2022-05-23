@@ -10,12 +10,14 @@ from fastapi import UploadFile, Response, File, status
 
 
 def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory):
-    @http_server.post("/api/job/schedule", tags=["JOBS"], summary="Run an RBS or ERD experiment")
-    async def run_rbs(job: Union[ErdJobModel, RbsJobModel]):
-        if type(job) == ErdJobModel:
-            job = job_factory.make_erd_job(job)
-        elif type(job) == RbsJobModel:
-            job = job_factory.make_rbs_job(job)
+    @http_server.post("/api/job/erd", tags=["JOBS"], summary="Schedule an ERD experiment")
+    async def run_rbs(job: ErdJobModel):
+        job = job_factory.make_erd_job(job)
+        job_runner.add_job_to_queue(job)
+
+    @http_server.post("/api/job/rbs", tags=["JOBS"], summary="Schedule an RBS experiment")
+    async def run_rbs(job: RbsJobModel):
+        job = job_factory.make_rbs_job(job)
         job_runner.add_job_to_queue(job)
 
     @http_server.get("/api/job/state", tags=["JOBS"], summary="Get the state of the job(s)")
@@ -36,17 +38,6 @@ def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory
             file_bytes = await file.read()
             contents = file_bytes.decode('utf-8')
             return job_factory.make_job_model_from_csv(contents)
-        except Exception as e:
-            logging.error(traceback.format_exc())
-            response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-            return str(e)
-
-    @http_server.post("/api/job/rbs_csv_conversion", tags=["JOBS"])
-    async def parse_rbs_csv(response: Response, file: UploadFile = File(...)):
-        try:
-            file_bytes = await file.read()
-            contents = file_bytes.decode('utf-8')
-            return job_factory.make_rbs_job_model_from_csv(contents)
         except Exception as e:
             logging.error(traceback.format_exc())
             response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY

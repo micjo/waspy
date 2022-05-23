@@ -169,30 +169,37 @@ class RbsJobModel(BaseModel):
         schema_extra = {
             'example':
                 {
-                    "rqm_number": "rqm_test",
+                    "job_id": "RBS21_071", "type": "rbs",
                     "detectors": [
-                        {"board": 6, "channel": 0, "color": "blue", "identifier": "d0",
-                         "bins_min": 0, "bins_max": 8192, "bins_width": 1024},
-                        {"board": 6, "channel": 1, "color": "red", "identifier": "d1",
-                         "bins_min": 0, "bins_max": 8192, "bins_width": 1024}
+                        {"board": 1, "channel": 0, "color": "blue", "identifier": "d01", "bins_min": 0,
+                         "bins_max": 8192, "bins_width": 1024},
+                        {"board": 1, "channel": 1, "color": "red", "identifier": "d02", "bins_min": 0, "bins_max": 8192,
+                         "bins_width": 1024}
                     ],
                     "recipes": [
+                        {"type": "random", "sample_id": "AE007607_D02_A", "file_stem": "RBS21_071_01B_A",
+                         "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
+                         "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
+                         },
+                        {"type": "random", "sample_id": "AE007607_D02_B", "file_stem": "RBS21_071_08B_A",
+                         "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
+                         "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
+                         },
                         {
-                            "type": "random", "sample_id": "RBS_071A", "file_stem": "RBS_071A_out",
-                            "start_position": {"x": 0},
-                            "charge_total": 60000,
-                            "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2},
-                            "detector_indices": [0, 1]
-                        },
-                        {
-                            "type": "random", "sample_id": "RBS_075A", "file_stem": "RBS_075A_out",
-                            "start_position": {"x": 10},
-                            "charge_total": 60000,
-                            "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2},
-                            "detector_indices": [0, 1]
+                            "type": "channeling", "sample_id": "AE007607_D02_A", "file_stem": "RBS21_071_01B_A",
+                            "start_position": {"x": 10, "y": 22, "phi": 0}, "yield_charge_total": 2100,
+                            "yield_vary_coordinates": [
+                                {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
+                                {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
+                                {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
+                                {"name": "theta", "start": -2, "end": 2, "increment": 0.2}
+                            ],
+                            "yield_integration_window": {"start": 22, "end": 53},
+                            "yield_optimize_detector_index": 0,
+                            "random_fixed_charge_total": 1000,
+                            "random_vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                         }
-                    ],
-                    "parking_position": {"x": 0, "y": 0, "phi": 0, "zeta": 0, "detector": 0, "theta": 0}
+                    ]
                 }
         }
 
