@@ -98,9 +98,9 @@ class Graph:
 
         self.reset_axes()
         df = pd.DataFrame.from_dict(data)
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format="%Y-%m-%d %H:%M:%S")
-        self.axes.plot(df['timestamp'], df[sys.argv[1]], color='blue')
-        self.tstamp_text.set_text(f'Time: {df["timestamp"].iloc[-1]}')
+        df['epoch'] = pd.to_datetime(df['epoch'], unit='s')
+        self.axes.plot(df['epoch'], df[sys.argv[1]], color='blue')
+        self.tstamp_text.set_text(f'Time: {df["epoch"].iloc[-1]}')
         self.value_text.set_text(f'Value: {df[sys.argv[1]].iloc[-1]}')
 
     def reset_axes(self):
@@ -125,12 +125,12 @@ class Graph:
         self._log_scale = not self._log_scale
 
     def toggle_show(self):
-#        kernel32 = ctypes.WinDLL('kernel32')
-#        user32 = ctypes.WinDLL('user32')
-#        hWnd = kernel32.GetConsoleWindow()
-        self._hide_term = not self._hide_term
-#        if hWnd:
-#            user32.ShowWindow(hWnd, self._hide_term)
+       kernel32 = ctypes.WinDLL('kernel32')
+       user32 = ctypes.WinDLL('user32')
+       hWnd = kernel32.GetConsoleWindow()
+       self._hide_term = not self._hide_term
+       if hWnd:
+           user32.ShowWindow(hWnd, self._hide_term)
 
 
 if __name__ == "__main__":
