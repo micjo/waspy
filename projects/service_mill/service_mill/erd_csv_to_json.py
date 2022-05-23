@@ -45,3 +45,9 @@ def parse_rqm(csv_text: str) -> ErdJobModel:
     erd_rqm_json = parse_rqm_number(rqm_section)
     erd_rqm_json["recipes"] = parse_recipes(recipes_section)
     return ErdJobModel.parse_obj(erd_rqm_json)
+
+def parse_recipes(recipe_setion:List) -> Dict:
+    recipe_section = drop_nan(recipe_setion)
+    return recipe_section
+
+

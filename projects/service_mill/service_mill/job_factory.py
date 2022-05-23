@@ -13,7 +13,7 @@ from hive.hardware_control.erd_entities import PositionCoordinates as ErdPositio
 from rbs_data_serializer import RbsDataSerializer
 from rbs_entities import RbsJobModel, RecipeType, VaryCoordinate
 from rbs_job import RbsJob
-import rbs_random_csv_to_json
+import rbs_csv_to_json
 import erd_csv_to_json
 from hive.hardware_control.rbs_setup import RbsSetup
 import csv
@@ -37,25 +37,19 @@ class JobFactory:
         sections = get_sections(contents)
         top_section = sections[0][0]
         settings = top_section
+        print(top_section)
 
         if settings["job_type"] == "erd":
-            settings["recipes"] = []
-            for section_recipe in sections[1]:
-                recipe = section_recipe
-                settings["recipes"].append(recipe)
+            recipes_section = sections[1]
+            settings["recipes"] = erd_csv_to_json.parse_recipes(recipes_section)
             return ErdJobModel.parse_obj(settings)
 
         elif settings["job_type"] == "rbs":
             settings["detectors"] = sections[1]
             self._rbs_setup.verify_caen_boards(settings["detectors"])
 
-            if settings["job_subtype"] == "random":
-                recipes_section = sections[2]
-                settings["recipes"] = rbs_random_csv_to_json.parse_random_recipes(recipes_section)
-            elif settings["job_subtype"] == "channeling":
-                ays_vary_section = sections[2][0]
-                recipes_section = sections[3]
-                settings["recipes"] = rbs_random_csv_to_json.parse_channeling_recipes(recipes_section, ays_vary_section)
+            recipes_section = sections[2]
+            settings["recipes"] = rbs_csv_to_json.parse_rbs_recipes(recipes_section)
             return RbsJobModel.parse_obj(settings)
 
 
