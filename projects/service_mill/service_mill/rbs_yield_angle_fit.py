@@ -13,7 +13,7 @@ def get_angle_for_minimum_yield(smooth_angles, smooth_yields) -> float:
 
 def fit_and_smooth(angles, yields, algorithm_type=0):
     """Will fit a curve using x and y. When the fit is found, recalculate the y values with a more finely
-    distributed x (smooth) (interpolated). Then the minimum y is found and the corresponding x value i returned"""
+    distributed x (smooth) (interpolated)."""
     if algorithm_type == 0:
         return attempt_lower_fit(angles, yields)
     else:

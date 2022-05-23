@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 import rbs_yield_angle_fit as fit
 from hive.hardware_control.rbs_entities import RbsData, PositionCoordinates
+
+from hive_exception import FitError
 from rbs_data_serializer import RbsDataSerializer
 from rbs_entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsRqmMinimizeYield, \
     VaryCoordinate, Window
@@ -155,7 +157,12 @@ def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: Rbs
         yield_recipe = _make_minimize_yield_recipe(recipe, vary_coordinate)
         yield_recipe.file_stem = recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name)
         data_serializer.prepare_yield_step(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
-        _minimize_yield(yield_recipe, rbs, data_serializer)
+        try:
+            _minimize_yield(yield_recipe, rbs, data_serializer)
+        except FitError as e:
+            logging.error(e)
+            data_serializer.fitting_fail(recipe.file_stem)
+
     data_serializer.finalize_yield_step()
 
     fixed_histograms = _run_fixed(_make_fixed_recipe(recipe), rbs, data_serializer).histograms
@@ -198,7 +205,11 @@ def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer:
         data_serializer.plot_histograms(rbs_data, file_stem)
 
     angles = get_positions_as_float(recipe.vary_coordinate)
-    smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
+    try:
+        smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
+    except Exception:
+        logging.error(traceback.format_exc())
+        raise FitError("Failed to fit the specified angular yields")
     min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
     min_position = convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
 
