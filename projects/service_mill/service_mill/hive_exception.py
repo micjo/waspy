@@ -11,3 +11,9 @@ class InvalidDaemonError(HiveError):
 class AbortedError(HiveError):
     """ An exception for any hardware related requests"""
     pass
+
+
+class FitError(HiveError):
+    """ An exception for when fitting a curve over a list of 2D points fails"""
+    pass
+

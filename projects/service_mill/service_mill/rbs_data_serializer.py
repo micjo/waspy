@@ -64,6 +64,9 @@ class RbsDataSerializer:
     def finalize_yield_step(self):
         self._data_store.set_sub_folder("")
 
+    def fitting_fail(self, file_stem):
+        self._data_store.write_text_to_disk(file_stem + "_FAILURE.txt", "Fitting the angular yields failed")
+
     def _flush_plot(self, fig, file_stem):
         if self.aborted():
             return
