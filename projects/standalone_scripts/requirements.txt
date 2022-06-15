@@ -3,4 +3,5 @@ matplotlib
 pydantic
 requests
 pandas
+pywin32
 
