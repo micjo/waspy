@@ -71,24 +71,24 @@ def create_app():
 
 
 def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBookDb):
-    job_runner = JobRunner()
+    if hive_config.rbs and hive_config.erd:
+        job_runner = JobRunner()
+        rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
+        rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
+        rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
 
-    rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
-    rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
-    rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
+        erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
+        erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
+        erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
 
-    erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
-    erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
-    erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
+        factory = JobFactory(rbs_setup, rbs_data_serializer, erd_setup, erd_data_serializer)
+        build_job_routes(router, job_runner, factory)
 
-    factory = JobFactory(rbs_setup, rbs_data_serializer, erd_setup, erd_data_serializer)
-    build_job_routes(router, job_runner, factory)
+        rbs_routes.build_hw_endpoints(router, hive_config.rbs.hardware)
+        rbs_routes.build_setup_endpoints(router, rbs_setup)
 
-    rbs_routes.build_hw_endpoints(router, hive_config.rbs.hardware)
-    rbs_routes.build_setup_endpoints(router, rbs_setup)
+        erd_routes.build_hw_endpoints(router, hive_config.erd.hardware)
+        erd_routes.build_setup_endpoints(router, erd_setup)
 
-    erd_routes.build_hw_endpoints(router, hive_config.erd.hardware)
-    erd_routes.build_setup_endpoints(router, erd_setup)
-
-    job_runner.daemon = True
-    job_runner.start()
+        job_runner.daemon = True
+        job_runner.start()
