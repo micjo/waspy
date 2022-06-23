@@ -161,7 +161,7 @@ def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: Rbs
             _minimize_yield(yield_recipe, rbs, data_serializer)
         except FitError as e:
             logging.error(e)
-            data_serializer.fitting_fail(recipe.file_stem)
+            data_serializer.fitting_fail(recipe.file_stem, str(e))
 
     data_serializer.finalize_yield_step()
 
