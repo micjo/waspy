@@ -11,8 +11,7 @@ from config import HiveConfig
 def build_systemd_endpoints(router, hive_config: HiveConfig):
     @router.post("/api/service")
     async def service(name: str, start: bool):
-        if not (name in hive_config.erd.hardware.__dict__ or name in hive_config.rbs.hardware.__dict__
-                or name in hive_config.any.hardware.__root__):
+        if not does_daemon_exist(hive_config, name):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail=f'Daemon is not supported')
 
@@ -26,7 +25,7 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
         subprocess.run([command], shell=True)
 
     @router.get("/api/service_log")
-    async def service(daemon: str):
+    async def service_log(daemon: str):
         if not (daemon in hive_config.erd.hardware.__dict__ or daemon in hive_config.rbs.hardware.__dict__
                 or daemon in hive_config.any.hardware.__root__):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -54,4 +53,17 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
             subprocess.run(["/bin/systemctl stop aml_x_y aml_det_theta aml_phi_zeta motrona"], shell=True)
             subprocess.run(["/usr/bin/ssh olympus 'sudo systemctl stop caen'"], shell=True)
 
+
+
+def does_daemon_exist(hive_config, name:str) -> bool:
+    is_erd_daemon = False
+    is_rbs_daemon = False
+    is_any_daemon = False
+    if hive_config.erd:
+        is_erd_daemon = name in hive_config.erd.hardware.__dict__
+    if hive_config.rbs:
+        is_rbs_daemon = name in hive_config.rbs.hardware.__dict__
+    if hive_config.any:
+        is_any_daemon = name in hive_config.any.hardware.__root__
+    return is_erd_daemon or is_rbs_daemon or is_any_daemon
 

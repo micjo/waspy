@@ -1,5 +1,5 @@
 #!/bin/bash
-export config_file="./lab_config.toml"
+export config_file="./vdg_lab_config.toml"
 export faker=false
 export env_state="prod"
 export logbook_url="http://127.0.0.1:8001"
