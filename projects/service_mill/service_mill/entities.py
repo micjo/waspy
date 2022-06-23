@@ -13,6 +13,7 @@ class HwControllerType(str, Enum):
     mpa3 = 'mpa3'
     motrona_ax350 = 'motrona_ax350'
     mirion_g64 = 'mirion_g64'
+    keithley = 'keithley'
 
 
 class SimpleConfig(BaseModel):
