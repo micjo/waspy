@@ -11,7 +11,6 @@ from config import HiveConfig
 def build_systemd_endpoints(router, hive_config: HiveConfig):
     @router.post("/api/service")
     async def service(name: str, start: bool):
-
         if not (name in hive_config.erd.hardware.__dict__ or name in hive_config.rbs.hardware.__dict__
                 or name in hive_config.any.hardware.__root__):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -25,6 +24,17 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
 
         logging.info("Executing : {" + command + "}")
         subprocess.run([command], shell=True)
+
+    @router.get("/api/service_log")
+    async def service(daemon: str):
+        if not (daemon in hive_config.erd.hardware.__dict__ or daemon in hive_config.rbs.hardware.__dict__
+                or daemon in hive_config.any.hardware.__root__):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail=f'Daemon is not supported')
+        command = '/bin/journalctl -u {daemon} --since="10 minutes ago"'.format(daemon=daemon)
+        logging.info("Executing : {" + command + "}")
+        output = subprocess.run([command], shell=True, capture_output=True).stdout
+        return output
 
     @router.get("/api/rbs/logs")
     async def get_rbs_logs():
