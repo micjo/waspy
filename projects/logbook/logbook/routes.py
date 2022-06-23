@@ -17,12 +17,12 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
 
     @router.post("/log_job_start")
     async def log_job_start(job_type: str, job_id: str):
-        sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} started'.format(job_id=job_id))
+        sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} started'.format(job_id=job_id), None)
         return sql_db.get_last_rowid()
 
     @router.post("/log_job_end")
     async def log_rbs_end(job_type: str, job_id: str):
-        sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} finished'.format(job_id=job_id))
+        sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} finished'.format(job_id=job_id), None)
 
     @router.post("/log_recipe_finish")
     async def log_recipe_finish(job_type: str, job_id: str, recipe_id: str):
