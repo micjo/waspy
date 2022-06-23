@@ -1,0 +1,8 @@
+trend =  [
+    ["vdg_current","http://127.0.0.1:22101/api/latest", "current(nA)"],
+    ["vdg_accumulated_charge","http://127.0.0.1:22101/api/latest", "accumulated_charge(nC)"],
+    ["vdg_charge_timestamp","http://127.0.0.1:22101/api/latest", "timestamp(sec)"],
+    ["vdg_counter_0","http://127.0.0.1:22100/api/latest", "counter_0_value"],
+    ["vdg_counter_1","http://127.0.0.1:22100/api/latest", "counter_1_value"],
+    ["vdg_radiation_us_h","http://127.0.0.1:22102/api/latest", "dosage_rate(uSv/h)"],
+]
