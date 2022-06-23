@@ -16,8 +16,8 @@ logging.basicConfig(
 
 class HiveConfig(BaseModel):
     any: AnyConfig
-    rbs: RbsConfig
-    erd: ErdConfig
+    rbs: Optional[RbsConfig]
+    erd: Optional[ErdConfig]
 
 
 class GlobalConfig(BaseSettings):

@@ -6,8 +6,8 @@ Requires=wait_eth_up.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root/wasp-hive/projects/service_mill
-ExecStart=/root/wasp-hive/projects/service_mill/run_service_mill.sh
+WorkingDirectory=/home/mca/dev/wasp-hive/projects/service_mill
+ExecStart=/home/mca/dev/wasp-hive/projects/service_mill/run_service_mill.sh
 Restart=on-failure
 SyslogIdentifier=service_mill
 
