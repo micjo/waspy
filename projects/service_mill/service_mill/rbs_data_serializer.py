@@ -58,11 +58,14 @@ class RbsDataSerializer:
     def save_recipe_result(self, job_id: str, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
         self._db.rbs_recipe_finish(job_id, recipe)
 
-    def prepare_yield_step(self, sub_folder: str):
-        self._data_store.set_sub_folder(sub_folder)
+    def cd_folder(self, sub_folder: str):
+        self._data_store.cd_folder(sub_folder)
 
-    def finalize_yield_step(self):
-        self._data_store.set_sub_folder("")
+    def cd_folder_up(self):
+        self._data_store.cd_folder_up()
+
+    def clear_sub_folder(self):
+        self._data_store.clear_sub_folder()
 
     def fitting_fail(self, file_stem, extra: str):
         self._data_store.write_text_to_disk(file_stem + "_FAILURE.txt",
