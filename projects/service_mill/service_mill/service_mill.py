@@ -58,7 +58,7 @@ def create_app():
             swagger_css_url="static/swagger-ui.css",
             swagger_ui_parameters={"syntaxHighlight": False}
         )
-    #
+
     @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
     async def swagger_ui_redirect():
         return get_swagger_ui_oauth2_redirect_html()
@@ -89,6 +89,11 @@ def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBook
 
         erd_routes.build_hw_endpoints(router, hive_config.erd.hardware)
         erd_routes.build_setup_endpoints(router, erd_setup)
+
+        env_conf = GlobalConfig()
+        if env_conf.FAKER:
+            rbs_setup.fake()
+            erd_setup.fake()
 
         job_runner.daemon = True
         job_runner.start()
