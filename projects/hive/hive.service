@@ -7,7 +7,7 @@ Requires=wait_eth_up.service
 Type=simple
 User=root
 WorkingDirectory=/home/mca/dev/wasp-hive/projects/hive
-ExecStart=/home/mca/dev/wasp-hive/projects/service_mill/run_hive.sh
+ExecStart=/home/mca/dev/wasp-hive/projects/hive/run_hive.sh
 Restart=on-failure
 SyslogIdentifier=hive
 

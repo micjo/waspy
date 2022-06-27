@@ -1,4 +1,4 @@
-from service_mill.config import make_rbs_config, make_hardware_config
+from hive.config import make_rbs_config, make_hardware_config
 
 
 def test_make_rbs_config():
