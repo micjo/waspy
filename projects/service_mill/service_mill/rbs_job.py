@@ -156,14 +156,15 @@ def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: Rbs
     for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
         yield_recipe = _make_minimize_yield_recipe(recipe, vary_coordinate)
         yield_recipe.file_stem = recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name)
-        data_serializer.prepare_yield_step(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
+        data_serializer.cd_folder(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
         try:
             _minimize_yield(yield_recipe, rbs, data_serializer)
-        except FitError as e:
+        except RuntimeError as e:
             logging.error(e)
             data_serializer.fitting_fail(recipe.file_stem, str(e))
+        data_serializer.cd_folder_up()
 
-    data_serializer.finalize_yield_step()
+    data_serializer.clear_sub_folder()
 
     fixed_histograms = _run_fixed(_make_fixed_recipe(recipe), rbs, data_serializer).histograms
     random_histograms = run_random(_make_random_recipe(recipe), rbs, data_serializer).histograms
@@ -190,6 +191,8 @@ def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer:
     detector_optimize = rbs.get_detectors()[recipe.optimize_detector_index]
     energy_yields = []
 
+    data_serializer.cd_folder("yield_data")
+
     for position in positions:
         rbs.start_data_acquisition()
         rbs.move_and_count(position)
@@ -204,15 +207,12 @@ def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer:
         data_serializer.save_histograms(rbs_data, file_stem, recipe.sample_id)
         data_serializer.plot_histograms(rbs_data, file_stem)
 
+    data_serializer.cd_folder_up()
+
     angles = get_positions_as_float(recipe.vary_coordinate)
-    try:
-        smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
-    except Exception:
-        logging.error(traceback.format_exc())
-        raise FitError("Failed to fit the specified angular yields")
+    smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
     min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
     min_position = convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
-
     data_serializer.store_yields(recipe.file_stem, angles, energy_yields)
     data_serializer.plot_energy_yields(recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
     rbs.move(min_position)
