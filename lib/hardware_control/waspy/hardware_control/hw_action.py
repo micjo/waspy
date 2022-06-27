@@ -3,9 +3,9 @@ from typing import List, Any
 
 import logging
 import time
-from hive.hardware_control import http_helper as http
-from hive.hardware_control.rbs_entities import CaenDetector
-from hive_exception import HiveError
+from waspy.hardware_control import http_helper as http
+from waspy.hardware_control.rbs_entities import CaenDetector
+from waspy.hardware_control.hive_exception import HiveError
 
 
 def set_motrona_target_charge(request_id, url, target_charge):

@@ -6,10 +6,10 @@ Requires=wait_eth_up.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/mca/dev/wasp-hive/projects/service_mill
-ExecStart=/home/mca/dev/wasp-hive/projects/service_mill/run_service_mill.sh
+WorkingDirectory=/home/mca/dev/wasp-hive/projects/hive
+ExecStart=/home/mca/dev/wasp-hive/projects/service_mill/run_hive.sh
 Restart=on-failure
-SyslogIdentifier=service_mill
+SyslogIdentifier=hive
 
 [Install]
 WantedBy=multi-user.target

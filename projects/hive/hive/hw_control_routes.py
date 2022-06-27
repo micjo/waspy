@@ -5,11 +5,11 @@ from fastapi import status, Response
 from pydantic import create_model
 from pydantic.generics import GenericModel
 
-from hive.hardware_control import http_helper as http
+from waspy.hardware_control import http_helper as http
 from entities import AnyHardware
-from hive.hardware_control.hw_action import get_caen_histogram, pack, get_packed_histogram
+from waspy.hardware_control.hw_action import get_caen_histogram, pack, get_packed_histogram
 from config import HiveConfig
-from hive.hardware_control.rbs_entities import CaenDetector
+from waspy.hardware_control.rbs_entities import CaenDetector
 
 
 def build_api_endpoints(http_router, any_hardware: AnyHardware):

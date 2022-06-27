@@ -3,7 +3,7 @@ import pandas as pd
 from io import StringIO
 from typing import Dict, List
 
-import hive.hardware_control.rbs_entities
+import waspy.hardware_control.rbs_entities
 import rbs_entities as rbs
 
 

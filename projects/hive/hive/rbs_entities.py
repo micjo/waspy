@@ -7,7 +7,7 @@ from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
 from entities import SimpleConfig, AmlConfig, CaenConfig
-from hive.hardware_control.rbs_entities import CaenDetector, PositionCoordinates
+from waspy.hardware_control.rbs_entities import CaenDetector, PositionCoordinates
 
 
 class RbsHardware(BaseModel):

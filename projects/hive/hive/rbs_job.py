@@ -7,13 +7,12 @@ from typing import List, Union
 from pydantic import BaseModel
 
 import rbs_yield_angle_fit as fit
-from hive.hardware_control.rbs_entities import RbsData, PositionCoordinates
+from waspy.hardware_control.rbs_entities import RbsData, PositionCoordinates
 
-from hive_exception import FitError
 from rbs_data_serializer import RbsDataSerializer
 from rbs_entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsRqmMinimizeYield, \
     VaryCoordinate, Window
-from hive.hardware_control.rbs_setup import RbsSetup
+from waspy.hardware_control.rbs_setup import RbsSetup
 from job import Job
 import numpy as np
 

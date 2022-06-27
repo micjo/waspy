@@ -1,7 +1,7 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
-from hive.hardware_control.hw_entities import HardwareUrl
+from waspy.hardware_control.hw_entities import HardwareUrl
 
 
 class CaenDetector(BaseModel):
