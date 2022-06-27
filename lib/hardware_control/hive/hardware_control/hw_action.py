@@ -4,7 +4,8 @@ from typing import List, Any
 import logging
 import time
 from hive.hardware_control import http_helper as http
-from hive.hardware_control.rbs_entities import CaenDetectorModel
+from hive.hardware_control.rbs_entities import CaenDetector
+from hive_exception import HiveError
 
 
 def set_motrona_target_charge(request_id, url, target_charge):
@@ -103,7 +104,7 @@ def stop_caen_acquisition(request_id, url):
     http.post_request(url, request)
 
 
-def get_packed_histogram(base_url, detector: CaenDetectorModel):
+def get_packed_histogram(base_url, detector: CaenDetector):
     resp_code, data = get_caen_histogram(base_url, detector.board, detector.channel)
     packed_data = pack(data, detector.bins_min, detector.bins_max, detector.bins_width)
     return resp_code, packed_data
@@ -112,6 +113,8 @@ def get_packed_histogram(base_url, detector: CaenDetectorModel):
 def get_caen_histogram(base_url, board: str, channel: int) -> tuple[Any, List[int]]:
     url = base_url + "/histogram/" + str(board) + "/" + str(channel)
     resp_code, raw_data = http.get_text_with_response_code(url)
+    if resp_code == 404:
+        raise HiveError("Could not retrieve histogram. Does this detector: ({},{}) exist?".format(board, channel))
     raw_data = raw_data.split(";")
     raw_data.pop()
     data = [int(x) for x in raw_data]

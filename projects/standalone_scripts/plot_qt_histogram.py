@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 from lib.hardware_control.hive.hardware_control.hw_action import get_packed_histogram
-from lib.hardware_control.hive.hardware_control.rbs_entities import CaenDetectorModel
+from lib.hardware_control.hive.hardware_control.rbs_entities import CaenDetector
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
@@ -22,8 +22,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self._main)
         layout = QtWidgets.QVBoxLayout(self._main)
 
-        self.detector = CaenDetectorModel(board="33", channel=0, identifier="", bins_min=0, bins_max=8192,
-                                          bins_width=1024)
+        self.detector = CaenDetector(board="33", channel=0, identifier="", bins_min=0, bins_max=8192,
+                                     bins_width=1024)
         title_string = "Histogram board=" + self.detector.board + ", channel=" + str(self.detector.channel)
         self.fig = plt.figure(title_string)
         self.title_text = plt.figtext(0.20, 0.94, title_string, size='x-large', color='blue')

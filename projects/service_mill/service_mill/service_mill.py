@@ -76,6 +76,7 @@ def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBook
         rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
         rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
         rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
+        rbs_setup.configure_detectors(hive_config.rbs.hardware.caen.detectors)
 
         erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
         erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)

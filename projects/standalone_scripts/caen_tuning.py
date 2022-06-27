@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from hive.hardware_control.data_serializer import DataSerializer
 from hive.hardware_control.hw_action import format_caen_histogram
 from hive.hardware_control.plot import plot_rbs_histograms
-from hive.hardware_control.rbs_entities import RbsHardwareRoute, CaenDetectorModel, RbsHistogramGraphData
+from hive.hardware_control.rbs_entities import RbsHardwareRoute, CaenDetector, RbsHistogramGraphData
 from hive.hardware_control.rbs_setup import RbsSetup
 
 log_format = "%(levelname)s %(asctime)s - %(message)s"
@@ -28,19 +28,19 @@ def setup_rbs() -> RbsSetup:
     }
 
     detectors = [
-        CaenDetectorModel(board="33", channel=0, identifier="c0", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=1, identifier="c1", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=2, identifier="c2", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=3, identifier="c3", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=4, identifier="c4", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=5, identifier="c5", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=6, identifier="c6", bins_min=0, bins_max=24576, bins_width=24576),
-        CaenDetectorModel(board="33", channel=7, identifier="c7", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=0, identifier="c0", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=1, identifier="c1", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=2, identifier="c2", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=3, identifier="c3", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=4, identifier="c4", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=5, identifier="c5", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=6, identifier="c6", bins_min=0, bins_max=24576, bins_width=24576),
+        CaenDetector(board="33", channel=7, identifier="c7", bins_min=0, bins_max=24576, bins_width=24576),
     ]
 
     rbs_hw = RbsHardwareRoute.parse_obj(config)
     rbs_setup = RbsSetup(rbs_hw)
-    rbs_setup.initialize(detectors)
+    rbs_setup.clear_charge_offset()
     # rbs_setup.fake()
     return rbs_setup
 

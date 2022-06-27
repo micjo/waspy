@@ -33,7 +33,7 @@ def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory
         job_runner.abort_schedule()
 
     @http_server.post("/api/job/csv_conversion", tags=["JOBS"])
-    async def parse_erd_csv(response: Response, file: UploadFile = File(...)):
+    async def parse_job_csv(response: Response, file: UploadFile = File(...)):
         try:
             file_bytes = await file.read()
             contents = file_bytes.decode('utf-8')
