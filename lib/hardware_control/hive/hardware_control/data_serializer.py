@@ -38,12 +38,18 @@ class DataSerializer:
             Path.mkdir(self._remote / self._base_folder, exist_ok=True)
             self._move_files(self._remote, subdir)
 
-    def set_sub_folder(self, folder: str):
-        self._sub_folder = Path(folder)
+    def cd_folder(self, folder: str):
+        self._sub_folder = self._sub_folder / Path(folder)
         Path.mkdir(self._local / self._base_folder / self._sub_folder, exist_ok=True)
 
         if self._remote:
             Path.mkdir(self._remote / self._base_folder / self._sub_folder, exist_ok=True)
+
+    def cd_folder_up(self):
+        self._sub_folder = self._sub_folder.parent
+
+    def clear_sub_folder(self):
+        self._sub_folder = Path("")
 
     def write_matplotlib_fig_to_disk(self, filename: str, fig: Figure):
         plt.subplots_adjust(hspace=0.5)
@@ -69,7 +75,6 @@ class DataSerializer:
 
     def write_csv_panda_to_disk(self, filename: str, content: Dict):
         df = pd.DataFrame.from_dict(content)
-        print(df)
         self.write_text_to_disk(filename, df.to_csv(index=False))
 
     def write_json_to_disk(self, filename, content: Dict):
