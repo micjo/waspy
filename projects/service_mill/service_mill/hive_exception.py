@@ -1,5 +1,5 @@
 class HiveError(Exception):
-    """ A base class for all hive related errors """
+    """ A base class for all service_mill related errors """
     pass
 
 

@@ -1,10 +1,6 @@
 job_id,job_type,,,,,,,,
 RBS22_084,rbs,,,,,,,,
 ,,,,,,,,,
-board,channel,identifier,bins_min,bins_max,bins_width,,,,
-33,0,d01,0,8192,1024,,,,
-33,1,d02,0,8192,1024,,,,
-,,,,,,,,,
 type,sample_id,file_stem,charge_total,x,y,phi,zeta,det,theta
 random,AE200856_D07,RBS22_084_01A,60000,9,14,,0.15,170,11
 random,AE208062_D15,RBS22_084_02A,60000,9,35,,0.15,170,11

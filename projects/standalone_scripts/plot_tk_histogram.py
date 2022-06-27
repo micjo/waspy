@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 import numpy as np
 
 from hive.hardware_control.hw_action import get_packed_histogram
-from hive.hardware_control.rbs_entities import CaenDetectorModel
+from hive.hardware_control.rbs_entities import CaenDetector
 
 root = tkinter.Tk()
 root.wm_title("Embedding in Tk")
@@ -42,8 +42,8 @@ button_quit = tkinter.Button(master=root, text="Quit", command=root.quit)
 
 
 def update_values():
-    detector = CaenDetectorModel(board="33", channel=0, identifier="", bins_min=0, bins_max=8192,
-                                 bins_width=1024)
+    detector = CaenDetector(board="33", channel=0, identifier="", bins_min=0, bins_max=8192,
+                            bins_width=1024)
 
     resp_code, data = get_packed_histogram("http://localhost:20200/api/latest", detector)
     line.set_data(range(len(data)), data)

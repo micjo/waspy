@@ -6,15 +6,15 @@ from typing import List, Optional, Union, Literal, Annotated
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
-from entities import SimpleConfig, AmlConfig
-from hive.hardware_control.rbs_entities import CaenDetectorModel, PositionCoordinates
+from entities import SimpleConfig, AmlConfig, CaenConfig
+from hive.hardware_control.rbs_entities import CaenDetector, PositionCoordinates
 
 
 class RbsHardware(BaseModel):
     aml_x_y: AmlConfig
     aml_phi_zeta: AmlConfig
     aml_det_theta: AmlConfig
-    caen: SimpleConfig
+    caen: CaenConfig
     motrona_charge: SimpleConfig
 
 
@@ -161,7 +161,7 @@ class RbsJobModel(BaseModel):
     recipes: List[Annotated[Union[RbsRqmChanneling, RbsRqmRandom], Field(discriminator='type')]]
     job_id: str
     type = "rbs"
-    detectors: List[CaenDetectorModel]
+    # detectors: List[CaenDetector]
 
     class Config:
         use_enum_values = True
@@ -170,12 +170,6 @@ class RbsJobModel(BaseModel):
             'example':
                 {
                     "job_id": "RBS21_071", "type": "rbs",
-                    "detectors": [
-                        {"board": 1, "channel": 0, "color": "blue", "identifier": "d01", "bins_min": 0,
-                         "bins_max": 8192, "bins_width": 1024},
-                        {"board": 1, "channel": 1, "color": "red", "identifier": "d02", "bins_min": 0, "bins_max": 8192,
-                         "bins_width": 1024}
-                    ],
                     "recipes": [
                         {"type": "random", "sample_id": "AE007607_D02_A", "file_stem": "RBS21_071_01B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,

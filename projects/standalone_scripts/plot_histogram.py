@@ -2,13 +2,13 @@ import requests
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from hive.hardware_control.hw_action import get_packed_histogram
-from hive.hardware_control.rbs_entities import CaenDetectorModel
+from hive.hardware_control.rbs_entities import CaenDetector
 from matplotlib import widgets, dates, ticker
 
 
 class Graph:
     def __init__(self):
-        self.detector= CaenDetectorModel(board="33", channel=0, identifier="", bins_min=0, bins_max=8192, bins_width=1024)
+        self.detector= CaenDetector(board="33", channel=0, identifier="", bins_min=0, bins_max=8192, bins_width=1024)
         title_string = "Histogram board=" + self.detector.board + ", channel=" + str(self.detector.channel)
         self.fig = plt.figure(title_string)
         self.title_text = plt.figtext(0.20, 0.94, title_string, size='x-large', color='blue')

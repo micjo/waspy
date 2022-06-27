@@ -9,7 +9,7 @@ from hive.hardware_control.data_serializer import DataSerializer
 from hive.hardware_control.hw_action import format_caen_histogram
 from logbook_db import LogBookDb
 from rbs_entities import RbsJobModel, RbsRqmRandom, RbsRqmChanneling
-from hive.hardware_control.rbs_entities import CaenDetectorModel, HistogramData, RbsHistogramGraphData, \
+from hive.hardware_control.rbs_entities import CaenDetector, HistogramData, RbsHistogramGraphData, \
     RbsHistogramGraphDataSet, RbsData
 from matplotlib import pyplot as plt
 import matplotlib

@@ -55,7 +55,7 @@ class RbsJob(Job):
 
     def execute(self):
         self._data_serializer.prepare_job(self._job_model)
-        self._rbs_setup.initialize(self._job_model.detectors)
+        self._rbs_setup.clear_charge_offset()
         logging.info("[RBS] Job Start: '" + str(self._job_model) + "'")
 
         for recipe in self._job_model.recipes:
