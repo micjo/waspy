@@ -1,11 +1,9 @@
 from enum import Enum
 from typing import Union, Dict, Optional, List
 
-from pydantic.fields import Field
 from pydantic.generics import BaseModel
-from pathlib import Path
 
-from hive.hardware_control.rbs_entities import CaenDetector
+from waspy.hardware_control.rbs_entities import CaenDetector
 
 
 class HwControllerType(str, Enum):

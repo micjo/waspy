@@ -8,9 +8,9 @@ from typing import Dict
 
 from threading import Lock
 
-from hive.hardware_control.data_serializer import DataSerializer
+from waspy.hardware_control.data_serializer import DataSerializer
 from erd_entities import ErdJobModel, ErdRecipe
-from hive.hardware_control.erd_entities import ErdData
+from waspy.hardware_control.erd_entities import ErdData
 from logbook_db import LogBookDb
 
 
