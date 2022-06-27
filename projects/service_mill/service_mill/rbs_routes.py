@@ -1,5 +1,6 @@
+from entities import CaenConfig
 from hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
-    build_packed_histogram
+    build_packed_histogram, build_detector_endpoints
 from hive.hardware_control.rbs_setup import RbsSetup
 
 
@@ -8,8 +9,10 @@ def build_hw_endpoints(http_server, rbs_hardware):
         build_get_redirect(http_server, daemon['proxy'], daemon['url'], ["RBS"])
         build_post_redirect(http_server, daemon['proxy'], daemon['url'], ["RBS"])
         if daemon['type'] == 'caen':
+            caen_daemon = CaenConfig.parse_obj(daemon)
             build_histogram_redirect(http_server, daemon['proxy'], daemon['url'], ["RBS"])
             build_packed_histogram(http_server, daemon['proxy'], daemon['url'], ["RBS"])
+            build_detector_endpoints(http_server, daemon['proxy'], daemon['url'], caen_daemon.detectors, ["RBS"])
 
 
 def build_setup_endpoints(http_server, rbs_setup:RbsSetup):

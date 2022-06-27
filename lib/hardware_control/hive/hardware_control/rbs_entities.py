@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from hive.hardware_control.hw_entities import HardwareUrl
 
 
-class CaenDetectorModel(BaseModel):
+class CaenDetector(BaseModel):
     board: str
     channel: int
     identifier: str = Field(
@@ -35,7 +35,7 @@ class RbsData(BaseModel):
     aml_det_theta: Dict
     caen: Dict
     motrona: Dict
-    detectors: List[CaenDetectorModel]
+    detectors: List[CaenDetector]
     histograms: List[HistogramData]
     measuring_time_msec: str
     accumulated_charge: str

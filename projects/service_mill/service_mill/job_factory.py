@@ -45,10 +45,10 @@ class JobFactory:
             return ErdJobModel.parse_obj(settings)
 
         elif settings["job_type"] == "rbs":
-            settings["detectors"] = sections[1]
-            self._rbs_setup.verify_caen_boards(settings["detectors"])
+            # settings["detectors"] = sections[1]
+            # self._rbs_setup.verify_caen_boards(settings["detectors"])
 
-            recipes_section = sections[2]
+            recipes_section = sections[1]
             settings["recipes"] = rbs_csv_to_json.parse_rbs_recipes(recipes_section)
             return RbsJobModel.parse_obj(settings)
 

@@ -8,7 +8,7 @@ import requests
 from pydantic.env_settings import BaseSettings
 
 from hive.hardware_control.http_helper import generate_request_id, get_json
-from hive.hardware_control.rbs_entities import CaenDetectorModel, RbsData, PositionCoordinates, \
+from hive.hardware_control.rbs_entities import CaenDetector, RbsData, PositionCoordinates, \
     RbsHardwareRoute, HistogramData
 from hive.hardware_control.hw_action import move_aml_first, move_aml_second, clear_start_motrona_count, \
     stop_clear_and_arm_caen_acquisition, stop_caen_acquisition, pause_motrona_count, set_motrona_target_charge, \
@@ -43,7 +43,7 @@ def fake_counter():
 
 class RbsSetup:
     hw: RbsHardwareRoute
-    detectors: List[CaenDetectorModel]
+    detectors: List[CaenDetector]
     _acquisition_run_time: float
     _acquisition_accumulated_charge: float
     _counting: bool
@@ -149,8 +149,10 @@ class RbsSetup:
                     increment = target_charge
         return self.charge_offset + increment
 
-    def initialize(self, detectors: List[CaenDetectorModel]):
+    def clear_charge_offset(self):
         self.charge_offset = 0
+
+    def configure_detectors(self, detectors: List[CaenDetector]):
         self.detectors = detectors
 
     def get_histograms(self) -> List[HistogramData]:
@@ -161,7 +163,7 @@ class RbsSetup:
             histogram_data.append(HistogramData(data=data, title=title))
         return histogram_data
 
-    def get_detectors(self) -> List[CaenDetectorModel]:
+    def get_detectors(self) -> List[CaenDetector]:
         return self.detectors
 
     def get_status(self, get_histograms=False) -> RbsData:
@@ -173,7 +175,6 @@ class RbsSetup:
         histograms = []
         if get_histograms:
             histograms = self.get_histograms()
-
         return RbsData.parse_obj({"aml_x_y": aml_x_y, "aml_phi_zeta": aml_phi_zeta, "aml_det_theta": aml_det_theta,
                                   "motrona": motrona, "caen": caen, "detectors": self.detectors,
                                   "histograms": histograms, "measuring_time_msec": self._acquisition_run_time,
@@ -202,7 +203,7 @@ class RbsSetup:
         set_motrona_target_charge(generate_request_id() + "_set_target_charge", self.hw.motrona_charge.url, target)
         logging.info("pause counting and set target done")
 
-    def get_packed_histogram(self, detector: CaenDetectorModel) -> List[int]:
+    def get_packed_histogram(self, detector: CaenDetector) -> List[int]:
         _, packed = get_packed_histogram(self.hw.caen.url, detector)
         return packed
 
@@ -212,7 +213,7 @@ class RbsSetup:
     def get_registry_value(self, board_id:str, hex_register_address:str):
         caen_read_single_register(generate_request_id(), self.hw.caen.url, board_id, hex_register_address)
 
-    def verify_caen_boards(self, detectors: List[CaenDetectorModel]):
+    def verify_caen_boards(self, detectors: List[CaenDetector]):
         for detector in detectors:
             caen_data = get_json(self.hw.caen.url)
             board_id = str(detector['board'])
