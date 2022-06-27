@@ -1,4 +1,4 @@
-# Hive
+# Waspy
 
 # Short description
 This repo contains python code to interface with the hardware controllers. It exposes a number of restapi endpoints.
