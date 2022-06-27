@@ -9,10 +9,10 @@ from pydantic import BaseModel
 
 from erd_data_serializer import ErdDataSerializer
 from erd_entities import ErdJobModel, ErdRecipe
-from hive.hardware_control.erd_setup import ErdSetup, PositionCoordinates
+from waspy.hardware_control.erd_setup import ErdSetup, PositionCoordinates
 
 from job import Job
-from hive_exception import HiveError
+from waspy.hardware_control.hive_exception import HiveError
 
 
 class ErdRecipeStatus(BaseModel):

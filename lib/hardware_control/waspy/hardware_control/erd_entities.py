@@ -1,7 +1,7 @@
 from typing import Optional, Dict
 from pydantic.main import BaseModel
 
-from hive.hardware_control.hw_entities import HardwareUrl
+from waspy.hardware_control.hw_entities import HardwareUrl
 
 
 class PositionCoordinates(BaseModel):

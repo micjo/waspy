@@ -7,15 +7,15 @@ import pandas as pd
 from erd_data_serializer import ErdDataSerializer
 from erd_entities import ErdJobModel
 from erd_job import ErdJob
-from hive.hardware_control.erd_setup import ErdSetup
-from hive.hardware_control.rbs_entities import PositionCoordinates as RbsPosition
-from hive.hardware_control.erd_entities import PositionCoordinates as ErdPosition
+from waspy.hardware_control.erd_setup import ErdSetup
+from waspy.hardware_control.rbs_entities import PositionCoordinates as RbsPosition
+from waspy.hardware_control.erd_entities import PositionCoordinates as ErdPosition
 from rbs_data_serializer import RbsDataSerializer
 from rbs_entities import RbsJobModel, RecipeType, VaryCoordinate
 from rbs_job import RbsJob
 import rbs_csv_to_json
 import erd_csv_to_json
-from hive.hardware_control.rbs_setup import RbsSetup
+from waspy.hardware_control.rbs_setup import RbsSetup
 import csv
 
 

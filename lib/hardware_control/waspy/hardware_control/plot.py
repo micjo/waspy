@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from hive.hardware_control.rbs_entities import RbsHistogramGraphData, RbsHistogramGraphDataSet
+from waspy.hardware_control.rbs_entities import RbsHistogramGraphData, RbsHistogramGraphDataSet
 
 
 def plot_rbs_histograms(histogram_data: RbsHistogramGraphData) -> Figure:

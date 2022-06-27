@@ -6,15 +6,15 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redi
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from hive.hardware_control import rbs_setup as rbs_lib
-from hive.hardware_control.data_serializer import DataSerializer
+from waspy.hardware_control import rbs_setup as rbs_lib
+from waspy.hardware_control.data_serializer import DataSerializer
 from erd_data_serializer import ErdDataSerializer
-from hive.hardware_control.erd_entities import ErdHardwareRoute
-from hive.hardware_control.erd_setup import ErdSetup
+from waspy.hardware_control.erd_entities import ErdHardwareRoute
+from waspy.hardware_control.erd_setup import ErdSetup
 import rbs_routes
 import hw_control_routes
 import erd_routes
-from hive.hardware_control.rbs_entities import RbsHardwareRoute
+from waspy.hardware_control.rbs_entities import RbsHardwareRoute
 from job_factory import JobFactory
 from systemd_routes import build_systemd_endpoints
 from logbook_db import LogBookDb

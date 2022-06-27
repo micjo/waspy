@@ -5,15 +5,15 @@ from threading import Lock
 from typing import List, Dict, Union
 import numpy as np
 
-from hive.hardware_control.data_serializer import DataSerializer
-from hive.hardware_control.hw_action import format_caen_histogram
+from waspy.hardware_control.data_serializer import DataSerializer
+from waspy.hardware_control.hw_action import format_caen_histogram
 from logbook_db import LogBookDb
 from rbs_entities import RbsJobModel, RbsRqmRandom, RbsRqmChanneling
-from hive.hardware_control.rbs_entities import CaenDetector, HistogramData, RbsHistogramGraphData, \
+from waspy.hardware_control.rbs_entities import CaenDetector, HistogramData, RbsHistogramGraphData, \
     RbsHistogramGraphDataSet, RbsData
 from matplotlib import pyplot as plt
 import matplotlib
-from hive.hardware_control.plot import plot_rbs_histograms, plot_compare_rbs_histograms
+from waspy.hardware_control.plot import plot_rbs_histograms, plot_compare_rbs_histograms
 
 matplotlib.use('Agg')
 

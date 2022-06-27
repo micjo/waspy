@@ -4,13 +4,13 @@ import time
 import requests
 from pydantic.env_settings import BaseSettings
 
-from hive.hardware_control import http_helper as http
-from hive.hardware_control.erd_entities import PositionCoordinates, ErdHardwareRoute, ErdData
+from waspy.hardware_control import http_helper as http
+from waspy.hardware_control.erd_entities import PositionCoordinates, ErdHardwareRoute, ErdData
 import logging
 from threading import Lock
 
-from hive.hardware_control.http_helper import get_json
-from hive.hardware_control.hw_action import acquisition_started, move_mdrive_done, move_mdrive, load_mdrive
+from waspy.hardware_control.http_helper import get_json
+from waspy.hardware_control.hw_action import acquisition_started, move_mdrive_done, move_mdrive, load_mdrive
 
 
 class GlobalConfig(BaseSettings):
