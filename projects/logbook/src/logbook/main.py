@@ -1,7 +1,7 @@
 from pathlib import Path
 from waspy.restapi.router_builder import create_router
-from routes import add_logbook_routes
-from sqlite_db import SqliteDb
+from logbook.routes import add_logbook_routes
+from logbook.sqlite_db import SqliteDb
 
 
 def main():
