@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import Union
 
 from fastapi import FastAPI
-from sqlite_db import SqliteDb
-from entities import ErdRecipeModel
+from logbook.sqlite_db import SqliteDb
+from logbook.entities import ErdRecipeModel
+
 
 
 def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
@@ -15,14 +16,18 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     async def remove_message(log_id: int):
         sql_db.remove_message(log_id)
 
-    @router.post("/log_job_start")
-    async def log_job_start(job_type: str, job_id: str):
-        sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} started'.format(job_id=job_id), None)
+    @router.post("/log_started_job")
+    async def log_started_job(job_id: str):
+        sql_db.log_message('job', '{job_id} started'.format(job_id=job_id), None)
         return sql_db.get_last_rowid()
 
-    @router.post("/log_job_end")
-    async def log_rbs_end(job_type: str, job_id: str):
-        sql_db.log_message('{job_type}_job'.format(job_type=job_type), '{job_id} finished'.format(job_id=job_id), None)
+    @router.post("/log_finished_job")
+    async def log_finished_job(job_id: str):
+        sql_db.log_message('job', '{job_id} finished'.format(job_id=job_id), None)
+
+    @router.post("/log_terminated_job")
+    async def log_terminated_job(job_id: str, message: str):
+        sql_db.log_message('job', '{job_id} terminated: {message}'.format(job_id=job_id, message=message), None)
 
     @router.post("/log_recipe_finish")
     async def log_recipe_finish(job_type: str, job_id: str, recipe_id: str):
