@@ -108,7 +108,7 @@ class ErdJob(Job):
 
     def _run_recipe(self, recipe):
         self._active_recipe.start_time = datetime.now()
-        self._active_recipe.recipe_id = recipe.file_stem
+        self._active_recipe.recipe_id = recipe.recipe
         self._active_recipe.run_time = timedelta(0)
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec
@@ -144,7 +144,7 @@ def _log_recipe(recipe, wait_time, z_range):
     position_list = "("
     position_list += "; ".join([str(position.z) for position in z_range])
     position_list += ")"
-    logging.info("Recipe: " + recipe.file_stem + ", wait_time_sec between steps: " + str(wait_time) +
+    logging.info("Recipe: " + recipe.recipe + ", wait_time_sec between steps: " + str(wait_time) +
                  ", total measurement time: " + str(recipe.measuring_time_sec) +
                  ", z-positions: \n\t" + position_list)
 

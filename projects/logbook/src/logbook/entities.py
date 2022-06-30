@@ -1,24 +1,23 @@
-from typing import List, Tuple
+from typing import List, Tuple, Annotated, Union, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
 
 
-class RbsRecipeType(Enum):
-    STEPWISE_LEAST = "stepwise_least"
-    STEPWISE = "stepwise"
-    SINGLE_STEP = "single_step"
+class RbsRecipeType(str, Enum):
+    STEPWISE_LEAST = "rbs_stepwise_least"
+    STEPWISE = "rbs_stepwise"
+    SINGLE_STEP = "rbs_single_step"
 
 
 class ErdRecipeModel(BaseModel):
-    job_id: str
     type = "erd"
     beam_type: str
     beam_energy_MeV: float
     sample_tilt_degrees: float
-    sample_id: str
-    file_stem: str
+    sample: str
+    recipe: str
     measuring_time_sec: int
     theta: float
     z_start: float
@@ -27,7 +26,7 @@ class ErdRecipeModel(BaseModel):
     z_repeat: int
     start_time: datetime
     end_time: datetime
-    avg_terminal_voltage: float
+    average_terminal_voltage: float
 
 
 class RbsRecipeModel(BaseModel):
@@ -39,13 +38,13 @@ class RbsRecipeModel(BaseModel):
 
 
 class RbsSingleStepRecipe(RbsRecipeModel):
-    type = RbsRecipeType.STEPWISE
+    type: Literal[RbsRecipeType.SINGLE_STEP] = RbsRecipeType.SINGLE_STEP
     axis: str
     position: float
 
 
 class RbsStepwiseRecipe(RbsRecipeModel):
-    type = RbsRecipeType.STEPWISE
+    type: Literal[RbsRecipeType.STEPWISE] = RbsRecipeType.STEPWISE
     vary_axis: str
     start: float
     end: float
@@ -53,9 +52,14 @@ class RbsStepwiseRecipe(RbsRecipeModel):
 
 
 class RbsStepwiseLeastRecipe(RbsStepwiseRecipe):
-    type = RbsRecipeType.STEPWISE_LEAST
+    type: Literal[RbsRecipeType.STEPWISE_LEAST] = RbsRecipeType.STEPWISE_LEAST
     yield_positions: List[Tuple[float, int]]
     least_yield_position: float
+
+
+class AnyRbs(BaseModel):
+    __root__: Union[RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe] = Field(..., discriminator='type')
+
 
 
 
