@@ -119,7 +119,7 @@ class RbsJob(Job):
     def _run_recipe(self, recipe):
         self._rbs_setup.charge_offset = 0
         self._active_recipe_status.start_time = datetime.now()
-        self._active_recipe_status.recipe_id = recipe.file_stem
+        self._active_recipe_status.recipe_id = recipe.recipe
         self._active_recipe_status.accumulated_charge_target = _get_total_counts(recipe)
         if recipe.type == RecipeType.random:
             run_random(recipe, self._rbs_setup, self._data_serializer)
@@ -218,8 +218,8 @@ def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer:
 
 
 def _make_minimize_yield_recipe(recipe, vary_coordinate):
-    return RbsRqmMinimizeYield(type=RecipeType.minimize_yield, sample_id=recipe.sample_id,
-                               file_stem=recipe.file_stem,
+    return RbsRqmMinimizeYield(type=RecipeType.minimize_yield, sample_id=recipe.sample,
+                               file_stem=recipe.recipe,
                                total_charge=recipe.yield_charge_total,
                                vary_coordinate=vary_coordinate, integration_window=
                                recipe.yield_integration_window,
@@ -227,14 +227,14 @@ def _make_minimize_yield_recipe(recipe, vary_coordinate):
 
 
 def _make_fixed_recipe(recipe):
-    return RbsRqmFixed(type=RecipeType.fixed, sample_id=recipe.sample_id,
-                       file_stem=recipe.file_stem + "_fixed",
+    return RbsRqmFixed(type=RecipeType.fixed, sample_id=recipe.sample,
+                       file_stem=recipe.recipe + "_fixed",
                        charge_total=recipe.random_fixed_charge_total)
 
 
 def _make_random_recipe(recipe):
-    return RbsRqmRandom(type=RecipeType.random, sample_id=recipe.sample_id,
-                        file_stem=recipe.file_stem + "_random",
+    return RbsRqmRandom(type=RecipeType.random, sample_id=recipe.sample,
+                        file_stem=recipe.recipe + "_random",
                         charge_total=recipe.random_fixed_charge_total,
                         start_position={"theta": -2},
                         vary_coordinate=recipe.random_vary_coordinate)

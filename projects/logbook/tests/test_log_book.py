@@ -1,9 +1,12 @@
+from typing import Literal
+
 from logbook.sqlite_db import SqliteDb
 from logbook.make_db import make_imec_db
 from pathlib import Path
 import os
 from datetime import datetime, timedelta
-from logbook.entities import RbsSingleStepRecipe, RbsRecipeType, RbsStepwiseRecipe, RbsStepwiseLeastRecipe
+from logbook.entities import RbsSingleStepRecipe, RbsRecipeType, RbsStepwiseRecipe, RbsStepwiseLeastRecipe, \
+    ErdRecipeModel
 
 import unittest
 
@@ -16,12 +19,11 @@ class TestDbTables(unittest.TestCase):
         self.db = SqliteDb(file)
 
     def tearDown(self):
-        pass
-        # file = Path("test.db")
-        # file.unlink(missing_ok=True)
+        file = Path("test.db")
+        file.unlink(missing_ok=True)
 
     def test_log_message(self):
-        self.db.log_message("message", "this is a test", datetime.now())
+        self.db.add_to_logbook("message", "this is a test", datetime.now())
         messages = self.db.get_log_messages()
         assert (messages[0]["note"] == "this is a test")
 
@@ -31,18 +33,29 @@ class TestDbTables(unittest.TestCase):
         assert (messages[0]["note"] == "test_job started")
         assert (messages[0]["mode"] == "job")
 
-    def test_log_job_with_3_recipes(self):
-        self.db.log_job_start("test_job")
+    def test_log_finished(self):
+        self.db.log_job_finish("test_job")
+        messages = self.db.get_log_messages()
+        assert (messages[0]["note"] == "test_job finished")
+        assert (messages[0]["mode"] == "job")
 
+    def test_job_terminated(self):
+        self.db.log_job_terminated("test_job", "daemon did not respond")
+        messages = self.db.get_log_messages()
+        assert (messages[0]["note"] == "test_job terminated: daemon did not respond")
+        assert (messages[0]["mode"] == "job")
+
+    def test_log_rbs_job_with_3_recipes(self):
+        self.db.log_job_start("test_job")
         start_time = datetime.now()
         end_time = datetime.now() + timedelta(hours=1)
 
-        rbs_recipe_1 = RbsSingleStepRecipe(type=RbsRecipeType.SINGLE_STEP, sample="sample_001", recipe="recipe_001",
+        rbs_recipe_1 = RbsSingleStepRecipe(sample="sample_001", recipe="recipe_001",
                                            start_time=start_time, end_time=end_time, axis="x", position=17.5)
-        rbs_recipe_2 = RbsStepwiseRecipe(type=RbsRecipeType.STEPWISE, sample="sample_002", recipe="recipe_003",
+        rbs_recipe_2 = RbsStepwiseRecipe(sample="sample_002", recipe="recipe_002",
                                          start_time=start_time, end_time=end_time, vary_axis="x", start=0, end=30,
                                          step=2)
-        rbs_recipe_3 = RbsStepwiseLeastRecipe(type=RbsRecipeType.STEPWISE_LEAST, sample="sample_003",
+        rbs_recipe_3 = RbsStepwiseLeastRecipe(sample="sample_003",
                                               recipe="recipe_003", start_time=start_time, end_time=end_time,
                                               vary_axis="x", start=0, end=30, step=2, least_yield_position=-1.3,
                                               yield_positions=[(-2.0, 50), (-1.8, 100)])
@@ -50,9 +63,27 @@ class TestDbTables(unittest.TestCase):
         self.db.log_rbs_recipe(rbs_recipe_1)
         self.db.log_rbs_recipe(rbs_recipe_2)
         self.db.log_rbs_recipe(rbs_recipe_3)
-
         messages = self.db.get_log_messages()
         assert (messages[0]["note"] == "test_job started")
+        assert (messages[1]["note"] == "recipe_001 finished")
+        assert (messages[1]["move"] == "x: 17.5")
+        assert (messages[2]["note"] == "recipe_002 finished")
+        assert (messages[2]["move"] == "x: [0.0,30.0,2.0]")
+        assert (messages[3]["note"] == "recipe_003 finished")
+        assert (messages[3]["move"] == "x: [0.0,30.0,2.0]-> -1.3")
+        assert (self.db.get_angle_yields(messages[3]["recipe_id"]) == [{'angle': -2.0, "yield": 50},
+                                                                       {"angle": -1.8, "yield": 100}])
 
-        print(self.db.get_log_messages())
-        print(self.db.get_angle_yields(messages[3]["recipe_id"]))
+    def test_log_erd_job_with_3_recipes(self):
+        self.db.log_job_start("test_job")
+        erd_recipe_1 = ErdRecipeModel(beam_type="Cl4+", beam_energy_MeV="8.5", sample_tilt_degrees="2.1",
+                                      sample="sample_erd_001", recipe="recipe_erd_001", measuring_time_sec="1200",
+                                      theta=45.0, z_start=50, z_end=70, z_increment=2, z_repeat=2,
+                                      start_time=datetime.now(), end_time=datetime.now() + timedelta(hours=1),
+                                      average_terminal_voltage=-100)
+        self.db.log_erd_recipe(erd_recipe_1)
+        messages = self.db.get_log_messages()
+        assert (messages[1]["note"] == "recipe_erd_001 finished")
+        assert (messages[1]["move"] == "Z: [50.0,70.0,2.0] *2")
+
+
