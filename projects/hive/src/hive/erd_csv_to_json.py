@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from io import StringIO
 from typing import Dict, List
-from erd_entities import ErdJobModel
+from hive.erd_entities import ErdJobModel
 
 
 def get_sections(csv_text: str):

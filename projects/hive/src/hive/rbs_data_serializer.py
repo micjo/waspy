@@ -6,8 +6,8 @@ import numpy as np
 
 from waspy.hardware_control.data_serializer import DataSerializer
 from waspy.hardware_control.hw_action import format_caen_histogram
-from logbook_db import LogBookDb
-from rbs_entities import RbsJobModel, RbsRqmRandom, RbsRqmChanneling
+from hive.logbook_db import LogBookDb
+from hive.rbs_entities import RbsJobModel, RbsStepwise, RbsChanneling, RbsStepwiseLeast, RbsSingleStep
 from waspy.hardware_control.rbs_entities import CaenDetector, HistogramData, RbsHistogramGraphData, \
     RbsHistogramGraphDataSet, RbsData
 from matplotlib import pyplot as plt
@@ -41,9 +41,12 @@ class RbsDataSerializer:
             return copy.deepcopy(self._abort)
 
     def prepare_job(self, job: RbsJobModel):
-        self._data_store.set_base_folder(job.job_id)
+        self._data_store.set_base_folder(job.name)
         self._db.job_start(job)
         self._time_loaded = datetime.now()
+
+    def terminate_job(self, job_name: str, reason: str):
+        self._db.job_terminate(job_name, reason)
 
     def finalize_job(self, job_model: RbsJobModel, job_result: Dict):
         trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "rbs")
@@ -51,11 +54,29 @@ class RbsDataSerializer:
         trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "any")
         self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
-        self._db.job_end(job_model)
+        self._db.job_finish(job_model)
         self.resume()
 
-    def save_recipe_result(self, job_id: str, recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
-        self._db.rbs_recipe_finish(job_id, recipe)
+    def stepwise_finish(self, recipe: RbsStepwise, start_time: datetime):
+        finished_recipe = _make_finished_vary_recipe(recipe, start_time)
+        self._db.recipe_finish(finished_recipe)
+
+    def single_step_finish(self, recipe: RbsSingleStep, start_time: datetime):
+        finished_recipe = _make_finished_basic_recipe(recipe, start_time)
+        self._db.recipe_finish(finished_recipe)
+
+    def stepwise_least_finish(self, recipe: RbsStepwiseLeast, angles: List[float], energy_yields: List[int],
+                              position: float, start_time: datetime):
+        finished_recipe = _make_finished_vary_recipe(recipe, start_time)
+        finished_recipe["yield_positions"] = list(zip(angles, energy_yields))
+        finished_recipe["least_yield_position"] = position
+        self._db.recipe_finish(finished_recipe)
+
+    def stepwise_least_terminate(self, recipe: RbsStepwiseLeast, angles: List[float], energy_yields: List[int],
+                                 reason: str, start_time: datetime):
+        terminated_recipe = _make_finished_vary_recipe(recipe, start_time)
+        terminated_recipe["yield_positions"] = np.column_pack((angles, energy_yields))
+        self._db.recipe_terminate(terminated_recipe, reason)
 
     def cd_folder(self, sub_folder: str):
         self._data_store.cd_folder(sub_folder)
@@ -138,6 +159,20 @@ class RbsDataSerializer:
             full_data = header + "\n" + formatted_data
 
             self._data_store.write_text_to_disk(file_stem + "_" + histogram_data.title + ".txt", full_data)
+
+
+def _make_finished_basic_recipe(recipe: RbsStepwiseLeast | RbsStepwise | RbsSingleStep, start_time: datetime):
+    return {"start_time": str(start_time), "end_time": str(datetime.now()), "name": recipe.name,
+            "type": recipe.type.value, "sample": recipe.sample}
+
+
+def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsStepwise, start_time: datetime):
+    finished_recipe = _make_finished_basic_recipe(recipe, start_time)
+    finished_recipe["vary_axis"] = recipe.vary_coordinate.name
+    finished_recipe["start"] = recipe.vary_coordinate.start
+    finished_recipe["end"] = recipe.vary_coordinate.end
+    finished_recipe["step"] = recipe.vary_coordinate.increment
+    return finished_recipe
 
 
 def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str):

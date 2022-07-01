@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from pydantic import Field
 
 from logbook.sqlite_db import SqliteDb
-from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRbs
+from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe
 
 
 def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
@@ -18,24 +18,24 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
         sql_db.remove_message(log_id)
 
     @router.post("/log_started_job")
-    async def log_started_job(job_id: str):
-        return sql_db.log_job_start(job_id)
+    async def log_started_job(name: str):
+        return sql_db.log_job_start(name)
 
     @router.post("/log_finished_job")
-    async def log_finished_job(job_id: str):
-        sql_db.add_to_logbook('job', '{job_id} finished'.format(job_id=job_id), None)
+    async def log_finished_job(name: str):
+        return sql_db.log_job_finish(name)
 
     @router.post("/log_terminated_job")
-    async def log_terminated_job(job_id: str, message: str):
-        sql_db.add_to_logbook('job', '{job_id} terminated: {message}'.format(job_id=job_id, message=message), None)
+    async def log_terminated_job(name: str, reason: str):
+        return sql_db.log_job_terminated(name, reason)
 
-    @router.post("/log_rbs_recipe_finish")
-    async def log_rbs_recipe_finish(rbs_recipe: AnyRbs):
-        sql_db.log_rbs_recipe(rbs_recipe.__root__)
+    @router.post("/log_finished_recipe")
+    async def log_finished_recipe(rbs_recipe: AnyRecipe):
+        sql_db.log_recipe_finished(rbs_recipe.__root__)
 
-    @router.post("/log_erd_recipe_finish")
-    async def log_erd_recipe_finish(erd_recipe_model: ErdRecipeModel):
-        sql_db.log_erd_recipe(erd_recipe_model)
+    @router.post("/log_terminated_recipe")
+    async def log_terminated_recipe(rbs_recipe: AnyRecipe, reason: str):
+        sql_db.log_recipe_terminated(rbs_recipe.__root__, reason)
 
     @router.post("/log_trend")
     async def log_trend(trend: dict):

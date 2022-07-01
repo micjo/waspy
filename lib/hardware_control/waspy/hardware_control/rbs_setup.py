@@ -32,12 +32,12 @@ def fakeable(func, faker):
 
 def fake_counter():
     value = 0
-    for i in range(0, 10):
+    for i in range(0, 3):
         time.sleep(0.1)
         str_value = str(round(value, 2))
         print("fake-counter: " + str_value + " -> 10")
         data = {"charge(nC)": str_value, "target_charge(nC)": 10}
-        value += 1.05
+        value += 3.05
 
 
 class RbsSetup:

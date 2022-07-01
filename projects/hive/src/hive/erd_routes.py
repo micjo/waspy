@@ -1,5 +1,5 @@
 from waspy.hardware_control.erd_setup import ErdSetup
-from hw_control_routes import build_get_redirect, build_post_redirect, build_mpa3_histogram_redirect
+from hive.hw_control_routes import build_get_redirect, build_post_redirect, build_mpa3_histogram_redirect
 
 
 def build_hw_endpoints(http_server, erd_hardware):

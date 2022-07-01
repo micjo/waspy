@@ -20,91 +20,40 @@ logging.basicConfig(
 class SqliteDb:
     _sqlite_file: Path
     _active_log_book_row_id: int
+    _active_job_id: int
 
     def __init__(self, sqlite_file: Path):
         self._sqlite_file = sqlite_file
         self._active_log_book_row_id = 0
+        self._active_job_id = 0
 
-    def log_job_start(self, job):
-        print("job start")
-        active_log_id = self.add_to_logbook('job', '{} started'.format(job), None)
-        print("added to logbook")
-        self.sql_insert("INSERT INTO job_book (log_id, job)"
-                        " VALUES ('{id}', '{job}')"
-                        .format(id=active_log_id, job=job)
+    def log_job_start(self, name):
+        active_log_id = self.add_to_logbook('job', '{} started'.format(name), None)
+        self._active_job_id = self.sql_insert("INSERT INTO job_name_book (name)"
+                                              " VALUES ('{name}')"
+                                              .format(name=name)
+                                              )
+        self.sql_insert("INSERT INTO job_book (log_id, job_id)"
+                        " VALUES ('{log_id}','{job_id}')"
+                        .format(log_id=active_log_id, job_id=self._active_job_id)
                         )
-        print("added to job_book")
 
-    def log_job_finish(self, job: str):
-        self.add_to_logbook('job', '{} finished'.format(job), None)
+    def log_job_finish(self, name: str):
+        self.add_to_logbook('job', '{} finished'.format(name), None)
 
-    def log_job_terminated(self, job: str, reason: str):
-        self.add_to_logbook('job', '{job} terminated: {reason}'.format(job=job, reason=reason), None)
+    def log_job_terminated(self, name: str, reason: str):
+        self.add_to_logbook('job', '{name} terminated: {reason}'.format(name=name, reason=reason), None)
 
-    def log_recipe(self, recipe: RbsRecipeModel | ErdRecipeModel):
-        active_log_id = self.add_to_logbook('recipe', '{recipe} finished'.format(recipe=recipe.recipe), None)
-        return self.sql_insert("INSERT INTO recipe_book (log_id, recipe, sample, type, start_epoch, end_epoch)"
-                               " VALUES ('{id}', '{recipe}','{sample}','{type}','{start_epoch}','{end_epoch}') "
-                               .format(id=active_log_id, recipe=recipe.recipe,
-                                       sample=recipe.sample, type=recipe.type,
-                                       start_epoch=int(recipe.start_time.timestamp()),
-                                       end_epoch=int(recipe.end_time.timestamp()))
-                               )
+    def log_recipe_finished(self, recipe: RbsRecipeModel | ErdRecipeModel):
+        active_log_id = self.add_to_logbook('recipe', '{recipe} finished'.format(recipe=recipe.name), None)
+        active_recipe_id = self._add_to_recipe_book(active_log_id, recipe)
+        self._log_some_recipe_end(recipe, active_recipe_id)
 
-    def log_rbs_recipe(self, rbs_recipe: RbsStepwiseRecipe | RbsSingleStepRecipe | RbsStepwiseLeastRecipe):
-        recipe_id = self.log_recipe(rbs_recipe)
-
-        if rbs_recipe.type == RbsRecipeType.STEPWISE:
-            self.sql_insert("INSERT INTO rbs_stepwise_book (recipe_id, axis, start, end, step)"
-                            "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}')"
-                            .format(recipe_id=recipe_id, axis=rbs_recipe.vary_axis, start=rbs_recipe.start,
-                                    end=rbs_recipe.end,
-                                    step=rbs_recipe.step)
-                            )
-
-        if rbs_recipe.type == RbsRecipeType.SINGLE_STEP:
-            self.sql_insert("INSERT INTO rbs_single_step_book (recipe_id, axis, position)"
-                            "VALUES ('{recipe_id}','{axis}','{position}')"
-                            .format(recipe_id=recipe_id, axis=rbs_recipe.axis, position=rbs_recipe.position)
-                            )
-
-        if rbs_recipe.type == RbsRecipeType.STEPWISE_LEAST:
-            self.sql_insert(
-                "INSERT INTO rbs_stepwise_least_book (recipe_id, axis, start, end, step, least_yield_position)"
-                "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}','{least_yield_position}')"
-                .format(recipe_id=recipe_id, axis=rbs_recipe.vary_axis, start=rbs_recipe.start,
-                        end=rbs_recipe.end,
-                        step=rbs_recipe.step, least_yield_position=rbs_recipe.least_yield_position)
-                )
-            for angleYield in rbs_recipe.yield_positions:
-                self.sql_insert("INSERT INTO rbs_yield_book (recipe_id, angle, yield)"
-                                "VALUES('{recipe_id}','{angle}', '{energy_yield}')"
-                                .format(recipe_id=recipe_id, angle=angleYield[0],
-                                        energy_yield=angleYield[1]))
-
-    def log_erd_recipe(self, erd_recipe: ErdRecipeModel):
-        recipe_id = self.log_recipe(erd_recipe)
-        self.sql_insert("""
-            INSERT INTO erd_book (
-            recipe_id, beam_type, beam_energy_MeV, sample_tilt_degrees, theta, z_start, z_end, z_increment, 
-            z_repeat, average_terminal_voltage
-            )
-            VALUES (
-            '{id}', '{beam_type}', '{beam_energy_MeV}', '{sample_tilt_degrees}','{theta}', '{z_start}',
-            '{z_end}','{z_increment}','{z_repeat}', '{average_terminal_voltage}'
-            );
-        """.format(id=recipe_id,
-                   beam_type=erd_recipe.beam_type,
-                   beam_energy_MeV=erd_recipe.beam_energy_MeV,
-                   sample_tilt_degrees=erd_recipe.sample_tilt_degrees,
-                   sample_id=erd_recipe.sample,
-                   file_stem=erd_recipe.recipe,
-                   theta=erd_recipe.theta,
-                   z_start=erd_recipe.z_start,
-                   z_end=erd_recipe.z_end,
-                   z_increment=erd_recipe.z_increment,
-                   z_repeat=erd_recipe.z_repeat,
-                   average_terminal_voltage=erd_recipe.average_terminal_voltage))
+    def log_recipe_terminated(self, recipe: RbsStepwiseRecipe | RbsSingleStepRecipe |
+                                             RbsStepwiseLeastRecipe | ErdRecipeModel, reason: str):
+        active_log_id = self.add_to_logbook('recipe', '{recipe} failed: {reason}'.format(recipe=recipe.name, reason=reason), None)
+        active_recipe_id = self._add_to_recipe_book(active_log_id, recipe)
+        self._log_some_recipe_end(recipe, active_recipe_id)
 
     def add_to_logbook(self, type, message, timestamp: Union[datetime, None]) -> int:
         if timestamp:
@@ -129,7 +78,7 @@ class SqliteDb:
 
     def get_trending(self) -> List[str]:
         response = self._sql_extract("SELECT name FROM pragma_table_info('trend');")
-        column_list = [''.join(item) for item in response]
+        column_list = response["name"].tolist()
         return column_list
 
     def get_angle_yields(self, recipe_id) -> List[str]:
@@ -140,12 +89,12 @@ class SqliteDb:
 
     def get_log_messages(self) -> List[str]:
         dataframe = self._sql_extract("""
-        SELECT l.log_id                                        as log_id,
+        SELECT l.log_id                                       as log_id,
        l.epoch                                                as epoch,
        l.mode                                                 as mode,
        l.note                                                 as note,
-       j.job                                                  as job,
-       r.recipe                                               as recipe,
+       job_name.name                                          as job_name,
+       r.name                                                 as recipe_name,
        r.sample                                               as sample,
        r.start_epoch                                          as start_epoch,
        r.end_epoch                                            as end_epoch,
@@ -159,15 +108,13 @@ class SqliteDb:
                     (select rsteps.axis || ": [" || rsteps.start || "," || rsteps.end || "," || rsteps.step|| "]")
            when type is "rbs_stepwise_least" then
                    (select rleast.axis || ": [" || rleast.start || "," || rleast.end || "," || rleast.step || "]-> " || rleast.least_yield_position )
-           when type is "rbs_single_step" then
-                   (select rsingle.axis || ": " || rsingle.position)
            end                                                as move,
        l.meta                                                 as meta
 FROM log_book l
          LEFT join recipe_book r ON l.log_id = r.log_id
          LEFT join job_book j ON l.log_id = j.log_id
+         LEFT JOIN job_name_book job_name ON j.job_id = job_name.job_id
          LEFT JOIN rbs_stepwise_book rsteps ON r.recipe_id = rsteps.recipe_id
-         LEFT JOIN rbs_single_step_book rsingle ON r.recipe_id = rsingle.recipe_id
          LEFT JOIN rbs_stepwise_least_book rleast ON r.recipe_id = rleast.recipe_id
          LEFT JOIN erd_book erd ON r.recipe_id = erd.recipe_id
         """)
@@ -205,13 +152,70 @@ FROM log_book l
         return df
 
     def sql_insert(self, query) -> int:
-        logging.debug("executing sql query: {" + query + "}")
+        logging.info("executing sql query: {" + query + "}")
         con = sqlite3.connect(self._sqlite_file)
         cur = con.cursor()
         answer = cur.execute(query)
         con.commit()
         con.close()
         return answer.lastrowid
+
+    def _add_to_recipe_book(self, active_log_id, recipe):
+        return self.sql_insert("INSERT INTO recipe_book (log_id, job_id, name, sample, type, start_epoch, end_epoch)"
+                               " VALUES ('{id}', '{job_id}','{name}','{sample}','{type}','{start_epoch}','{end_epoch}') "
+                               .format(id=active_log_id, job_id=self._active_job_id, name=recipe.name,
+                                       sample=recipe.sample, type=recipe.type,
+                                       start_epoch=int(recipe.start_time.timestamp()),
+                                       end_epoch=int(recipe.end_time.timestamp()))
+                               )
+
+    def _log_some_recipe_end(self, recipe: RbsStepwiseRecipe | RbsSingleStepRecipe |
+                                           RbsStepwiseLeastRecipe | ErdRecipeModel, recipe_id:int):
+
+        if recipe.type == RbsRecipeType.STEPWISE:
+            self.sql_insert("INSERT INTO rbs_stepwise_book (recipe_id, axis, start, end, step)"
+                            "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}')"
+                            .format(recipe_id=recipe_id, axis=recipe.vary_axis, start=recipe.start,
+                                    end=recipe.end,
+                                    step=recipe.step)
+                            )
+
+        if recipe.type == RbsRecipeType.STEPWISE_LEAST:
+            self.sql_insert(
+                "INSERT INTO rbs_stepwise_least_book (recipe_id, axis, start, end, step, least_yield_position)"
+                "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}','{least_yield_position}')"
+                    .format(recipe_id=recipe_id, axis=recipe.vary_axis, start=recipe.start,
+                            end=recipe.end,
+                            step=recipe.step, least_yield_position=recipe.least_yield_position)
+            )
+            for angleYield in recipe.yield_positions:
+                self.sql_insert("INSERT INTO rbs_yield_book (recipe_id, angle, yield)"
+                                "VALUES('{recipe_id}','{angle}', '{energy_yield}')"
+                                .format(recipe_id=recipe_id, angle=angleYield[0],
+                                        energy_yield=angleYield[1]))
+
+        if recipe.type == "erd":
+            self.sql_insert("""
+                INSERT INTO erd_book (
+                recipe_id, beam_type, beam_energy_MeV, sample_tilt_degrees, theta, z_start, z_end, z_increment, 
+                z_repeat, average_terminal_voltage
+                )
+                VALUES (
+                '{id}','{beam_type}', '{beam_energy_MeV}', '{sample_tilt_degrees}','{theta}', '{z_start}',
+                '{z_end}','{z_increment}','{z_repeat}', '{average_terminal_voltage}'
+                );
+            """.format(id=recipe_id,
+                       beam_type=recipe.beam_type,
+                       beam_energy_MeV=recipe.beam_energy_MeV,
+                       sample_tilt_degrees=recipe.sample_tilt_degrees,
+                       sample_id=recipe.sample,
+                       theta=recipe.theta,
+                       z_start=recipe.z_start,
+                       z_end=recipe.z_end,
+                       z_increment=recipe.z_increment,
+                       z_repeat=recipe.z_repeat,
+                       average_terminal_voltage=recipe.average_terminal_voltage))
+
 
 
 def datetime_from_utc_to_local(utc_datetime):

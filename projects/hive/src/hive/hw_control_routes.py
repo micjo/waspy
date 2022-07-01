@@ -6,9 +6,9 @@ from pydantic import create_model
 from pydantic.generics import GenericModel
 
 from waspy.hardware_control import http_helper as http
-from entities import AnyHardware
+from hive.entities import AnyHardware
 from waspy.hardware_control.hw_action import get_caen_histogram, pack, get_packed_histogram
-from config import HiveConfig
+from hive.config import HiveConfig
 from waspy.hardware_control.rbs_entities import CaenDetector
 
 

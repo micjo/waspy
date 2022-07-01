@@ -7,11 +7,11 @@ from typing import List
 
 from pydantic import BaseModel
 
-from erd_data_serializer import ErdDataSerializer
-from erd_entities import ErdJobModel, ErdRecipe
+from hive.erd_data_serializer import ErdDataSerializer
+from hive.erd_entities import ErdJobModel, ErdRecipe
 from waspy.hardware_control.erd_setup import ErdSetup, PositionCoordinates
 
-from job import Job
+from hive.job import Job
 from waspy.hardware_control.hive_exception import HiveError
 
 
@@ -123,7 +123,7 @@ class ErdJob(Job):
 def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
     erd_setup.wait_for_arrival()
-    erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.file_stem)
+    erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.name)
     erd_setup.start_acquisition()
     erd_setup.wait_for_acquisition_started()
     z_range = get_z_range(recipe.z_start, recipe.z_end, recipe.z_increment, recipe.z_repeat)

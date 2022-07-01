@@ -2,7 +2,7 @@ import pandas as pd
 from io import StringIO
 from typing import Dict, List
 
-import rbs_entities as rbs
+import hive.rbs_entities as rbs
 
 
 def get_sections(csv_text: str):
