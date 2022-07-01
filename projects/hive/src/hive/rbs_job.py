@@ -6,14 +6,14 @@ from typing import List, Union
 
 from pydantic import BaseModel
 
-import rbs_yield_angle_fit as fit
+import hive.rbs_yield_angle_fit as fit
 from waspy.hardware_control.rbs_entities import RbsData, PositionCoordinates
 
-from rbs_data_serializer import RbsDataSerializer
-from rbs_entities import RbsJobModel, RecipeType, RbsRqmRandom, RbsRqmChanneling, RbsRqmFixed, RbsRqmMinimizeYield, \
+from hive.rbs_data_serializer import RbsDataSerializer
+from hive.rbs_entities import RbsJobModel, RecipeType, RbsStepwise, RbsChanneling, RbsSingleStep, RbsStepwiseLeast, \
     VaryCoordinate, Window
 from waspy.hardware_control.rbs_setup import RbsSetup
-from job import Job
+from hive.job import Job
 import numpy as np
 
 
@@ -67,6 +67,7 @@ class RbsJob(Job):
                 self._did_error = True
                 self._error_message = str(e)
                 logging.error(traceback.format_exc())
+                self._data_serializer.terminate_job(self._job_model.name, str(e))
                 self._finished_recipes = []
                 break
             self._finish_recipe()
@@ -119,12 +120,11 @@ class RbsJob(Job):
     def _run_recipe(self, recipe):
         self._rbs_setup.charge_offset = 0
         self._active_recipe_status.start_time = datetime.now()
-        self._active_recipe_status.recipe_id = recipe.recipe
+        self._active_recipe_status.recipe_id = recipe.name
         self._active_recipe_status.accumulated_charge_target = _get_total_counts(recipe)
-        if recipe.type == RecipeType.random:
+        if recipe.type == RecipeType.STEPWISE:
             run_random(recipe, self._rbs_setup, self._data_serializer)
-            self._data_serializer.save_recipe_result(self._job_model.job_id, recipe)
-        if recipe.type == RecipeType.channeling:
+        if recipe.type == RecipeType.CHANNELING:
             run_channeling(recipe, self._rbs_setup, self._data_serializer)
 
     def _finish_recipe(self):
@@ -133,7 +133,8 @@ class RbsJob(Job):
         self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
 
 
-def run_random(recipe: RbsRqmRandom, rbs: RbsSetup, data_serializer: RbsDataSerializer):
+def run_random(recipe: RbsStepwise, rbs: RbsSetup, data_serializer: RbsDataSerializer):
+    start_time = datetime.now()
     rbs.move(recipe.start_position)
     positions = get_positions_as_coordinate(recipe.vary_coordinate)
     rbs.prepare_counting_with_target(recipe.charge_total / len(positions))
@@ -144,45 +145,47 @@ def run_random(recipe: RbsRqmRandom, rbs: RbsSetup, data_serializer: RbsDataSeri
     rbs.stop_data_acquisition()
 
     rbs_data = rbs.get_status(True)
-    data_serializer.save_histograms(rbs_data, recipe.file_stem, recipe.sample_id)
-    data_serializer.plot_histograms(rbs_data, recipe.file_stem)
+    data_serializer.save_histograms(rbs_data, recipe.name, recipe.sample)
+    data_serializer.plot_histograms(rbs_data, recipe.name)
+    data_serializer.stepwise_finish(recipe, start_time)
     return rbs_data
 
 
-def run_channeling(recipe: RbsRqmChanneling, rbs: RbsSetup, data_serializer: RbsDataSerializer):
+def run_channeling(recipe: RbsChanneling, rbs: RbsSetup, data_serializer: RbsDataSerializer):
     rbs.move(recipe.start_position)
 
     for index, vary_coordinate in enumerate(recipe.yield_vary_coordinates):
-        yield_recipe = _make_minimize_yield_recipe(recipe, vary_coordinate)
-        yield_recipe.file_stem = recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name)
-        data_serializer.cd_folder(recipe.file_stem + "_" + str(index) + "_vary_" + str(vary_coordinate.name))
-        try:
-            _minimize_yield(yield_recipe, rbs, data_serializer)
-        except RuntimeError as e:
-            logging.error(e)
-            data_serializer.fitting_fail(recipe.file_stem, str(e))
+        stepwise_least_recipe = _make_stepwise_least_recipe(recipe, vary_coordinate, index)
+        data_serializer.cd_folder(stepwise_least_recipe.name)
+        _stepwise_least(stepwise_least_recipe, rbs, data_serializer)
         data_serializer.cd_folder_up()
 
     data_serializer.clear_sub_folder()
 
-    fixed_histograms = _run_fixed(_make_fixed_recipe(recipe), rbs, data_serializer).histograms
-    random_histograms = run_random(_make_random_recipe(recipe), rbs, data_serializer).histograms
-    data_serializer.plot_compare(fixed_histograms, random_histograms, recipe.file_stem)
+    fixed_histograms = _run_fixed(_make_single_step_recipe(recipe), rbs, data_serializer).histograms
+    random_histograms = run_random(_make_stepwise_recipe(recipe), rbs, data_serializer).histograms
+    data_serializer.plot_compare(fixed_histograms, random_histograms, recipe.name)
 
 
-def _run_fixed(recipe: RbsRqmFixed, rbs: RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
+def _run_fixed(recipe: RbsSingleStep, rbs: RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
+    start_time = datetime.now()
+
     rbs.prepare_counting_with_target(recipe.charge_total)
     rbs.start_data_acquisition()
     rbs.count()
     rbs.stop_data_acquisition()
 
     rbs_data = rbs.get_status(True)
-    data_serializer.save_histograms(rbs_data, recipe.file_stem, recipe.sample_id)
-    data_serializer.plot_histograms(rbs_data, recipe.file_stem)
+    data_serializer.save_histograms(rbs_data, recipe.name, recipe.sample)
+    data_serializer.plot_histograms(rbs_data, recipe.name)
+
+    data_serializer.single_step_finish(recipe, start_time)
     return rbs_data
 
 
-def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer: RbsDataSerializer):
+def _stepwise_least(recipe: RbsStepwiseLeast, rbs: RbsSetup, data_serializer: RbsDataSerializer):
+    start_time = datetime.now()
+
     rbs.move(recipe.start_position)
     positions = get_positions_as_coordinate(recipe.vary_coordinate)
     rbs.prepare_counting_with_target(recipe.total_charge / len(positions))
@@ -202,59 +205,64 @@ def _minimize_yield(recipe: RbsRqmMinimizeYield, rbs: RbsSetup, data_serializer:
         energy_yields.append(integrated_energy_yield)
 
         rbs_data = rbs.get_status(True)
-        file_stem = recipe.file_stem + "_" + single_coordinate_to_string(position, recipe.vary_coordinate)
-        data_serializer.save_histograms(rbs_data, file_stem, recipe.sample_id)
+        file_stem = recipe.name + "_" + single_coordinate_to_string(position, recipe.vary_coordinate)
+        data_serializer.save_histograms(rbs_data, file_stem, recipe.sample)
         data_serializer.plot_histograms(rbs_data, file_stem)
 
     data_serializer.cd_folder_up()
-
     angles = get_positions_as_float(recipe.vary_coordinate)
-    smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
-    min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
-    min_position = convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
-    data_serializer.store_yields(recipe.file_stem, angles, energy_yields)
-    data_serializer.plot_energy_yields(recipe.file_stem, angles, energy_yields, smooth_angles, smooth_yields)
-    rbs.move(min_position)
+
+    try:
+        smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
+        min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
+        min_position = convert_float_to_coordinate(recipe.vary_coordinate.name, min_angle)
+        data_serializer.store_yields(recipe.name, angles, energy_yields)
+        data_serializer.plot_energy_yields(recipe.name, angles, energy_yields, smooth_angles, smooth_yields)
+        rbs.move(min_position)
+        data_serializer.stepwise_least_finish(recipe, angles, energy_yields, min_angle, start_time)
+    except RuntimeError as e:
+        logging.error(e)
+        data_serializer.stepwise_least_terminate(recipe, angles, energy_yields, str(e), start_time)
 
 
-def _make_minimize_yield_recipe(recipe, vary_coordinate):
-    return RbsRqmMinimizeYield(type=RecipeType.minimize_yield, sample_id=recipe.sample,
-                               file_stem=recipe.recipe,
-                               total_charge=recipe.yield_charge_total,
-                               vary_coordinate=vary_coordinate, integration_window=
-                               recipe.yield_integration_window,
-                               optimize_detector_index=recipe.yield_optimize_detector_index)
+def _make_stepwise_least_recipe(recipe, vary_coordinate, index: int):
+    return RbsStepwiseLeast(type=RecipeType.STEPWISE_LEAST, sample=recipe.sample,
+                            name=recipe.name + "_" + str(index) + "_vary_" + str(vary_coordinate.name),
+                            total_charge=recipe.yield_charge_total,
+                            vary_coordinate=vary_coordinate, integration_window=
+                            recipe.yield_integration_window,
+                            optimize_detector_index=recipe.yield_optimize_detector_index)
 
 
-def _make_fixed_recipe(recipe):
-    return RbsRqmFixed(type=RecipeType.fixed, sample_id=recipe.sample,
-                       file_stem=recipe.recipe + "_fixed",
-                       charge_total=recipe.random_fixed_charge_total)
+def _make_single_step_recipe(recipe):
+    return RbsSingleStep(type=RecipeType.SINGLE_STEP, sample=recipe.sample,
+                         name=recipe.name + "_fixed",
+                         charge_total=recipe.random_fixed_charge_total)
 
 
-def _make_random_recipe(recipe):
-    return RbsRqmRandom(type=RecipeType.random, sample_id=recipe.sample,
-                        file_stem=recipe.recipe + "_random",
-                        charge_total=recipe.random_fixed_charge_total,
-                        start_position={"theta": -2},
-                        vary_coordinate=recipe.random_vary_coordinate)
+def _make_stepwise_recipe(recipe):
+    return RbsStepwise(type=RecipeType.STEPWISE, sample=recipe.sample,
+                       name=recipe.name + "_random",
+                       charge_total=recipe.random_fixed_charge_total,
+                       start_position={"theta": -2},
+                       vary_coordinate=recipe.random_vary_coordinate)
 
 
-def _get_total_counts_random(recipe: RbsRqmRandom):
+def _get_total_counts_stepwise(recipe: RbsStepwise):
     return recipe.charge_total
 
 
-def _get_total_counts_channeling(recipe: RbsRqmChanneling):
+def _get_total_counts_channeling(recipe: RbsChanneling):
     yield_optimize_total_charge = recipe.yield_charge_total * len(recipe.yield_vary_coordinates)
     compare_total_charge = 2 * recipe.random_fixed_charge_total
     return yield_optimize_total_charge + compare_total_charge
 
 
-def _get_total_counts(recipe: Union[RbsRqmRandom, RbsRqmChanneling]):
-    if recipe.type == RecipeType.channeling:
+def _get_total_counts(recipe: Union[RbsStepwise, RbsChanneling]):
+    if recipe.type == RecipeType.CHANNELING:
         return _get_total_counts_channeling(recipe)
-    if recipe.type == RecipeType.random:
-        return _get_total_counts_random(recipe)
+    if recipe.type == RecipeType.STEPWISE:
+        return _get_total_counts_stepwise(recipe)
 
 
 def single_coordinate_to_string(position: PositionCoordinates, coordinate: VaryCoordinate) -> str:

@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from starlette import status
 
-from config import HiveConfig
+from hive.config import HiveConfig
 
 
 def build_systemd_endpoints(router, hive_config: HiveConfig):

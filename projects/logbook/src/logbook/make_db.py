@@ -27,9 +27,21 @@ def make_job_book(sql_db):
         (
             log_id integer
                 references log_book,
-            job    text
+            job_id integer
+                references job_name_book
         );
     """)
+
+    sql_db.sql_insert("""
+        create table job_name_book
+        (
+            job_id integer not null
+                constraint log_book_pk
+                    primary key autoincrement,
+            name text
+        );
+    """)
+
 
 def make_recipe_book(sql_db):
     sql_db.sql_insert("""
@@ -40,7 +52,9 @@ def make_recipe_book(sql_db):
                     primary key autoincrement,
             log_id      integer
                 references log_book,
-            recipe      text,
+            job_id      integer
+                references job_name_book,
+            name      text,
             type        text,
             sample      text,
             start_epoch integer,
@@ -54,15 +68,6 @@ def make_recipe_book(sql_db):
     """)
 
 def make_rbs_recipe_books(sql_db):
-    sql_db.sql_insert("""
-        create table rbs_single_step_book
-        (
-            recipe_id integer
-                references recipe_book,
-            axis      float,
-            position  float
-        );
-    """)
 
     sql_db.sql_insert("""
         create table rbs_stepwise_book
@@ -85,7 +90,6 @@ def make_rbs_recipe_books(sql_db):
             start                float,
             end                  float,
             step                 float,
-            yield_positions      text,
             least_yield_position float
         );
     """)

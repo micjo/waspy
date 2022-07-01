@@ -4,7 +4,7 @@ from collections import deque
 from threading import Thread, Lock
 from typing import List, Dict
 
-from job import Job, EmptyJob, empty_job
+from hive.job import Job, EmptyJob, empty_job
 
 
 class JobRunner(Thread):

@@ -9,9 +9,9 @@ from typing import Dict
 from threading import Lock
 
 from waspy.hardware_control.data_serializer import DataSerializer
-from erd_entities import ErdJobModel, ErdRecipe
+from hive.erd_entities import ErdJobModel, ErdRecipe
 from waspy.hardware_control.erd_entities import ErdData
-from logbook_db import LogBookDb
+from hive.logbook_db import LogBookDb
 
 
 def _try_copy(source, destination):
@@ -53,6 +53,9 @@ class ErdDataSerializer:
         self._db.job_start(job)
         self._time_loaded = datetime.now()
 
+    def terminate_job(self, job_name: str, reason: str):
+        self._db.job_terminate(job_name, reason)
+
     def finalize_job(self, job_model: ErdJobModel, job_result: Dict):
         trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "erd")
         self._data_store.write_csv_panda_to_disk("erd_trends.csv", trends)
@@ -60,15 +63,15 @@ class ErdDataSerializer:
         self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
         self._data_store.write_csv_panda_to_disk("service_log.csv", self._db.get_job_summary())
-        self._db.job_end(job_model)
+        self._db.job_finish(job_model)
         self.resume()
 
     def save_recipe_result(self, erd_data: ErdData, recipe: ErdRecipe):
         if self.aborted():
             return
         self._db.erd_recipe_finish(self._job, recipe, self._time_loaded)
-        self._data_store.write_text_to_disk(recipe.file_stem + ".flt", erd_data.histogram)
-        self._data_store.write_text_to_disk(recipe.file_stem + ".meta",
+        self._data_store.write_text_to_disk(recipe.name + ".flt", erd_data.histogram)
+        self._data_store.write_text_to_disk(recipe.name + ".meta",
                                             _serialize_meta(erd_data, recipe, self._job, self._time_loaded))
 
 
@@ -101,14 +104,14 @@ def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel
  *
  % Section :=  </raw_data>
  % End comments""".format(
-        title=recipe.file_stem,
-        recipe_name=recipe.file_stem,
+        title=recipe.name,
+        recipe_name=recipe.name,
         date=datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
         measure_time_sec=erd_data.measuring_time_sec,
         beam_energy=job_model.beam_energy_MeV,
         beam_type=job_model.beam_type,
         sample_tilt_degrees=job_model.sample_tilt_degrees,
-        sample_id=recipe.sample_id,
+        sample_id=recipe.sample,
         sample_z=erd_data.mdrive_z["motor_position"],
         sample_theta=erd_data.mdrive_theta["motor_position"],
         z_start=recipe.z_start,

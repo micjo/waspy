@@ -1,9 +1,9 @@
 from datetime import timedelta
 from pathlib import Path
-from typing import List
+from typing import List, Literal
 from pydantic import BaseModel, Field
 
-from entities import SimpleConfig
+from hive.entities import SimpleConfig
 
 
 class ErdHardware(BaseModel):
@@ -20,8 +20,9 @@ class ErdConfig(BaseModel):
 
 class ErdRecipe(BaseModel):
     measuring_time_sec: int
-    sample_id: str
-    file_stem: str
+    type: Literal["erd"] = "erd"
+    sample: str
+    name: str
     theta: float
     z_start: float
     z_end: float

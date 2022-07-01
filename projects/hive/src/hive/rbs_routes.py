@@ -1,5 +1,5 @@
-from entities import CaenConfig
-from hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
+from hive.entities import CaenConfig
+from hive.hw_control_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram, build_detector_endpoints
 from waspy.hardware_control.rbs_setup import RbsSetup
 
