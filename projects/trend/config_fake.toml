@@ -1,0 +1,18 @@
+trend =  [
+    ["rbs_x","http://127.0.0.1:20000/api/latest", "motor_1_position"],
+    ["rbs_y","http://127.0.0.1:20000/api/latest", "motor_2_position"],
+    ["rbs_phi","http://127.0.0.1:20000/api/latest", "motor_1_position"],
+    ["rbs_zeta","http://127.0.0.1:22000/api/latest", "motor_2_position"],
+    ["rbs_current","http://127.0.0.1:20100/api/latest", "current(nA)"],
+
+    ["erd_ad1_count_rate","http://169.254.155.94:22400/api/latest", "ad1.total_rate"],
+    ["erd_ad2_count_rate","http://169.254.155.94:22400/api/latest", "ad2.total_rate"],
+    ["erd_z","http://127.0.0.1:22300/api/latest", "motor_position"],
+    ["erd_theta","http://127.0.0.1:22300/api/latest", "motor_position"],
+
+    ["any_sf6_pressure","http://127.0.0.1:22101/api/latest", "counter_0_value"],
+    ["any_sf6_temperature","http://127.0.0.1:22101/api/latest", "counter_1_value"],
+    ["any_motor_current","http://127.0.0.1:22103/api/latest", "counter_0_value"],
+    ["any_magnet_current","http://127.0.0.1:22102/api/latest", "counter_0_value"],
+    ["any_terminal_voltage","http://127.0.0.1:22102/api/latest", "counter_1_value"]
+]

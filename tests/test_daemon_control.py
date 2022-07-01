@@ -2,9 +2,9 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import ANY
 
-import projects.hive.hive.entities as entities
+import projects.hive.src.hive.entities as entities
 
-from projects.hive.hive.rbs_entities import RbsConfig, AmlConfig, SimpleConfig
+from projects.hive.src.hive.rbs_entities import RbsConfig, AmlConfig, SimpleConfig
 from waspy.hardware_control import rbs_setup as rbs_lib
 from waspy.hardware_control.rbs_entities import PositionCoordinates
 import waspy.hardware_control.hw_action as hw_action
@@ -94,4 +94,4 @@ def test_move_and_count():
 
 def test_entities():
     rbs_settings = entities.RbsRqmSettings(rqm_number="RBS21_232", detectors=[])
-    assert rbs_settings.job_id == rbs_settings.base_folder
+    assert rbs_settings.name == rbs_settings.base_folder

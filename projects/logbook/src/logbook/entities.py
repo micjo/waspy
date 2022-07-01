@@ -12,12 +12,12 @@ class RbsRecipeType(str, Enum):
 
 
 class ErdRecipeModel(BaseModel):
-    type = "erd"
+    type: Literal["erd"] = "erd"
     beam_type: str
     beam_energy_MeV: float
     sample_tilt_degrees: float
     sample: str
-    recipe: str
+    name: str
     measuring_time_sec: int
     theta: float
     z_start: float
@@ -32,15 +32,13 @@ class ErdRecipeModel(BaseModel):
 class RbsRecipeModel(BaseModel):
     type: RbsRecipeType
     sample: str
-    recipe: str
+    name: str
     start_time: datetime
     end_time: datetime
 
 
 class RbsSingleStepRecipe(RbsRecipeModel):
     type: Literal[RbsRecipeType.SINGLE_STEP] = RbsRecipeType.SINGLE_STEP
-    axis: str
-    position: float
 
 
 class RbsStepwiseRecipe(RbsRecipeModel):
@@ -57,9 +55,6 @@ class RbsStepwiseLeastRecipe(RbsStepwiseRecipe):
     least_yield_position: float
 
 
-class AnyRbs(BaseModel):
-    __root__: Union[RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe] = Field(..., discriminator='type')
-
-
-
-
+class AnyRecipe(BaseModel):
+    __root__: Union[RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, ErdRecipeModel] = \
+        Field(..., discriminator='type')

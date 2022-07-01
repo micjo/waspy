@@ -65,7 +65,7 @@ def write_or_check_title(trend_list, env_conf):
         if (set(column_titles).issubset(set(columns))):
             print("database has required columns")
         else:
-            print("The database does not contain all the required columns")
+            print("The database does not contain all the required columns: " + str(columns))
             return False
 
     return True

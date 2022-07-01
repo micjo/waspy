@@ -6,7 +6,7 @@ from typing import List, Optional, Union, Literal, Annotated
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
-from entities import SimpleConfig, AmlConfig, CaenConfig
+from hive.entities import SimpleConfig, AmlConfig, CaenConfig
 from waspy.hardware_control.rbs_entities import CaenDetector, PositionCoordinates
 
 
@@ -80,10 +80,10 @@ class Window(BaseModel):
 
 
 class RecipeType(str, Enum):
-    channeling = "channeling"
-    random = "random"
-    minimize_yield = "minimize_yield"
-    fixed = "fixed"
+    CHANNELING = "rbs_channeling"
+    STEPWISE = "rbs_stepwise"
+    STEPWISE_LEAST = "rbs_stepwise_least"
+    SINGLE_STEP = "rbs_single_step"
 
 
 class PositionModel(BaseModel):
@@ -104,15 +104,15 @@ class StatusModel(str, Enum):
     Running = "Running"
 
 
-class RbsRqmChanneling(BaseModel):
+class RbsChanneling(BaseModel):
     """
     The model for a channeling measurement. This is a combination of recipes. A number of yield optimizations will
     happen. Next, a random measurement and a fixed measurement are performed.
     The outputs of the configured detectors are then compared in a plot.
     """
-    type: Literal[RecipeType.channeling]
-    sample_id: str
-    file_stem: str
+    type: Literal[RecipeType.CHANNELING]
+    sample: str
+    name: str
     start_position: Optional[PositionCoordinates]
     yield_charge_total: int
     yield_vary_coordinates: List[VaryCoordinate]
@@ -125,43 +125,42 @@ class RbsRqmChanneling(BaseModel):
         extra = 'forbid'
 
 
-class RbsRqmMinimizeYield(BaseModel):
+class RbsStepwiseLeast(BaseModel):
     """ The model for a yield minimization run. The sample will be moved along the vary_coordinate axis. For each step,
     the energy yield is calculated by integrating the histogram. Then the yields are fitted and the sample will be moved
     to the position with minimum yield """
-    type: Literal[RecipeType.minimize_yield]
-    sample_id: str
+    type: Literal[RecipeType.STEPWISE_LEAST]
+    sample: str
+    name: str
     start_position: Optional[PositionCoordinates]
-    file_stem: str
     total_charge: int
     vary_coordinate: VaryCoordinate
     integration_window: Window
     optimize_detector_index: int
 
 
-class RbsRqmRandom(BaseModel):
-    """ The model for a random measurement - the vary_coordinate will be changed"""
-    type: Literal[RecipeType.random]
-    sample_id: str
-    file_stem: str
+class RbsStepwise(BaseModel):
+    """ The model for a stepwise (a.k.a. random) measurement - the vary_coordinate will be changed"""
+    type: Literal[RecipeType.STEPWISE]
+    sample: str
+    name: str
     start_position: Optional[PositionCoordinates]
     charge_total: int
     vary_coordinate: VaryCoordinate
 
 
-class RbsRqmFixed(BaseModel):
+class RbsSingleStep(BaseModel):
     """ The model for a fixed measurement - all coordinates are kept the same"""
-    type: Literal[RecipeType.fixed]
-    sample_id: str
-    file_stem: str
+    type: Literal[RecipeType.SINGLE_STEP]
+    sample: str
+    name: str
     charge_total: int
 
 
 class RbsJobModel(BaseModel):
-    recipes: List[Annotated[Union[RbsRqmChanneling, RbsRqmRandom], Field(discriminator='type')]]
-    job_id: str
+    recipes: List[Annotated[Union[RbsChanneling, RbsStepwise], Field(discriminator='type')]]
+    name: str
     type = "rbs"
-    # detectors: List[CaenDetector]
 
     class Config:
         use_enum_values = True
@@ -169,18 +168,18 @@ class RbsJobModel(BaseModel):
         schema_extra = {
             'example':
                 {
-                    "job_id": "RBS21_071", "type": "rbs",
+                    "name": "RBS21_071", "type": "rbs",
                     "recipes": [
-                        {"type": "random", "sample_id": "AE007607_D02_A", "file_stem": "RBS21_071_01B_A",
+                        {"type": "rbs_stepwise", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
                          "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                          },
-                        {"type": "random", "sample_id": "AE007607_D02_B", "file_stem": "RBS21_071_08B_A",
+                        {"type": "rbs_stepwise", "sample": "AE007607_D02_B", "name": "RBS21_071_08B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
                          "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                          },
                         {
-                            "type": "channeling", "sample_id": "AE007607_D02_A", "file_stem": "RBS21_071_01B_A",
+                            "type": "rbs_channeling", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
                             "start_position": {"x": 10, "y": 22, "phi": 0}, "yield_charge_total": 2100,
                             "yield_vary_coordinates": [
                                 {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
@@ -198,7 +197,7 @@ class RbsJobModel(BaseModel):
         }
 
 
-empty_rbs_job = RbsJobModel(recipes=[], job_id="", detectors=[])
+empty_rbs_job = RbsJobModel(recipes=[], name="", detectors=[])
 
 
 class ActiveRecipe(BaseModel):

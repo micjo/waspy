@@ -2,9 +2,9 @@ from typing import Optional
 
 from pydantic import BaseSettings, BaseModel
 
-from erd_entities import ErdConfig
-from entities import AnyConfig
-from rbs_entities import RbsConfig
+from hive.erd_entities import ErdConfig
+from hive.entities import AnyConfig
+from hive.rbs_entities import RbsConfig
 import logging
 import tomli
 
