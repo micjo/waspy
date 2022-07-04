@@ -152,7 +152,7 @@ FROM log_book l
         return df
 
     def sql_insert(self, query) -> int:
-        logging.info("executing sql query: {" + query + "}")
+        logging.debug("executing sql query: {" + query + "}")
         con = sqlite3.connect(self._sqlite_file)
         cur = con.cursor()
         answer = cur.execute(query)
@@ -197,11 +197,11 @@ FROM log_book l
         if recipe.type == "erd":
             self.sql_insert("""
                 INSERT INTO erd_book (
-                recipe_id, beam_type, beam_energy_MeV, sample_tilt_degrees, theta, z_start, z_end, z_increment, 
+                recipe_id, theta, z_start, z_end, z_increment, 
                 z_repeat, average_terminal_voltage
                 )
                 VALUES (
-                '{id}','{beam_type}', '{beam_energy_MeV}', '{sample_tilt_degrees}','{theta}', '{z_start}',
+                '{id}','{theta}', '{z_start}',
                 '{z_end}','{z_increment}','{z_repeat}', '{average_terminal_voltage}'
                 );
             """.format(id=recipe_id,
