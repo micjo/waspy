@@ -31,12 +31,12 @@ class ErdRecipe(BaseModel):
 
 
 class ErdJobModel(BaseModel):
-    job_id: str
+    name: str
     beam_type: str
     sample_tilt_degrees: float
     beam_energy_MeV: float
     recipes: List[ErdRecipe]
-    type = "erd"
+    type: Literal["erd"] = "erd"
 
     class Config:
         use_enum_value = True
@@ -44,37 +44,34 @@ class ErdJobModel(BaseModel):
         schema_extra = {
             'example':
                 {
-                    "job_id": "ERD22_020", "beam_type": "35Cl4+", "beam_energy_MeV": 8, "sample_tilt_degrees": 15,
+                    "name": "ERD22_020", "beam_type": "35Cl4+", "beam_energy_MeV": 8, "sample_tilt_degrees": 15,
                     "recipes": [
                         {
-                            "type": "standard",
-                            "rqm_number": "test_1",
+                            "name": "test_1",
                             "measuring_time_sec": 30,
-                            "file_stem": "test_001",
-                            "sample_id": "something_1",
+                            "sample": "test_001",
                             "theta": 40,
                             "z_start": 1,
                             "z_end": 5,
                             "z_increment": 0.5,
-                            "z_repeat": 5
+                            "z_repeat": 2
                         },
                         {
-                            "type": "standard",
-                            "rqm_number": "test_2",
+                            "name": "test_2",
                             "measuring_time_sec": 30,
-                            "file_stem": "test_002",
-                            "sample_id": "something_2",
+                            "sample": "test_002",
+                            "recipe": "something_2",
                             "theta": 70.05,
                             "z_start": 5,
                             "z_end": 50,
-                            "z_increment": 10
+                            "z_increment": 1
                         }
                     ]
                 }
         }
 
 
-empty_erd_rqm = ErdJobModel(recipes=[], job_id="", beam_energy_MeV=0.0, beam_type="", sample_tilt_degrees=0.0)
+empty_erd_rqm = ErdJobModel(recipes=[], name="", beam_energy_MeV=0.0, beam_type="", sample_tilt_degrees=0.0)
 
 
 class ActiveRecipe(BaseModel):

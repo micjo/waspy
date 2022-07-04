@@ -124,6 +124,7 @@ def make_erd_recipe_book(sql_db):
         );
     """)
 
+
 def make_imec_trend(sql_db):
     sql_db.sql_insert("""
     create table trend

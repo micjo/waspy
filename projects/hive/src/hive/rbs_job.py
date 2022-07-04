@@ -85,7 +85,7 @@ class RbsJob(Job):
     def abort(self):
         logging.info("[RBS] Recipe" + str(self._active_recipe_status) + "aborted")
         self._aborted = True
-        self._error_message = str("Aborted RQM")
+        self._error_message = str("Aborted Job")
         self._rbs_setup.abort()
         self._data_serializer.abort()
         self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
