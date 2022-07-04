@@ -49,7 +49,7 @@ class ErdDataSerializer:
 
     def prepare_job(self, job: ErdJobModel):
         self._job = job
-        self._data_store.set_base_folder(job.job_id)
+        self._data_store.set_base_folder(job.name)
         self._db.job_start(job)
         self._time_loaded = datetime.now()
 
@@ -62,14 +62,19 @@ class ErdDataSerializer:
         trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "any")
         self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
-        self._data_store.write_csv_panda_to_disk("service_log.csv", self._db.get_job_summary())
         self._db.job_finish(job_model)
         self.resume()
 
-    def save_recipe_result(self, erd_data: ErdData, recipe: ErdRecipe):
+    def save_recipe_result(self, erd_data: ErdData, recipe: ErdRecipe, time_loaded: datetime):
         if self.aborted():
             return
-        self._db.erd_recipe_finish(self._job, recipe, self._time_loaded)
+
+        finished_recipe = recipe.dict()
+
+        finished_recipe["start_time"] = str(time_loaded)
+        finished_recipe["end_time"] = str(datetime.now())
+        finished_recipe["average_terminal_voltage"] = 0
+        self._db.recipe_finish(finished_recipe)
         self._data_store.write_text_to_disk(recipe.name + ".flt", erd_data.histogram)
         self._data_store.write_text_to_disk(recipe.name + ".meta",
                                             _serialize_meta(erd_data, recipe, self._job, self._time_loaded))
@@ -121,6 +126,6 @@ def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel
         start_time=start_time,
         end_time=datetime.now(),
         average_terminal_voltage=0,
-        job_id=job_model.job_id,
+        job_id=job_model.name,
     )
     return header

@@ -13,9 +13,6 @@ class RbsRecipeType(str, Enum):
 
 class ErdRecipeModel(BaseModel):
     type: Literal["erd"] = "erd"
-    beam_type: str
-    beam_energy_MeV: float
-    sample_tilt_degrees: float
     sample: str
     name: str
     measuring_time_sec: int

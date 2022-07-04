@@ -45,7 +45,7 @@ class ErdJob(Job):
         self._did_error = False
         self._error_message = "No Error"
         self._run_time = timedelta(0)
-        self._active_recipe = empty_erd_recipe_status
+        self._active_recipe = copy.deepcopy(empty_erd_recipe_status)
         self._finished_recipes = []
         self._aborted = False
 
@@ -53,7 +53,7 @@ class ErdJob(Job):
         self._data_serializer.prepare_job(self._job_model)
         self._erd_setup.reupload_config()
 
-        logging.info("[RQM ERD] RQM Start: '" + str(self._job_model) + "'")
+        logging.info("[ERD] RQM Start: '" + str(self._job_model) + "'")
         for recipe in self._job_model.recipes:
             if self._aborted:
                 break
@@ -64,6 +64,7 @@ class ErdJob(Job):
                 self._did_error = True
                 self._error_message = str(e)
                 logging.error(traceback.format_exc())
+                self._data_serializer.terminate_job(self._job_model.name, str(e))
                 self._finished_recipes = []
                 break
             self._finish_recipe()
@@ -87,11 +88,10 @@ class ErdJob(Job):
         else:
             self._active_recipe.progress = "0.00%"
 
-
     def abort(self):
-        logging.info("[RQM ERD] RQM abort")
+        logging.info("[ERD] Recipe" + str(self._active_recipe) + "aborted")
         self._aborted = True
-        self._error_message = str("Aborted RQM")
+        self._error_message = str("Aborted Job")
         self._erd_setup.abort()
         self._data_serializer.abort()
         self._active_recipe = copy.deepcopy(empty_erd_recipe_status)
@@ -108,7 +108,7 @@ class ErdJob(Job):
 
     def _run_recipe(self, recipe):
         self._active_recipe.start_time = datetime.now()
-        self._active_recipe.recipe_id = recipe.recipe
+        self._active_recipe.recipe_id = recipe.name
         self._active_recipe.run_time = timedelta(0)
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec
@@ -121,6 +121,7 @@ class ErdJob(Job):
 
 
 def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: ErdDataSerializer):
+    start_time = datetime.now()
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
     erd_setup.wait_for_arrival()
     erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.name)
@@ -137,14 +138,14 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup, erd_data_serializer: 
 
     erd_setup.wait_for_acquisition_done()
     erd_setup.convert_data_to_ascii()
-    erd_data_serializer.save_recipe_result(erd_setup.get_status(get_histogram=True), recipe)
+    erd_data_serializer.save_recipe_result(erd_setup.get_status(get_histogram=True), recipe, start_time)
 
 
 def _log_recipe(recipe, wait_time, z_range):
     position_list = "("
     position_list += "; ".join([str(position.z) for position in z_range])
     position_list += ")"
-    logging.info("Recipe: " + recipe.recipe + ", wait_time_sec between steps: " + str(wait_time) +
+    logging.info("Recipe: " + recipe.name + ", wait_time_sec between steps: " + str(wait_time) +
                  ", total measurement time: " + str(recipe.measuring_time_sec) +
                  ", z-positions: \n\t" + position_list)
 
