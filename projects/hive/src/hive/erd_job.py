@@ -12,7 +12,7 @@ from hive.erd_entities import ErdJobModel, ErdRecipe
 from waspy.hardware_control.erd_setup import ErdSetup, PositionCoordinates
 
 from hive.job import Job
-from waspy.hardware_control.hive_exception import HiveError
+from waspy.hardware_control.hive_exception import HiveError, AbortedError
 
 
 class ErdRecipeStatus(BaseModel):
@@ -32,81 +32,65 @@ class ErdJob(Job):
     _data_serializer: ErdDataSerializer
     _erd_setup: ErdSetup
     _job_model: ErdJobModel
-    _did_error: bool
-    _error_message: str
     _active_recipe: ErdRecipeStatus
     _finished_recipes: List[ErdRecipeStatus]
     _aborted: bool
+    _running: bool
 
     def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, data_serializer: ErdDataSerializer):
         self._erd_setup = erd_setup
         self._data_serializer = data_serializer
         self._job_model = job_model
-        self._did_error = False
-        self._error_message = "No Error"
         self._run_time = timedelta(0)
         self._active_recipe = copy.deepcopy(empty_erd_recipe_status)
         self._finished_recipes = []
         self._aborted = False
+        self._running = False
 
-    def execute(self):
+    def setup(self) -> None:
         self._data_serializer.prepare_job(self._job_model)
         self._erd_setup.reupload_config()
 
-        logging.info("[ERD] RQM Start: '" + str(self._job_model) + "'")
+    def exec(self):
+        """ Can raise: AbortedError, HardwareError"""
         for recipe in self._job_model.recipes:
-            if self._aborted:
-                break
-            try:
-                self._run_recipe(recipe)
-            except Exception as e:
-                logging.error("[ERD] Recipe: {" + str(recipe) + "}\nfailed with message: " + str(e))
-                self._did_error = True
-                self._error_message = str(e)
-                logging.error(traceback.format_exc())
-                self._data_serializer.terminate_job(self._job_model.name, str(e))
-                self._finished_recipes = []
-                break
+            self._run_recipe(recipe)
             self._finish_recipe()
 
-        self._data_serializer.finalize_job(self._job_model, self.get_status())
+    def teardown(self):
+        self._data_serializer.finalize_job(self._job_model, self.serialize())
         self._erd_setup.resume()
 
-    def get_status(self):
+    def terminate(self, message: str) -> None:
+        self._data_serializer.terminate_job(self._job_model.name, message)
+
+    def serialize(self):
         self._update_active_recipe()
         finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
         status = {"job": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
-                  "finished_recipes": finished_recipes, "error_state": self._error_message}
+                  "finished_recipes": finished_recipes}
         return status
 
     def _update_active_recipe(self):
-        self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
-        self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
-        if self._active_recipe.measurement_time_target != 0:
+        """Can raise: HardwareError"""
+
+        if self._running:
+            self._active_recipe.run_time = datetime.now() - self._active_recipe.start_time
+            self._active_recipe.measurement_time = self._erd_setup.get_measurement_time()
             progress = self._active_recipe.measurement_time / self._active_recipe.measurement_time_target * 100
             self._active_recipe.progress = "{:.2f}%".format(progress)
-        else:
-            self._active_recipe.progress = "0.00%"
 
     def abort(self):
         logging.info("[ERD] Recipe" + str(self._active_recipe) + "aborted")
         self._aborted = True
-        self._error_message = str("Aborted Job")
         self._erd_setup.abort()
         self._data_serializer.abort()
-        self._active_recipe = copy.deepcopy(empty_erd_recipe_status)
-
-    def completed(self) -> bool:
-        if self._did_error:
-            return False
-        if self._aborted:
-            return False
-        return True
-
-    def empty(self):
-        return False
 
     def _run_recipe(self, recipe):
+        if self._aborted:
+            raise AbortedError("Job Terminated")
+
+        self._running = True
         self._active_recipe.start_time = datetime.now()
         self._active_recipe.recipe_id = recipe.name
         self._active_recipe.run_time = timedelta(0)

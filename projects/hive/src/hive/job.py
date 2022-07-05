@@ -1,38 +1,59 @@
-from typing import Dict
+import logging
+from typing import Dict, Generator
+
+from waspy.hardware_control.hive_exception import AbortedError
+from waspy.hardware_control.http_helper import HardwareError
 
 
 class Job:
-    def execute(self) -> None:
+    def setup(self) -> None:
         raise NotImplementedError("")
 
-    def get_status(self) -> Dict:
+    def exec(self) -> None:
         raise NotImplementedError("")
 
-    def abort(self) -> None:
+    def teardown(self) -> None:
         raise NotImplementedError("")
 
-    def empty(self) -> bool:
+    def terminate(self, message: str) -> None:
         raise NotImplementedError("")
 
-    def completed(self) -> bool:
+    def serialize(self) -> Dict:
+        raise NotImplementedError("")
+
+    def abort(self):
         raise NotImplementedError("")
 
 
 class EmptyJob(Job):
-    def execute(self):
+    def setup(self) -> Dict:
         pass
 
-    def get_status(self):
+    def exec(self) -> None:
+        pass
+
+    def teardown(self) -> None:
+        pass
+
+    def terminate(self, message: str) -> None:
+        pass
+
+    def serialize(self) -> Dict:
         return {}
 
     def abort(self):
         pass
 
-    def empty(self):
-        return True
-
-    def completed(self):
-        return True
-
 
 empty_job = EmptyJob()
+
+
+def execute(job: Job):
+    job.setup()
+    logging.info("[JOB] start: " + str(job.serialize()))
+    try:
+        job.exec()
+    except (AbortedError, HardwareError) as e:
+        job.terminate(str(e))
+    job.teardown()
+

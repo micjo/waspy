@@ -23,7 +23,7 @@ class TestDbTables(unittest.TestCase):
         file.unlink(missing_ok=True)
 
     def test_log_message(self):
-        self.db.add_to_logbook("message", "this is a test", datetime.now())
+        self.db._add_to_logbook("message", "this is a test", datetime.now())
         messages = self.db.get_log_messages()
         assert (messages[0]["note"] == "this is a test")
 

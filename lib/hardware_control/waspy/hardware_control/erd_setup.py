@@ -142,6 +142,9 @@ class ErdSetup:
             return ""
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "reupload_mpa3_cnf": True})
 
+    def initialize(self):
+        self.reupload_config()
+
     def start_acquisition(self):
         if self._fake:
             self._fake_count = 0
