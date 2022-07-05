@@ -3,10 +3,9 @@
   "recipes": [
     {
       "type": "standard",
-      "rqm_number": "test_1",
       "measuring_time_sec": 30,
-      "file_stem": "test_001",
-      "sample_id": "something_1",
+      "name": "test_001",
+      "sample": "something_1",
       "theta": 40,
       "z_start": 1,
       "z_end": 5,
@@ -15,10 +14,9 @@
     },
     {
       "type": "standard",
-      "rqm_number": "test_2",
       "measuring_time_sec": 30,
-      "file_stem": "test_002",
-      "sample_id": "something_2",
+      "name": "test_002",
+      "sample": "something_2",
       "theta": 70.05,
       "z_start": 5,
       "z_end": 50,

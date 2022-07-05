@@ -6,6 +6,7 @@ from typing import List
 
 import requests
 
+from waspy.hardware_control.hive_exception import HiveError
 from waspy.hardware_control.http_helper import generate_request_id, get_json
 from waspy.hardware_control.rbs_entities import CaenDetector, RbsData, PositionCoordinates, \
     RbsHardwareRoute, HistogramData
@@ -167,6 +168,13 @@ class RbsSetup:
 
     def get_detectors(self) -> List[CaenDetector]:
         return self.detectors
+
+    def get_detector(self, identifier: str) -> CaenDetector:
+        try:
+            return next(detector for detector in self.detectors if detector.identifier == identifier)
+        except StopIteration:
+            detector_names = str([detector.identifier for detector in self.detectors])
+            raise HiveError("Detector: '" + str(identifier) + "' Does not exist. Available detectors:" + detector_names)
 
     def get_status(self, get_histograms=False) -> RbsData:
         aml_x_y = get_json(self.hw.aml_x_y.url)
