@@ -8,7 +8,7 @@ from typing import Dict
 
 from threading import Lock
 
-from waspy.hardware_control.data_serializer import DataSerializer
+from waspy.hardware_control.file_writer import FileWriter
 from hive.erd_entities import ErdJobModel, ErdRecipe
 from waspy.hardware_control.erd_entities import ErdData
 from hive.logbook_db import LogBookDb
@@ -24,12 +24,12 @@ def _try_copy(source, destination):
 
 
 class ErdDataSerializer:
-    _data_store: DataSerializer
+    _data_store: FileWriter
     _db: LogBookDb
     _time_loaded: datetime
     _job: ErdJobModel
 
-    def __init__(self, data_store: DataSerializer, log_book_db: LogBookDb):
+    def __init__(self, data_store: FileWriter, log_book_db: LogBookDb):
         self._data_store = data_store
         self._lock = Lock()
         self._abort = False
@@ -57,9 +57,9 @@ class ErdDataSerializer:
         self._db.job_terminate(job_name, reason)
 
     def finalize_job(self, job_model: ErdJobModel, job_result: Dict):
-        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "erd")
+        trends = self._db.get_trends(self._time_loaded, datetime.now(), "erd")
         self._data_store.write_csv_panda_to_disk("erd_trends.csv", trends)
-        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "any")
+        trends = self._db.get_trends(self._time_loaded, datetime.now(), "any")
         self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
         self._db.job_finish(job_model)

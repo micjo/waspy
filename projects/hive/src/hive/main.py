@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from hive import hw_control_routes, rbs_routes, erd_routes
 from waspy.hardware_control import rbs_setup as rbs_lib
-from waspy.hardware_control.data_serializer import DataSerializer
+from waspy.hardware_control.file_writer import FileWriter
 from hive.erd_data_serializer import ErdDataSerializer
 from waspy.hardware_control.erd_entities import ErdHardwareRoute
 from waspy.hardware_control.erd_setup import ErdSetup
@@ -72,12 +72,12 @@ def build_job_and_hw_routes(router, hive_config: HiveConfig, logbook_db: LogBook
     if hive_config.rbs and hive_config.erd:
         job_runner = JobRunner()
         rbs_setup = rbs_lib.RbsSetup(RbsHardwareRoute.parse_obj(hive_config.rbs.hardware))
-        rbs_file_writer = DataSerializer(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
+        rbs_file_writer = FileWriter(hive_config.rbs.local_dir, hive_config.rbs.remote_dir)
         rbs_data_serializer = RbsDataSerializer(rbs_file_writer, logbook_db)
         rbs_setup.configure_detectors(hive_config.rbs.hardware.caen.detectors)
 
         erd_setup = ErdSetup(ErdHardwareRoute.parse_obj(hive_config.erd.hardware))
-        erd_file_writer = DataSerializer(hive_config.erd.local_dir, hive_config.erd.remote_dir)
+        erd_file_writer = FileWriter(hive_config.erd.local_dir, hive_config.erd.remote_dir)
         erd_data_serializer = ErdDataSerializer(erd_file_writer, logbook_db)
 
         factory = JobFactory(rbs_setup, rbs_data_serializer, erd_setup, erd_data_serializer)

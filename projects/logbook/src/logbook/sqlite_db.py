@@ -17,6 +17,40 @@ logging.basicConfig(
     datefmt='%Y.%m.%d__%H:%M__%S')
 
 
+def build_query(sql_filter=""):
+    return f"""
+    SELECT l.log_id                                       as log_id,
+    l.epoch                                                as epoch,
+    l.mode                                                 as mode,
+    l.note                                                 as note,
+    job_name.name                                          as job_name,
+    r.name                                                 as recipe_name,
+    r.sample                                               as sample,
+    r.start_epoch                                          as start_epoch,
+    r.end_epoch                                            as end_epoch,
+    r.type                                                 as type,
+    r.recipe_id                                            as recipe_id,
+
+    case
+    when type is "erd" then
+    (select "Z: [" || erd.z_start || "," || erd.z_end || "," || erd.z_increment || "] *" || erd.z_repeat)
+    when type is "rbs_stepwise" then
+    (select rsteps.axis || ": [" || rsteps.start || "," || rsteps.end || "," || rsteps.step|| "]")
+    when type is "rbs_stepwise_least" then
+    (select rleast.axis || ": [" || rleast.start || "," || rleast.end || "," || rleast.step || "]-> " || rleast.least_yield_position )
+    end                                                as move,
+    l.meta                                                 as meta
+    FROM log_book l
+    LEFT join recipe_book r ON l.log_id = r.log_id
+    LEFT join job_book j ON l.log_id = j.log_id
+    LEFT JOIN job_name_book job_name ON j.job_id = job_name.job_id
+    LEFT JOIN rbs_stepwise_book rsteps ON r.recipe_id = rsteps.recipe_id
+    LEFT JOIN rbs_stepwise_least_book rleast ON r.recipe_id = rleast.recipe_id
+    LEFT JOIN erd_book erd ON r.recipe_id = erd.recipe_id
+    {sql_filter}
+    """
+
+
 class SqliteDb:
     _sqlite_file: Path
     _active_log_book_row_id: int
@@ -28,7 +62,7 @@ class SqliteDb:
         self._active_job_id = 0
 
     def log_job_start(self, name):
-        active_log_id = self.add_to_logbook('job', '{} started'.format(name), None)
+        active_log_id = self._add_to_logbook('job', '{} started'.format(name), None)
         self._active_job_id = self.sql_insert("INSERT INTO job_name_book (name)"
                                               " VALUES ('{name}')"
                                               .format(name=name)
@@ -39,31 +73,39 @@ class SqliteDb:
                         )
 
     def log_job_finish(self, name: str):
-        self.add_to_logbook('job', '{} finished'.format(name), None)
+        active_log_id = self._add_to_logbook('job', '{} finished'.format(name), None)
+        self.sql_insert("INSERT INTO job_book (log_id, job_id)"
+                        " VALUES ('{log_id}','{job_id}')"
+                        .format(log_id=active_log_id, job_id=self._active_job_id)
+                        )
 
     def log_job_terminated(self, name: str, reason: str):
-        self.add_to_logbook('job', '{name} terminated: {reason}'.format(name=name, reason=reason), None)
+        active_log_id = self._add_to_logbook('job', '{name} terminated: {reason}'.format(name=name, reason=reason), None)
+        self.sql_insert("INSERT INTO job_book (log_id, job_id)"
+                        " VALUES ('{log_id}','{job_id}')"
+                        .format(log_id=active_log_id, job_id=self._active_job_id)
+                        )
 
     def log_recipe_finished(self, recipe: RbsRecipeModel | ErdRecipeModel):
-        active_log_id = self.add_to_logbook('recipe', '{recipe} finished'.format(recipe=recipe.name), None)
+        active_log_id = self._add_to_logbook('recipe', '{recipe} finished'.format(recipe=recipe.name), None)
         active_recipe_id = self._add_to_recipe_book(active_log_id, recipe)
         self._log_some_recipe_end(recipe, active_recipe_id)
 
     def log_recipe_terminated(self, recipe: RbsStepwiseRecipe | RbsSingleStepRecipe |
                                              RbsStepwiseLeastRecipe | ErdRecipeModel, reason: str):
-        active_log_id = self.add_to_logbook('recipe', '{recipe} failed: {reason}'.format(recipe=recipe.name, reason=reason), None)
+        active_log_id = self._add_to_logbook('recipe', '{recipe} failed: {reason}'.format(recipe=recipe.name, reason=reason), None)
         active_recipe_id = self._add_to_recipe_book(active_log_id, recipe)
         self._log_some_recipe_end(recipe, active_recipe_id)
 
-    def add_to_logbook(self, type, message, timestamp: Union[datetime, None]) -> int:
+    def _add_to_logbook(self, mode, message, timestamp: Union[datetime, None]) -> int:
         if timestamp:
             return self.sql_insert("""
                 INSERT INTO log_book (mode, note, epoch) VALUES ('{type}', '{message}', '{epoch}');
-            """.format(type=type, message=message, epoch=int(timestamp.timestamp())))
+            """.format(type=mode, message=message, epoch=int(timestamp.timestamp())))
         else:
             return self.sql_insert("""
                 INSERT INTO log_book (mode, note) VALUES ('{type}', '{message}');
-            """.format(type=type, message=message))
+            """.format(type=mode, message=message))
 
     def remove_message(self, log_id):
         self.sql_insert("""
@@ -88,36 +130,7 @@ class SqliteDb:
         return dataframe.to_dict(orient='records')
 
     def get_log_messages(self) -> List[str]:
-        dataframe = self._sql_extract("""
-        SELECT l.log_id                                       as log_id,
-       l.epoch                                                as epoch,
-       l.mode                                                 as mode,
-       l.note                                                 as note,
-       job_name.name                                          as job_name,
-       r.name                                                 as recipe_name,
-       r.sample                                               as sample,
-       r.start_epoch                                          as start_epoch,
-       r.end_epoch                                            as end_epoch,
-       r.type                                                 as type,
-       r.recipe_id                                            as recipe_id,
-
-       case
-           when type is "erd" then
-                   (select "Z: [" || erd.z_start || "," || erd.z_end || "," || erd.z_increment || "] *" || erd.z_repeat)
-           when type is "rbs_stepwise" then
-                    (select rsteps.axis || ": [" || rsteps.start || "," || rsteps.end || "," || rsteps.step|| "]")
-           when type is "rbs_stepwise_least" then
-                   (select rleast.axis || ": [" || rleast.start || "," || rleast.end || "," || rleast.step || "]-> " || rleast.least_yield_position )
-           end                                                as move,
-       l.meta                                                 as meta
-FROM log_book l
-         LEFT join recipe_book r ON l.log_id = r.log_id
-         LEFT join job_book j ON l.log_id = j.log_id
-         LEFT JOIN job_name_book job_name ON j.job_id = job_name.job_id
-         LEFT JOIN rbs_stepwise_book rsteps ON r.recipe_id = rsteps.recipe_id
-         LEFT JOIN rbs_stepwise_least_book rleast ON r.recipe_id = rleast.recipe_id
-         LEFT JOIN erd_book erd ON r.recipe_id = erd.recipe_id
-        """)
+        dataframe = self._sql_extract(build_query())
 
         dataframe['recipe_id'] = dataframe['recipe_id'].fillna(0).astype(int)
         dataframe.sort_values("epoch", inplace=True)
@@ -205,9 +218,6 @@ FROM log_book l
                 '{z_end}','{z_increment}','{z_repeat}', '{average_terminal_voltage}'
                 );
             """.format(id=recipe_id,
-                       beam_type=recipe.beam_type,
-                       beam_energy_MeV=recipe.beam_energy_MeV,
-                       sample_tilt_degrees=recipe.sample_tilt_degrees,
                        sample_id=recipe.sample,
                        theta=recipe.theta,
                        z_start=recipe.z_start,
@@ -216,6 +226,19 @@ FROM log_book l
                        z_repeat=recipe.z_repeat,
                        average_terminal_voltage=recipe.average_terminal_voltage))
 
+    def get_filtered_log_messages(self, mode:str, start_time:datetime, end_time:datetime):
+        mode_filter = "where"
+        if mode == "job":
+            mode_filter += ' mode = "job" and'
+        elif mode == "recipe":
+            mode_filter += ' mode = "recipe" and'
+
+        epoch_start = int(start_time.timestamp())
+        epoch_end = int(end_time.timestamp())
+        sql_filter = f"{mode_filter} epoch between {epoch_start} and {epoch_end}"
+        dataframe = self._sql_extract(build_query(sql_filter))
+        dataframe.replace({np.nan: None}, inplace=True)
+        return dataframe.to_dict(orient='records')
 
 
 def datetime_from_utc_to_local(utc_datetime):
