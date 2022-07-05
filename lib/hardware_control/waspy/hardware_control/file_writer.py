@@ -12,7 +12,7 @@ import pandas as pd
 import json
 
 
-class DataSerializer:
+class FileWriter:
     _local: Path
     _remote: Union[Path, None]
     _base_folder: Path

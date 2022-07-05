@@ -151,6 +151,9 @@ class RbsSetup:
     def clear_charge_offset(self):
         self.charge_offset = 0
 
+    def initialize(self):
+        self.charge_offset = 0
+
     def configure_detectors(self, detectors: List[CaenDetector]):
         self.detectors = detectors
 

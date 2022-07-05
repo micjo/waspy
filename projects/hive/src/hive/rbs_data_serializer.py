@@ -4,7 +4,8 @@ from threading import Lock
 from typing import List, Dict, Union
 import numpy as np
 
-from waspy.hardware_control.data_serializer import DataSerializer
+from hive.erd_entities import ErdJobModel
+from waspy.hardware_control.file_writer import FileWriter
 from waspy.hardware_control.hw_action import format_caen_histogram
 from hive.logbook_db import LogBookDb
 from hive.rbs_entities import RbsJobModel, RbsStepwise, RbsChanneling, RbsStepwiseLeast, RbsSingleStep
@@ -18,11 +19,11 @@ matplotlib.use('Agg')
 
 
 class RbsDataSerializer:
-    _data_store: DataSerializer
+    _data_store: FileWriter
     _db: LogBookDb
     _time_loaded: datetime
 
-    def __init__(self, data_serializer: DataSerializer, db: LogBookDb):
+    def __init__(self, data_serializer: FileWriter, db: LogBookDb):
         self._data_store = data_serializer
         self._lock = Lock()
         self._abort = False
@@ -49,9 +50,9 @@ class RbsDataSerializer:
         self._db.job_terminate(job_name, reason)
 
     def finalize_job(self, job_model: RbsJobModel, job_result: Dict):
-        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "rbs")
+        trends = self._db.get_trends(self._time_loaded, datetime.now(), "rbs")
         self._data_store.write_csv_panda_to_disk("rbs_trends.csv", trends)
-        trends = self._db.get_trends(str(self._time_loaded), str(datetime.now()), "any")
+        trends = self._db.get_trends(self._time_loaded, datetime.now(), "any")
         self._data_store.write_csv_panda_to_disk("any_trends.csv", trends)
         self._data_store.write_json_to_disk("active_rqm.json", job_result)
         self._db.job_finish(job_model)
