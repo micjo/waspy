@@ -16,15 +16,16 @@ from waspy.hardware_control.hive_exception import HiveError, AbortedError
 
 
 class ErdRecipeStatus(BaseModel):
-    recipe_id: str
+    name: str
     start_time: datetime
     run_time: timedelta
     measurement_time: float
     measurement_time_target: float
     progress: str
+    sample: str
 
 
-empty_erd_recipe_status = ErdRecipeStatus(recipe_id="", start_time=datetime.now(), run_time=0,
+empty_erd_recipe_status = ErdRecipeStatus(name="", sample="", start_time=datetime.now(), run_time=0,
                                           measurement_time=0, measurement_time_target=0, progress="0.0%")
 
 
@@ -92,7 +93,7 @@ class ErdJob(Job):
 
         self._running = True
         self._active_recipe.start_time = datetime.now()
-        self._active_recipe.recipe_id = recipe.name
+        self._active_recipe.name = recipe.name
         self._active_recipe.run_time = timedelta(0)
         self._active_recipe.measurement_time = 0
         self._active_recipe.measurement_time_target = recipe.measuring_time_sec

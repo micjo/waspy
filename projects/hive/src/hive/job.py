@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Generator
 
-from waspy.hardware_control.hive_exception import AbortedError
+from waspy.hardware_control.hive_exception import AbortedError, HiveError
 from waspy.hardware_control.http_helper import HardwareError
 
 
@@ -53,7 +53,8 @@ def execute(job: Job):
     logging.info("[JOB] start: " + str(job.serialize()))
     try:
         job.exec()
-    except (AbortedError, HardwareError) as e:
+    except (AbortedError, HardwareError, HiveError) as e:
         job.terminate(str(e))
+        return
     job.teardown()
 
