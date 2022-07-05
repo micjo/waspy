@@ -18,14 +18,16 @@ import numpy as np
 
 
 class RbsRecipeStatus(BaseModel):
-    recipe_id: str
+    name: str
     start_time: datetime
     run_time: timedelta
     accumulated_charge_corrected: float
     accumulated_charge_target: float
+    progress: str
+    sample: str
 
 
-empty_rbs_recipe_status = RbsRecipeStatus(recipe_id="", start_time=datetime.now(), run_time=0,
+empty_rbs_recipe_status = RbsRecipeStatus(name="", sample="", start_time=datetime.now(), run_time=0,
                                           accumulated_charge_corrected=0,
                                           accumulated_charge_target=0, progress="0.0%")
 
@@ -92,16 +94,16 @@ class RbsJob(Job):
         if self._aborted:
             raise AbortedError("Job Terminated")
 
-        self._running = True
         self._rbs_setup.charge_offset = 0
         self._active_recipe_status.start_time = datetime.now()
-        self._active_recipe_status.recipe_id = recipe.name
+        self._active_recipe_status.name = recipe.name
         self._active_recipe_status.accumulated_charge_target = _get_total_counts(recipe)
-
+        self._running = True
         if recipe.type == RecipeType.STEPWISE:
             run_random(recipe, self._rbs_setup, self._data_serializer)
         if recipe.type == RecipeType.CHANNELING:
             run_channeling(recipe, self._rbs_setup, self._data_serializer)
+        self._running = True
 
     def _finish_recipe(self):
         self._update_active_recipe()
@@ -166,7 +168,7 @@ def _stepwise_least(recipe: RbsStepwiseLeast, rbs: RbsSetup, data_serializer: Rb
     positions = get_positions_as_coordinate(recipe.vary_coordinate)
     rbs.prepare_counting_with_target(recipe.total_charge / len(positions))
 
-    detector_optimize = rbs.get_detectors()[recipe.optimize_detector_index]
+    detector_optimize = rbs.get_detector(recipe.optimize_detector_identifier)
     energy_yields = []
 
     data_serializer.cd_folder("yield_data")
@@ -207,7 +209,7 @@ def _make_stepwise_least_recipe(recipe, vary_coordinate, index: int):
                             total_charge=recipe.yield_charge_total,
                             vary_coordinate=vary_coordinate, integration_window=
                             recipe.yield_integration_window,
-                            optimize_detector_index=recipe.yield_optimize_detector_index)
+                            optimize_detector_identifier=recipe.yield_optimize_detector_identifier)
 
 
 def _make_single_step_recipe(recipe):

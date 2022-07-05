@@ -117,7 +117,7 @@ class RbsChanneling(BaseModel):
     yield_charge_total: int
     yield_vary_coordinates: List[VaryCoordinate]
     yield_integration_window: Window
-    yield_optimize_detector_index: int
+    yield_optimize_detector_identifier: str
     random_fixed_charge_total: int
     random_vary_coordinate: VaryCoordinate
 
@@ -136,7 +136,7 @@ class RbsStepwiseLeast(BaseModel):
     total_charge: int
     vary_coordinate: VaryCoordinate
     integration_window: Window
-    optimize_detector_index: int
+    optimize_detector_identifier: str
 
 
 class RbsStepwise(BaseModel):

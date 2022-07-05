@@ -34,7 +34,7 @@ class JobRunner(Thread):
 
     def get_state(self) -> Dict:
         with self._lock:
-            scheduled_jobs = _get_rqm_list_status(self._scheduled_jobs)
+            scheduled_jobs = _get_job_list_status(self._scheduled_jobs)
             active_job = self._active_job.serialize()
         state = {"run_status": self._run_status, "schedule": scheduled_jobs, "active_job": active_job}
         return state
@@ -65,6 +65,6 @@ class JobRunner(Thread):
                 return empty_job
 
 
-def _get_rqm_list_status(rqm_list: List[Job]) -> List[Dict]:
-    rqm_status = [rqm.get_status() for rqm in rqm_list]
-    return rqm_status
+def _get_job_list_status(job_list: List[Job]) -> List[Dict]:
+    job_status = [job.serialize() for job in job_list]
+    return job_status
