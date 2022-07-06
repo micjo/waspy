@@ -53,8 +53,8 @@ def execute(job: Job):
     logging.info("[JOB] start: " + str(job.serialize()))
     try:
         job.exec()
+        job.teardown()
     except (AbortedError, HardwareError, HiveError) as e:
         job.terminate(str(e))
         return
-    job.teardown()
 
