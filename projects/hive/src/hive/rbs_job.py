@@ -87,7 +87,11 @@ class RbsJob(Job):
             self._active_recipe_status.run_time = datetime.now() - self._active_recipe_status.start_time
             self._active_recipe_status.accumulated_charge_corrected = self._rbs_setup.get_corrected_total_accumulated_charge()
             active_recipe = self._active_recipe_status
-            progress = active_recipe.accumulated_charge_corrected / active_recipe.accumulated_charge_target * 100
+
+            if active_recipe.accumulated_charge_target != 0:
+                progress = active_recipe.accumulated_charge_corrected / active_recipe.accumulated_charge_target * 100
+            else:
+                progress = 0
             self._active_recipe_status.progress = "{:.2f}%".format(progress)
 
     def _run_recipe(self, recipe):
