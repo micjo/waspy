@@ -6,6 +6,7 @@ from typing import List
 
 import requests
 
+from waspy.hardware_control.hive_exception import HiveError
 from waspy.hardware_control.http_helper import generate_request_id, get_json
 from waspy.hardware_control.rbs_entities import CaenDetector, RbsData, PositionCoordinates, \
     RbsHardwareRoute, HistogramData
@@ -32,12 +33,12 @@ def fakeable(func, faker):
 
 def fake_counter():
     value = 0
-    for i in range(0, 10):
+    for i in range(0, 3):
         time.sleep(0.1)
         str_value = str(round(value, 2))
         print("fake-counter: " + str_value + " -> 10")
         data = {"charge(nC)": str_value, "target_charge(nC)": 10}
-        value += 1.05
+        value += 3.05
 
 
 class RbsSetup:
@@ -151,6 +152,9 @@ class RbsSetup:
     def clear_charge_offset(self):
         self.charge_offset = 0
 
+    def initialize(self):
+        self.charge_offset = 0
+
     def configure_detectors(self, detectors: List[CaenDetector]):
         self.detectors = detectors
 
@@ -164,6 +168,13 @@ class RbsSetup:
 
     def get_detectors(self) -> List[CaenDetector]:
         return self.detectors
+
+    def get_detector(self, identifier: str) -> CaenDetector:
+        try:
+            return next(detector for detector in self.detectors if detector.identifier == identifier)
+        except StopIteration:
+            detector_names = str([detector.identifier for detector in self.detectors])
+            raise HiveError("Detector: '" + str(identifier) + "' Does not exist. Available detectors:" + detector_names)
 
     def get_status(self, get_histograms=False) -> RbsData:
         aml_x_y = get_json(self.hw.aml_x_y.url)

@@ -95,4 +95,4 @@ if __name__ == "__main__":
     app.show()
     app.activateWindow()
     app.raise_()
-    qapp.exec()
+    qapp.sql_insert()

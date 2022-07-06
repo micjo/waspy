@@ -142,6 +142,9 @@ class ErdSetup:
             return ""
         http.post_request(self.hw.mpa3.url, {"request_id": http.generate_request_id(), "reupload_mpa3_cnf": True})
 
+    def initialize(self):
+        self.reupload_config()
+
     def start_acquisition(self):
         if self._fake:
             self._fake_count = 0
@@ -160,11 +163,6 @@ class ErdSetup:
         logging.info("Conversion to ascii done")
 
     def get_measurement_time(self):
-        if self._fake:
-            fake_call(self.get_measurement_time)
-            self._fake_count += 10
-            return self._fake_count
-
         mpa3 = requests.get(self.hw.mpa3.url, timeout=10).json()
         return mpa3["acquisition_status"]["real_time"]
 
