@@ -1,7 +1,7 @@
 from typing import Tuple
 import time
 from datetime import datetime
-import http_helper as http
+import waspy.hardware_control.http_helper as http
 
 url = "http://localhost:8000/api/aml_x_y"
 
@@ -24,7 +24,7 @@ def set_speed(x: Tuple[int, int, int], h: Tuple[int, int], m: Tuple[int, int, in
 
 
 def move_to_x_mm(position, debug_print=True):
-    status = http.get_status(url)
+    status = http.get_json(url)
     start_position = status["motor_1_position"]
     start = time.time()
     http.post_request(url, {"set_m1_target_position": position});
@@ -34,7 +34,7 @@ def move_to_x_mm(position, debug_print=True):
 
 
 def move_to_y_mm(position, debug_print=True):
-    status = http.get_status(url)
+    status = http.get_json(url)
     start_position = status["motor_2_position"]
     start = time.time()
     http.post_request(url, {"set_m2_target_position": position});
@@ -49,7 +49,7 @@ def move_to_xy_mm(x_position, y_position, debug_print=True):
 
 
 if __name__ == "__main__":
-    print(http.get_status(url)["speed"])
+    print(http.get_json(url)["speed"])
 
     set_speed((75, 500, 1200), (49, 0), (160, 320, 600), 500)
     for i in range(0, 5):
@@ -57,4 +57,4 @@ if __name__ == "__main__":
         move_to_xy_mm(0, 0)
         move_to_xy_mm(1, 1)
 
-    print(http.get_status(url)["speed"])
+    print(http.get_json(url)["speed"])

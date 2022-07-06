@@ -9,8 +9,8 @@ from matplotlib.figure import Figure
 
 import numpy as np
 
-from hive.hardware_control.hw_action import get_packed_histogram
-from hive.hardware_control.rbs_entities import CaenDetector
+from waspy.hardware_control.hw_action import get_packed_histogram
+from waspy.hardware_control.rbs_entities import CaenDetector
 
 root = tkinter.Tk()
 root.wm_title("Embedding in Tk")
