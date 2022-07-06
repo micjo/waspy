@@ -1,8 +1,8 @@
 import requests
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from hive.hardware_control.hw_action import get_packed_histogram
-from hive.hardware_control.rbs_entities import CaenDetector
+from waspy.hardware_control.hw_action import get_packed_histogram
+from waspy.hardware_control.rbs_entities import CaenDetector
 from matplotlib import widgets, dates, ticker
 
 

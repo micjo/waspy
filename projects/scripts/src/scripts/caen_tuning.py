@@ -5,11 +5,11 @@ from pathlib import Path
 
 from matplotlib import pyplot as plt
 
-from hive.hardware_control.data_serializer import DataSerializer
-from hive.hardware_control.hw_action import format_caen_histogram
-from hive.hardware_control.plot import plot_rbs_histograms
-from hive.hardware_control.rbs_entities import RbsHardwareRoute, CaenDetector, RbsHistogramGraphData
-from hive.hardware_control.rbs_setup import RbsSetup
+from waspy.hardware_control.file_writer import FileWriter
+from waspy.hardware_control.hw_action import format_caen_histogram
+from waspy.hardware_control.plot import plot_rbs_histograms
+from waspy.hardware_control.rbs_entities import RbsHardwareRoute, CaenDetector, RbsHistogramGraphData
+from waspy.hardware_control.rbs_setup import RbsSetup
 
 log_format = "%(levelname)s %(asctime)s - %(message)s"
 logging.basicConfig(filename="logfile.log",
@@ -47,7 +47,7 @@ def setup_rbs() -> RbsSetup:
 
 if __name__ == "__main__":
     rbs = setup_rbs()
-    data_serializer = DataSerializer(Path(os.getcwd()), None)
+    data_serializer = FileWriter(Path(os.getcwd()), None)
     data_serializer.set_base_folder("caen_tuning_data")
 
     registry_list = [

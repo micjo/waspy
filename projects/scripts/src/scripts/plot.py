@@ -1,15 +1,12 @@
-import io
 from datetime import datetime, timedelta
 
 import requests
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.widgets as widgets
 import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 import pandas as pd
-import json
 import ctypes
 from pydantic import BaseSettings
 

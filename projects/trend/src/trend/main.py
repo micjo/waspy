@@ -1,6 +1,5 @@
 import logging, tomli, requests, time
 import sys
-import traceback
 from datetime import datetime
 from enum import Enum
 from pathlib import Path

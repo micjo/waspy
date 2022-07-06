@@ -6,13 +6,13 @@ import numpy as np
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QHBoxLayout, QComboBox, QGridLayout, QLabel
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qt5agg import (
-    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+    FigureCanvasAgg, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
 import matplotlib.pyplot as plt
 
-from lib.hardware_control.hive.hardware_control.hw_action import get_packed_histogram
-from lib.hardware_control.hive.hardware_control.rbs_entities import CaenDetector
+from waspy.hardware_control.hw_action import get_packed_histogram
+from waspy.hardware_control.rbs_entities import CaenDetector
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
