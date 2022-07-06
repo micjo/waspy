@@ -13,5 +13,3 @@ SyslogIdentifier=logbook
 
 [Install]
 WantedBy=multi-user.target
-
-

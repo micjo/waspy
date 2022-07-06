@@ -42,6 +42,8 @@ url = "http://localhost:20200/api/latest"
 detectors = [
 	{"board"="33", "channel"=0, "identifier"="MD01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
 	{"board"="33", "channel"=3, "identifier"="MD04", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=0, "identifier"="d01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=1, "identifier"="d02", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
 ]
 
 [erd.hardware.mdrive_z]
