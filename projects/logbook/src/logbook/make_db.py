@@ -70,7 +70,7 @@ def make_recipe_book(sql_db):
 def make_rbs_recipe_books(sql_db):
 
     sql_db.sql_insert("""
-        create table rbs_stepwise_book
+        create table rbs_random_book
         (
             recipe_id integer
                 references recipe_book,
@@ -82,7 +82,7 @@ def make_rbs_recipe_books(sql_db):
     """)
 
     sql_db.sql_insert("""
-        create table rbs_stepwise_least_book
+        create table rbs_angular_yield_book
         (
             recipe_id            integer
                 references recipe_book,

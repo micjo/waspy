@@ -81,9 +81,9 @@ class Window(BaseModel):
 
 class RecipeType(str, Enum):
     CHANNELING = "rbs_channeling"
-    STEPWISE = "rbs_stepwise"
-    STEPWISE_LEAST = "rbs_stepwise_least"
-    SINGLE_STEP = "rbs_single_step"
+    RANDOM = "rbs_random"
+    ANGULAR_YIELD = "rbs_angular_yield"
+    FIXED = "rbs_fixed"
 
 
 class PositionModel(BaseModel):
@@ -129,7 +129,7 @@ class RbsStepwiseLeast(BaseModel):
     """ The model for a yield minimization run. The sample will be moved along the vary_coordinate axis. For each step,
     the energy yield is calculated by integrating the histogram. Then the yields are fitted and the sample will be moved
     to the position with minimum yield """
-    type: Literal[RecipeType.STEPWISE_LEAST]
+    type: Literal[RecipeType.ANGULAR_YIELD]
     sample: str
     name: str
     start_position: Optional[PositionCoordinates]
@@ -141,7 +141,7 @@ class RbsStepwiseLeast(BaseModel):
 
 class RbsStepwise(BaseModel):
     """ The model for a stepwise (a.k.a. random) measurement - the vary_coordinate will be changed"""
-    type: Literal[RecipeType.STEPWISE]
+    type: Literal[RecipeType.RANDOM]
     sample: str
     name: str
     start_position: Optional[PositionCoordinates]
@@ -151,7 +151,7 @@ class RbsStepwise(BaseModel):
 
 class RbsSingleStep(BaseModel):
     """ The model for a fixed measurement - all coordinates are kept the same"""
-    type: Literal[RecipeType.SINGLE_STEP]
+    type: Literal[RecipeType.FIXED]
     sample: str
     name: str
     charge_total: int
@@ -170,11 +170,11 @@ class RbsJobModel(BaseModel):
                 {
                     "name": "RBS21_071", "type": "rbs",
                     "recipes": [
-                        {"type": "rbs_stepwise", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
+                        {"type": "rbs_random", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
                          "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                          },
-                        {"type": "rbs_stepwise", "sample": "AE007607_D02_B", "name": "RBS21_071_08B_A",
+                        {"type": "rbs_random", "sample": "AE007607_D02_B", "name": "RBS21_071_08B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
                          "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                          },

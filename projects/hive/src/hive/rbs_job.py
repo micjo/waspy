@@ -103,7 +103,7 @@ class RbsJob(Job):
         self._active_recipe_status.name = recipe.name
         self._active_recipe_status.accumulated_charge_target = _get_total_counts(recipe)
         self._running = True
-        if recipe.type == RecipeType.STEPWISE:
+        if recipe.type == RecipeType.RANDOM:
             run_random(recipe, self._rbs_setup, self._data_serializer)
         if recipe.type == RecipeType.CHANNELING:
             run_channeling(recipe, self._rbs_setup, self._data_serializer)
@@ -208,7 +208,7 @@ def _stepwise_least(recipe: RbsStepwiseLeast, rbs: RbsSetup, data_serializer: Rb
 
 
 def _make_stepwise_least_recipe(recipe, vary_coordinate, index: int):
-    return RbsStepwiseLeast(type=RecipeType.STEPWISE_LEAST, sample=recipe.sample,
+    return RbsStepwiseLeast(type=RecipeType.ANGULAR_YIELD, sample=recipe.sample,
                             name=recipe.name + "_" + str(index) + "_vary_" + str(vary_coordinate.name),
                             total_charge=recipe.yield_charge_total,
                             vary_coordinate=vary_coordinate, integration_window=
@@ -217,13 +217,13 @@ def _make_stepwise_least_recipe(recipe, vary_coordinate, index: int):
 
 
 def _make_single_step_recipe(recipe):
-    return RbsSingleStep(type=RecipeType.SINGLE_STEP, sample=recipe.sample,
+    return RbsSingleStep(type=RecipeType.FIXED, sample=recipe.sample,
                          name=recipe.name + "_fixed",
                          charge_total=recipe.random_fixed_charge_total)
 
 
 def _make_stepwise_recipe(recipe):
-    return RbsStepwise(type=RecipeType.STEPWISE, sample=recipe.sample,
+    return RbsStepwise(type=RecipeType.RANDOM, sample=recipe.sample,
                        name=recipe.name + "_random",
                        charge_total=recipe.random_fixed_charge_total,
                        start_position={"theta": -2},
@@ -243,7 +243,7 @@ def _get_total_counts_channeling(recipe: RbsChanneling):
 def _get_total_counts(recipe: Union[RbsStepwise, RbsChanneling]):
     if recipe.type == RecipeType.CHANNELING:
         return _get_total_counts_channeling(recipe)
-    if recipe.type == RecipeType.STEPWISE:
+    if recipe.type == RecipeType.RANDOM:
         return _get_total_counts_stepwise(recipe)
 
 

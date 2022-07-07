@@ -6,9 +6,9 @@ from enum import Enum
 
 
 class RbsRecipeType(str, Enum):
-    STEPWISE_LEAST = "rbs_stepwise_least"
-    STEPWISE = "rbs_stepwise"
-    SINGLE_STEP = "rbs_single_step"
+    ANGULAR_YIELD = "rbs_angular_yield"
+    RANDOM = "rbs_random"
+    FIXED = "rbs_fixed"
 
 
 class ErdRecipeModel(BaseModel):
@@ -35,11 +35,11 @@ class RbsRecipeModel(BaseModel):
 
 
 class RbsSingleStepRecipe(RbsRecipeModel):
-    type: Literal[RbsRecipeType.SINGLE_STEP] = RbsRecipeType.SINGLE_STEP
+    type: Literal[RbsRecipeType.FIXED] = RbsRecipeType.FIXED
 
 
 class RbsStepwiseRecipe(RbsRecipeModel):
-    type: Literal[RbsRecipeType.STEPWISE] = RbsRecipeType.STEPWISE
+    type: Literal[RbsRecipeType.RANDOM] = RbsRecipeType.RANDOM
     vary_axis: str
     start: float
     end: float
@@ -47,7 +47,7 @@ class RbsStepwiseRecipe(RbsRecipeModel):
 
 
 class RbsStepwiseLeastRecipe(RbsStepwiseRecipe):
-    type: Literal[RbsRecipeType.STEPWISE_LEAST] = RbsRecipeType.STEPWISE_LEAST
+    type: Literal[RbsRecipeType.ANGULAR_YIELD] = RbsRecipeType.ANGULAR_YIELD
     yield_positions: List[Tuple[float, int]]
     least_yield_position: float
 

@@ -82,7 +82,7 @@ def parse_rbs_recipes(recipes_section, rbs_setup: RbsSetup):
     recipes = []
 
     for input_recipe in recipes_section:
-        if input_recipe["type"] == "rbs_stepwise":
+        if input_recipe["type"] == "rbs_random":
             recipes.append(parse_random_recipe(input_recipe))
         elif input_recipe["type"] == "rbs_channeling":
             recipe = parse_channeling_recipe(input_recipe)
