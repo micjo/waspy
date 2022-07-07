@@ -1,40 +1,82 @@
+import random
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk
 
-
 root = tk.Tk()
-root.geometry('300x200')
-root.resizable(False, False)
 root.title('Label Widget Demo')
 
+pastel_green = "#82e67e"
+pastel_yellow = "#f7e283"
+pastel_red = "#ff7c70"
 
-# label with a specific font
+
 label_bad = ttk.Label(
     root,
-    text='too much rads',
-    background="red", foreground='white',anchor='center',
-    font=("Helvetica", 14))
+    text='Danger of ionizing radiation',
+    background=pastel_red, foreground='black', anchor='center',
+    font=("Helvetica", 70))
 
-label_good = ttk.Label(
+label_ok = ttk.Label(
     root,
-    text='too little rads', anchor='center',
-    background="green", foreground='white',
-    font=("Helvetica", 14))
+    text='Safe to enter', anchor='center',
+    background=pastel_green, foreground='black',
+    font=("Helvetica", 70))
 
-label_bad.pack(fill='x', ipady=10)
-label_good.pack(fill='x', ipady=10)
+label_warning = ttk.Label(
+    root,
+    text='Qualified personnel only', anchor='center',
+    background=pastel_yellow, foreground='black',
+    font=("Helvetica", 70))
 
-toggle_rads = True
-def toggle():
-    global toggle_rads
-    toggle_rads = not toggle_rads
-    if toggle_rads:
-        label_good.pack_forget()
-        label_bad.pack(fill='x', ipady=10)
+label_timestamp = ttk.Label(
+    root,
+    text='1/1/1970 00:00:00', anchor='ne',
+    font=("Helvetica", 20))
+
+label_rads = ttk.Label(
+    root,
+    text='0', anchor='center',
+    font=("Helvetica", 30))
+
+label_bad.pack(fill='both')
+label_ok.pack(fill='both')
+label_warning.pack(fill='both')
+label_timestamp.pack(fill='x')
+label_rads.pack(fill='x')
+
+
+def clear():
+    label_ok.pack_forget()
+    label_bad.pack_forget()
+    label_warning.pack_forget()
+
+
+def set_widget_colors(color):
+    label_timestamp.configure(background=color)
+    label_rads.configure(background=color)
+
+
+def update():
+    clear()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    some_number = random.randint(0, 10)
+
+    if some_number > 7:
+        active_label = label_bad
+        set_widget_colors(pastel_red)
+    elif some_number > 3:
+        active_label = label_warning
+        set_widget_colors(pastel_yellow)
     else:
-        label_bad.pack_forget()
-        label_good.pack(fill='x', ipady=10)
-    root.after(2000, toggle)
+        active_label = label_ok
+        set_widget_colors(pastel_green)
 
-toggle()
+    root.after(2000, update)
+    label_timestamp.configure(text=now)
+    label_rads.configure(text="Radiation level: " + str(some_number) + "uSv/h")
+    active_label.pack(fill='both', expand=True)
+
+
+update()
 root.mainloop()

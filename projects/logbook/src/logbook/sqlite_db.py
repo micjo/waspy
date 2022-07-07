@@ -34,9 +34,9 @@ def build_query(sql_filter=""):
     case
     when type is "erd" then
     (select "Z: [" || erd.z_start || "," || erd.z_end || "," || erd.z_increment || "] *" || erd.z_repeat)
-    when type is "rbs_stepwise" then
+    when type is "rbs_random" then
     (select rsteps.axis || ": [" || rsteps.start || "," || rsteps.end || "," || rsteps.step|| "]")
-    when type is "rbs_stepwise_least" then
+    when type is "rbs_angular_yield" then
     (select rleast.axis || ": [" || rleast.start || "," || rleast.end || "," || rleast.step || "]-> " || rleast.least_yield_position )
     end                                                as move,
     l.meta                                                 as meta
@@ -44,8 +44,8 @@ def build_query(sql_filter=""):
     LEFT join recipe_book r ON l.log_id = r.log_id
     LEFT join job_book j ON l.log_id = j.log_id
     LEFT JOIN job_name_book job_name ON j.job_id = job_name.job_id
-    LEFT JOIN rbs_stepwise_book rsteps ON r.recipe_id = rsteps.recipe_id
-    LEFT JOIN rbs_stepwise_least_book rleast ON r.recipe_id = rleast.recipe_id
+    LEFT JOIN rbs_random_book rsteps ON r.recipe_id = rsteps.recipe_id
+    LEFT JOIN rbs_angular_yield_book rleast ON r.recipe_id = rleast.recipe_id
     LEFT JOIN erd_book erd ON r.recipe_id = erd.recipe_id
     {sql_filter}
     """
@@ -185,17 +185,17 @@ class SqliteDb:
     def _log_some_recipe_end(self, recipe: RbsStepwiseRecipe | RbsSingleStepRecipe |
                                            RbsStepwiseLeastRecipe | ErdRecipeModel, recipe_id:int):
 
-        if recipe.type == RbsRecipeType.STEPWISE:
-            self.sql_insert("INSERT INTO rbs_stepwise_book (recipe_id, axis, start, end, step)"
+        if recipe.type == RbsRecipeType.RANDOM:
+            self.sql_insert("INSERT INTO rbs_random_book (recipe_id, axis, start, end, step)"
                             "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}')"
                             .format(recipe_id=recipe_id, axis=recipe.vary_axis, start=recipe.start,
                                     end=recipe.end,
                                     step=recipe.step)
                             )
 
-        if recipe.type == RbsRecipeType.STEPWISE_LEAST:
+        if recipe.type == RbsRecipeType.ANGULAR_YIELD:
             self.sql_insert(
-                "INSERT INTO rbs_stepwise_least_book (recipe_id, axis, start, end, step, least_yield_position)"
+                "INSERT INTO rbs_angular_yield_book (recipe_id, axis, start, end, step, least_yield_position)"
                 "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}','{least_yield_position}')"
                     .format(recipe_id=recipe_id, axis=recipe.vary_axis, start=recipe.start,
                             end=recipe.end,

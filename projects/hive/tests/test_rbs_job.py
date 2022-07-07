@@ -20,7 +20,7 @@ class TestDbTables(unittest.TestCase):
         job = RbsJobModel.parse_obj({
             "name": "RBS21_071", "type": "rbs",
             "recipes": [
-                {"type": "rbs_stepwise", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
+                {"type": "rbs_random", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
                  "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
                  "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                  }
