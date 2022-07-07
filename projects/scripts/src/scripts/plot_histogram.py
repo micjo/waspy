@@ -1,15 +1,13 @@
 import requests
+import sys
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from waspy.hardware_control.hw_action import get_packed_histogram
-from waspy.hardware_control.rbs_entities import CaenDetector
 from matplotlib import widgets, dates, ticker
 
 
 class Graph:
     def __init__(self):
-        self.detector= CaenDetector(board="33", channel=0, identifier="", bins_min=0, bins_max=8192, bins_width=1024)
-        title_string = "Histogram board=" + self.detector.board + ", channel=" + str(self.detector.channel)
+        title_string = "Detector: " + sys.argv[1]
         self.fig = plt.figure(title_string)
         self.title_text = plt.figtext(0.20, 0.94, title_string, size='x-large', color='blue')
         ax_size = [0.11, 0.20, 1-0.140, 1-0.27] # [left, bottom, width, height] as fractions of figure width and height.
@@ -41,7 +39,7 @@ class Graph:
 
     def get_data(self):
         while True:
-            resp_code, data = get_packed_histogram("http://localhost:20200/api/latest", self.detector)
+            data = requests.get("http://169.254.150.200/hive/api/rbs/caen/detector/{}".format(sys.argv[1])).json()
             yield data
 
 
