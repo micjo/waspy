@@ -35,6 +35,12 @@ url = "http://127.0.0.1:22100/api/latest"
 type = "caen"
 title = "Caen"
 url = "http://169.254.80.218:22200/api/latest"
+detectors = [
+	{"board"="10664", "channel"=0, "identifier"="d01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="10664", "channel"=1, "identifier"="d02", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=0, "identifier"="MD01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=3, "identifier"="MD04", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+]
 
 [erd.hardware.mdrive_z]
 type = "mdrive"
@@ -58,3 +64,4 @@ remote_dir = "/mnt/winbe_wasp/transfer_RBS"
 [erd]
 local_dir = "/mnt/mcaiba_nas/transfer_ERD"
 remote_dir = "/mnt/winbe_wasp/transfer_ERD"
+

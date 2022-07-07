@@ -6,8 +6,8 @@ Requires=wait_eth_up.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/mca/dev/wasp-hive/projects/logbook
-ExecStart=/home/mca/dev/wasp-hive/projects/logbook/run_logbook.sh
+WorkingDirectory=/root/waspy/projects/logbook
+ExecStart=/root/waspy/projects/logbook/run_logbook.sh
 Restart=on-failure
 SyslogIdentifier=logbook
 

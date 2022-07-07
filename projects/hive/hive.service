@@ -1,13 +1,13 @@
 [Unit]
-Description=Service Mill - runs erd and rbs experiments
+Description=Hive - runs erd and rbs experiments
 After=wait_eth_up.service
 Requires=wait_eth_up.service
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/mca/dev/wasp-hive/projects/hive
-ExecStart=/home/mca/dev/wasp-hive/projects/hive/run_hive.sh
+WorkingDirectory=/root/waspy/projects/hive
+ExecStart=/root/waspy/projects/hive/run_hive.sh
 Restart=on-failure
 SyslogIdentifier=hive
 
