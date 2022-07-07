@@ -10,7 +10,7 @@ from hive.entities import AnyHardware
 from waspy.hardware_control.hw_action import get_caen_histogram, pack, get_packed_histogram
 from hive.config import HiveConfig
 from waspy.hardware_control.rbs_entities import CaenDetector
-import logging
+from starlette.requests import Request
 
 
 def build_api_endpoints(http_router, any_hardware: AnyHardware):
@@ -39,7 +39,6 @@ def build_histogram_redirect(some_router, from_url, to_url, tags):
 
 
 def histogram(response: Response, to_url, board: str, channel: int, start: int, end: int, width: int):
-    logging.info(f"getting histogram for {board}, {channel}")
     if width > end - start:
         response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
         return {}
@@ -59,9 +58,15 @@ def build_packed_histogram(some_router, from_url, to_url, tags):
 def build_detector_endpoints(some_router, from_url, to_url, detectors: List[CaenDetector], tags):
     for detector in detectors:
         @some_router.get(from_url + "/detector/" + detector.identifier, tags=tags)
-        async def get_histogram(response: Response):
-            return histogram(response, to_url, detector.board, detector.channel, detector.bins_min, detector.bins_max,
-                             detector.bins_width)
+        async def get_histogram(request: Request, response: Response):
+            path = str(request.url.path)
+            last_part = path.split("/")[-1]
+            
+            active_detector = next(some_detector for some_detector in detectors 
+                    if some_detector.identifier == last_part)
+
+            return histogram(response, to_url, active_detector.board, active_detector.channel, 
+                    active_detector.bins_min, active_detector.bins_max, active_detector.bins_width)
 
 
 def _make_hw_schema(class_name, url):

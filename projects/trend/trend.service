@@ -6,8 +6,8 @@ Requires=wait_eth_up.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/mca/dev/wasp-hive/projects/trend
-ExecStart=/home/mca/dev/wasp-hive/projects/trend/run_trend.sh
+WorkingDirectory=/root/waspy/projects/trend
+ExecStart=/root/waspy/projects/trend/run_trend.sh
 Restart=on-failure
 SyslogIdentifier=trend
 
