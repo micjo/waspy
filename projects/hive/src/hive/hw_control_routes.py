@@ -10,6 +10,7 @@ from hive.entities import AnyHardware
 from waspy.hardware_control.hw_action import get_caen_histogram, pack, get_packed_histogram
 from hive.config import HiveConfig
 from waspy.hardware_control.rbs_entities import CaenDetector
+import logging
 
 
 def build_api_endpoints(http_router, any_hardware: AnyHardware):
@@ -38,6 +39,7 @@ def build_histogram_redirect(some_router, from_url, to_url, tags):
 
 
 def histogram(response: Response, to_url, board: str, channel: int, start: int, end: int, width: int):
+    logging.info(f"getting histogram for {board}, {channel}")
     if width > end - start:
         response.status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
         return {}
