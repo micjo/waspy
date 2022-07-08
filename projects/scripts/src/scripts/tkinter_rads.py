@@ -2,6 +2,8 @@ import random
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
+from pydantic import BaseSettings
+import requests
 
 root = tk.Tk()
 root.title('Label Widget Demo')
@@ -9,6 +11,12 @@ root.title('Label Widget Demo')
 pastel_green = "#82e67e"
 pastel_yellow = "#f7e283"
 pastel_red = "#ff7c70"
+
+
+class GlobalConfig(BaseSettings):
+    G64_url = "http://169.254.150.100/hive/api/any/g64"
+
+env_config = GlobalConfig()
 
 
 label_bad = ttk.Label(
@@ -60,12 +68,12 @@ def set_widget_colors(color):
 def update():
     clear()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    some_number = random.randint(0, 10)
+    rads = float(requests.get(env_config.G64_url).json()['dosage_rate(uSv/h)'])
 
-    if some_number > 7:
+    if rads > 3.2 :
         active_label = label_bad
         set_widget_colors(pastel_red)
-    elif some_number > 3:
+    elif rads > 1.2:
         active_label = label_warning
         set_widget_colors(pastel_yellow)
     else:
@@ -74,7 +82,7 @@ def update():
 
     root.after(2000, update)
     label_timestamp.configure(text=now)
-    label_rads.configure(text="Radiation level: " + str(some_number) + "uSv/h")
+    label_rads.configure(text="Radiation level: {0:.5f} uSv/h".format(rads))
     active_label.pack(fill='both', expand=True)
 
 
