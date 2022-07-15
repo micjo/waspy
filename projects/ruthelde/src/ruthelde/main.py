@@ -35,6 +35,23 @@ def main():
             response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
             return str(e)
 
+    # @router.post("/run_de")
+    # async def run_de(response: Response, file: UploadFile = File(...)):
+    #     try:
+    #         file_bytes = await file.read()
+    #         contents = file_bytes.decode('utf-8')
+    #         with open("ruthelde-in.json", "w") as f:
+    #             f.write(contents)
+    #
+    #         subprocess.call(['java', '-jar', 'ruthelde.jar', 'run-de', 'ruthelde-in.json', 'out/testfile.imec'])
+    #         return FileResponse("testfile.imec")
+    #
+    #
+    #     except Exception as e:
+    #         logging.error(traceback.format_exc())
+    #         response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    #         return str(e)
+
     return router
 
 
