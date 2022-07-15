@@ -1,0 +1,15 @@
+[Unit]
+Description=Ruthelde - Experiment simulation
+After=wait_eth_up.service
+Requires=wait_eth_up.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/mca/dev/waspy/projects/ruthelde
+ExecStart=/home/mca/dev/waspy/projects/ruthelde/run_ruthelde.sh
+Restart=on-failure
+SyslogIdentifier=logbook
+
+[Install]
+WantedBy=multi-user.target
