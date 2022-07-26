@@ -1,5 +1,5 @@
 #!/bin/bash
-export config_file="./home_config.toml"
+export config_file="./default_config.toml"
 export faker=true
 export env_state="dev"
 export trend_store="/tmp/trends/"
