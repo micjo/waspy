@@ -2,7 +2,7 @@
 
 
 # Short description
-This repository contains python code to automate, orchestrate and log ion beam analysis.
+This repository contains python code to automate, orchestrate and log ion beam analysis experiments.
 
 # How to cite:
 - J. Meersschaut and W. Vandervorst, High-throughput ion beam analysis at imec. Nucl. Instrum. Methods Phys. Res., B. 406, 25-29 (2017).
@@ -94,18 +94,10 @@ names = ["U", "V"]
 (work in progress)
 
 # Caveats
-When using ip addressing, using ''localhost'' can cause unintended slowdowns, particularly in windows. In some cases,
+- When using ip addressing, using ''localhost'' can cause unintended slowdowns, particularly in windows. In some cases,
 localhost will be treated as an ipv6 address, causing timeouts. Consider using ''127.0.0.1'' instead.
 
-
-Make sure you have python (3.9.x or higher) and tox installed. Tox wil generate the virtualenv for you and run the tests
-
-Run tox in the repository directory
-```
-tox
-```
-
-You may want to remove the `--reload` option when running in production. It is a useful feature when developing, but it requires extra CPU (about 30% on an i3-9100). If you
+- You may want to remove the `--reload` option when running in production. It is a useful feature when developing, but it requires extra CPU (about 30% on an i3-9100). If you
 do not strictly need it, disable it.
 
 
