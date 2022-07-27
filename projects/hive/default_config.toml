@@ -3,37 +3,29 @@ type="aml"
 title="AML U V"
 url="http://localhost:30000/api/latest"
 names = ["U", "V"]
-loads = [110,20]
-trend = {"any_x"="motor_1_position", "any_y"="motor_2_position"}
 
 [rbs.hardware.aml_x_y]
 type="aml"
 title="AML X Y"
 url="http://localhost:20000/api/latest"
 names = ["X", "Y"]
-loads = [110,20]
-trend = {"rbs_x"="motor_1_position", "rbs_y"="motor_2_position"}
 
 [rbs.hardware.aml_det_theta]
 type = "aml"
 title = "AML Detector Theta"
 url = "http://localhost:20000/api/latest"
 names = ["Detector", "Theta"]
-loads = [170, 10]
 
 [rbs.hardware.aml_phi_zeta]
 type = "aml"
 title = "AML Phi Zeta"
 url = "http://localhost:20000/api/latest"
 names = ["Phi", "Zeta"]
-loads = [0, -1]
 
 [rbs.hardware.motrona_charge]
 type = "motrona_dx350"
 title = "Motrona Charge"
 url = "http://localhost:20100/api/latest"
-trend = {"current"="current(nA)"}
-
 
 [rbs.hardware.caen]
 type = "caen"
@@ -50,21 +42,16 @@ detectors = [
 type = "mdrive"
 title = "MDrive Z"
 url = "http://localhost:22300/api/latest"
-load = -180
-trend = {"z_position"="motor_position", log="loggers.log_vlinx"}
 
 [erd.hardware.mdrive_theta]
 type = "mdrive"
 title = "MDrive Theta"
 url = "http://localhost:22300/api/latest"
-load = 90
-trend = {"theta_position"="motor_position"}
 
 [erd.hardware.mpa3]
 type = "mpa3"
 title = "MPA 3"
 url = "http://localhost:22400/api/latest"
-trend = {"ad1_count_rate"= "ad1.total_rate", "ad2_count_rate"= "ad2.total_rate"}
 
 [rbs]
 local_dir = "/tmp/ACQ/5_data"

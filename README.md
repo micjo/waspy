@@ -38,7 +38,7 @@ as an example for using various python packages and libraries. Some packages/lib
 ## Python setup
 Prerequisites: 
   - Python 3.9.x
-  - tox (can be installed through pip or standalone
+  - tox (can be installed through pip or standalone)
 
 While python is considered cross-platform, most usage and testing has been done on Linux. Windows should work, this is
 however dependent on external libraries, YMMV.
@@ -58,7 +58,7 @@ Go to the folder `projects/hive`. To run hive, execute the script `run_hive_loca
 `default.toml` file, and open a web-server on port 8000. You can change this in the `run_hive_local.sh` script. To 
 verify that it is working, open a web-browser and navigate to: `http://localhost:8000`.
 
-In the `default.toml` configuration file, 3 setups are available. A setup is a logical group of hardware controllers.
+In the `default.toml` configuration file, 2 setups are available. A setup is a logical group of hardware controllers.
 The RBS setup consists of:
   - 3 AML stepper motor drivers. (x,y); (phi,zeta); (detector, theta)
   - 1 Motrona DX350 charge counter
@@ -70,6 +70,19 @@ The ERD setup consists of:
 
 Both setups have a folder definition where the experiment (a.k.a 'job') data is stored. This definition is twofold.
 The local dir is the main form of storage. All the data here is copied to the remote dir.
+
+For ease of use, a test environment is available as well. This is the 'ANY' setup. It follows the same approach as the
+previous setups. You can define and add hardware controllers in a similar fashion. An example is available in the
+config file:
+
+e.g :
+```toml
+[any.hardware.aml_u_v]
+type="aml"
+title="AML U V"
+url="http://localhost:30000/api/latest"
+names = ["U", "V"]
+```
 
 ## Logbook
 (Work in progress)
