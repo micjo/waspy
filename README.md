@@ -58,16 +58,27 @@ Go to the folder `projects/hive`. To run hive, execute the script `run_hive_loca
 `default.toml` file, and open a web-server on port 8000. You can change this in the `run_hive_local.sh` script. To 
 verify that it is working, open a web-browser and navigate to: `http://localhost:8000`.
 
+In the `default.toml` configuration file, 3 setups are available. A setup is a logical group of hardware controllers.
+The RBS setup consists of:
+  - 3 AML stepper motor drivers. (x,y); (phi,zeta); (detector, theta)
+  - 1 Motrona DX350 charge counter
+  - 1 Caen data acquisition system
+
+The ERD setup consists of:
+  - 2 mdrive stepper motor drivers, (z); (theta)
+  - 1 mpa3 data acquisition system
+
+Both setups have a folder definition where the experiment (a.k.a 'job') data is stored. This definition is twofold.
+The local dir is the main form of storage. All the data here is copied to the remote dir.
+
+## Logbook
 (Work in progress)
 
+## Scripts
+(Work in progress)
 
-
-
-
-
-
-
-
+## Trend
+(work in progress)
 
 # Caveats
 When using ip addressing, using ''localhost'' can cause unintended slowdowns, particularly in windows. In some cases,

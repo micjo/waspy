@@ -66,15 +66,6 @@ title = "MPA 3"
 url = "http://localhost:22400/api/latest"
 trend = {"ad1_count_rate"= "ad1.total_rate", "ad2_count_rate"= "ad2.total_rate"}
 
-[rbs.folder_scan]
-watch = "/tmp/ACQ/1_watch"
-ongoing.local = "/tmp/ACQ/2_ongoing"
-ongoing.remote = "/tmp/ACQ/REM/2_ongoing"
-failed.local = "/tmp/ACQ/3_failed"
-failed.remote = "/tmp/ACQ/REM/3_failed"
-done.local = "/tmp/ACQ/4_done"
-done.remote = "/tmp/ACQ/REM/4_done"
-
 [rbs]
 local_dir = "/tmp/ACQ/5_data"
 remote_dir = "/tmp/ACQ/REM/_05_data"
