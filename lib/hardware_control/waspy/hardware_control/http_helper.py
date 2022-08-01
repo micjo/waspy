@@ -54,9 +54,10 @@ def wait_for_request_done(url, request):
             raise HardwareError(url + ": " + error_message)
 
 
-def post_request(url, request):
+def post_request(url, request, wait=True):
     post_dictionary(url, request)
-    wait_for_request_done(url, request)
+    if wait:
+        wait_for_request_done(url, request)
 
 
 def generate_request_id() -> str:

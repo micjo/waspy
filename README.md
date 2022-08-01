@@ -34,6 +34,8 @@ as an example for using various python packages and libraries. Some packages/lib
   - systemd
 
 # Getting Started
+To get an overview of what this python code can do for you, have a look at the example files in `projects/scripts/examples`.
+These serve as an easy introduction for first time users/readers.
 
 ## Python setup
 Prerequisites: 
@@ -84,10 +86,11 @@ url="http://localhost:30000/api/latest"
 names = ["U", "V"]
 ```
 
-## Logbook
-(Work in progress)
-
 ## Scripts
+Go to the folder `projects/scripts`. In here you can find various standalone scripts. You can directly run these. In the
+`projects/scripts/examples` directory you can find examples on how to interface with the hardware controllers.
+
+## Logbook
 (Work in progress)
 
 ## Trend
@@ -99,5 +102,3 @@ localhost will be treated as an ipv6 address, causing timeouts. Consider using '
 
 - You may want to remove the `--reload` option when running in production. It is a useful feature when developing, but it requires extra CPU (about 30% on an i3-9100). If you
 do not strictly need it, disable it.
-
-
