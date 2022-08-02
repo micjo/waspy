@@ -16,26 +16,8 @@ pastel_red = "#ff7c70"
 class GlobalConfig(BaseSettings):
     G64_url = "http://169.254.150.100/hive/api/any/g64"
 
+
 env_config = GlobalConfig()
-
-
-label_bad = ttk.Label(
-    root,
-    text='Danger of ionizing radiation',
-    background=pastel_red, foreground='black', anchor='center',
-    font=("Helvetica", 70))
-
-label_ok = ttk.Label(
-    root,
-    text='Safe to enter', anchor='center',
-    background=pastel_green, foreground='black',
-    font=("Helvetica", 70))
-
-label_warning = ttk.Label(
-    root,
-    text='Qualified personnel only', anchor='center',
-    background=pastel_yellow, foreground='black',
-    font=("Helvetica", 70))
 
 label_timestamp = ttk.Label(
     root,
@@ -47,43 +29,57 @@ label_rads = ttk.Label(
     text='0', anchor='center',
     font=("Helvetica", 30))
 
-label_bad.pack(fill='both')
-label_ok.pack(fill='both')
-label_warning.pack(fill='both')
+label_entry = ttk.Label(
+    root,
+    anchor='center',
+    font=("Helvetica", 70))
+
 label_timestamp.pack(fill='x')
 label_rads.pack(fill='x')
+label_entry.pack(fill='both',expand=True)
 
 
-def clear():
-    label_ok.pack_forget()
-    label_bad.pack_forget()
-    label_warning.pack_forget()
+def set_warning():
+    label_entry.configure(
+        text='Qualified personnel only', anchor='center',
+        background=pastel_yellow, foreground='black')
+    label_rads.configure(background=pastel_yellow, foreground='black')
+    label_timestamp.configure(background=pastel_yellow, foreground='black')
 
 
-def set_widget_colors(color):
-    label_timestamp.configure(background=color)
-    label_rads.configure(background=color)
+def set_danger():
+    label_entry.configure(
+        text='Danger of ionizing radiation',
+        background=pastel_red, foreground='black')
+    label_rads.configure(background=pastel_red, foreground='black')
+    label_timestamp.configure(background=pastel_red, foreground='black')
+
+
+def set_safe():
+    label_entry.configure(
+        text='Safe to enter', anchor='center',
+        background=pastel_green, foreground='black')
+    label_rads.configure(background=pastel_green, foreground='black')
+    label_timestamp.configure(background=pastel_green, foreground='black')
 
 
 def update():
-    clear()
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    rads = float(requests.get(env_config.G64_url).json()['dosage_rate(uSv/h)'])
+    label_timestamp.configure(text=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    if rads > 3.2 :
-        active_label = label_bad
-        set_widget_colors(pastel_red)
-    elif rads > 1.2:
-        active_label = label_warning
-        set_widget_colors(pastel_yellow)
-    else:
-        active_label = label_ok
-        set_widget_colors(pastel_green)
+    try:
+        rads = float(requests.get(env_config.G64_url, timeout=2).json()['dosage_rate(uSv/h)'])
+        if rads > 3.2:
+            set_danger()
+        elif rads > 1.2:
+            set_warning()
+        else:
+            set_safe()
+        label_rads.configure(text="Radiation level: {0:.5f} uSv/h".format(rads))
+    except:
+        set_danger()
+        label_rads.configure(text="Failed to retrieve radiation level. Verify network connection")
 
     root.after(2000, update)
-    label_timestamp.configure(text=now)
-    label_rads.configure(text="Radiation level: {0:.5f} uSv/h".format(rads))
-    active_label.pack(fill='both', expand=True)
 
 
 update()
