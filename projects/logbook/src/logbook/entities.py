@@ -26,6 +26,23 @@ class ErdRecipeModel(BaseModel):
     average_terminal_voltage: float
 
 
+class ToolStatus(BaseModel):
+    area: str
+    beam_description: str
+    beam_energy_MeV: float
+    snics_cathode_target: str
+    bias_voltage_kV: float
+    bias_current_mA: float
+    focus_voltage_kV: float
+    focus_current_mA: float
+    oven_power_percentage: int
+    over_temperature_celsius: int
+    ionizer_current_A: float
+    ionizer_voltage_V: float
+    cathode_probe_voltage_kV: float
+    cathode_probe_current_mA: float
+
+
 class RbsRecipeModel(BaseModel):
     type: RbsRecipeType
     sample: str
@@ -50,6 +67,23 @@ class RbsStepwiseLeastRecipe(RbsStepwiseRecipe):
     type: Literal[RbsRecipeType.ANGULAR_YIELD] = RbsRecipeType.ANGULAR_YIELD
     yield_positions: List[Tuple[float, int]]
     least_yield_position: float
+
+
+class Accelerator(BaseModel):
+    area: str
+    beam_description: str
+    beam_energy_MeV: float
+    snics_cathode_target: str
+    bias_voltage_kV: float
+    bias_current_mA: float
+    focus_voltage_kV: float
+    focus_current_mA: float
+    oven_power_percentage: int
+    oven_temperature_celsius: int
+    ionizer_current_A: float
+    ionizer_voltage_V: float
+    cathode_probe_voltage_kV: float
+    cathode_probe_current_mA: float
 
 
 class AnyRecipe(BaseModel):

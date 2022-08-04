@@ -1,6 +1,9 @@
 from pathlib import Path
+
+from logbook.db_orm import Base
 from logbook.sqlite_db import SqliteDb
 import sys
+from sqlalchemy import create_engine
 
 
 def make_log_book(sql_db):
@@ -181,6 +184,10 @@ create unique index trend_id_uindex
     """)
 
 
+def make_accelerator(engine):
+    Base.metadata.create_all(bind=engine)
+
+
 def make_imec_db(filename:str):
     sql_db = SqliteDb(Path(filename))
     make_log_book(sql_db)
@@ -200,7 +207,10 @@ if __name__ == "__main__":
     if sys.argv[1] == "imec":
         print("Generating sqlite db for imec lab")
         make_imec_db("imec.db")
+        engine = create_engine('sqlite:///imec.db')
+        make_accelerator(engine)
     elif sys.argv[1] == "vdg":
         print("Generating sqlite db for vdg lab")
         make_vdg_db("vdg.db")
+
 

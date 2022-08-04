@@ -4,8 +4,10 @@ from typing import Union, Annotated
 from fastapi import FastAPI
 from pydantic import Field
 
+from logbook.db_orm import DbAccelerator, session
 from logbook.sqlite_db import SqliteDb
-from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe
+from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe, \
+    Accelerator
 
 
 def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
@@ -32,6 +34,15 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.post("/log_finished_recipe")
     async def log_finished_recipe(rbs_recipe: AnyRecipe):
         sql_db.log_recipe_finished(rbs_recipe.__root__)
+
+    @router.post("/log_accelerator_paramaters")
+    async def log_accelerator_parameters(accelerator: Accelerator):
+        accel = DbAccelerator(
+            area=accelerator.area,
+            beam_energy_MeV=accelerator.beam_energy_MeV
+        )
+        session.add(accel)
+        session.commit()
 
     @router.post("/log_terminated_recipe")
     async def log_terminated_recipe(rbs_recipe: AnyRecipe, reason: str):
