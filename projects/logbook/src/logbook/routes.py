@@ -39,10 +39,30 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     async def log_accelerator_parameters(accelerator: Accelerator):
         accel = DbAccelerator(
             area=accelerator.area,
-            beam_energy_MeV=accelerator.beam_energy_MeV
+            beam_description=accelerator.beam_description,
+            beam_energy_MeV=accelerator.beam_energy_MeV,
+            snics_cathode_target=accelerator.snics_cathode_target,
+            bias_voltage_kV=accelerator.bias_voltage_kV,
+            bias_current_mA=accelerator.bias_current_mA,
+            focus_voltage_kV=accelerator.focus_voltage_kV,
+            focus_current_mA=accelerator.focus_current_mA,
+            oven_power_percentage=accelerator.oven_power_percentage,
+            oven_temperature_celsius=accelerator.oven_temperature_celsius,
+            ionizer_current_A=accelerator.ionizer_current_A,
+            ionizer_voltage_V=accelerator.ionizer_voltage_V,
+            cathode_probe_current_mA=accelerator.cathode_probe_current_mA,
+            cathode_probe_voltage_kV=accelerator.cathode_probe_voltage_kV
         )
         session.add(accel)
         session.commit()
+
+    @router.get("/check_accelerator_parameters")
+    async def check_accelerator_parameters():
+        return DbAccelerator.__table__.columns.keys()
+
+    @router.get("/get_accelerator_parameters")
+    async def check_accelerator_parameters():
+        return session.query(DbAccelerator).all()
 
     @router.post("/log_terminated_recipe")
     async def log_terminated_recipe(rbs_recipe: AnyRecipe, reason: str):
