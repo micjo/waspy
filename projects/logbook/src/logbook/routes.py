@@ -1,3 +1,4 @@
+import http
 from datetime import datetime
 from typing import Union, Annotated
 
@@ -54,6 +55,11 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
             cathode_probe_voltage_kV=accelerator.cathode_probe_voltage_kV
         )
         session.add(accel)
+        session.commit()
+
+    @router.delete("/accelerator_parameters", status_code=201)
+    async def remove_accelerator_parameters(id: int):
+        session.query(DbAccelerator).filter(DbAccelerator.id == id).delete()
         session.commit()
 
     @router.get("/check_accelerator_parameters")
