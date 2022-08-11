@@ -69,63 +69,47 @@ class ErdDataSerializer:
         if self.aborted():
             return
 
-        finished_recipe = recipe.dict()
+        params = self._db.get_last_beam_parameters()
 
+        finished_recipe = recipe.dict()
         finished_recipe["start_time"] = str(time_loaded)
         finished_recipe["end_time"] = str(datetime.now())
         finished_recipe["average_terminal_voltage"] = 0
         self._db.recipe_finish(finished_recipe)
         self._data_store.write_text_to_disk(recipe.name + ".flt", erd_data.histogram)
         self._data_store.write_text_to_disk(recipe.name + ".meta",
-                                            _serialize_meta(erd_data, recipe, self._job, self._time_loaded))
+                                            _serialize_meta(erd_data, recipe, self._job, self._time_loaded, params))
 
 
-def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel, start_time):
-    header = """ % Comments
- % Title                 := {title}
+def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel, start_time, params):
+    now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
+
+    header = f""" % Comments
+ % Title                 := {recipe.name}
  % Section := <raw_data>
  *
- * Recipe name           := {recipe_name}
- * DATE/Time             := {date}
- * MEASURING TIME[sec]   := {measure_time_sec}
- * Job id                := {job_id}
+ * Recipe name           := {recipe.name}
+ * DATE/Time             := {now}
+ * MEASURING TIME[sec]   := {erd_data.measuring_time_sec}
+ * Job id                := {job_model.name}
  *
- * ENERGY[MeV]           := {beam_energy} MeV
- * Beam type             := {beam_type}
- * Sample Tilt Degrees   := {sample_tilt_degrees}
+ * ENERGY[MeV]           := {params["beam_energy_MeV"]} MeV
+ * Beam description      := {params["beam_description"]}
+ * Sample Tilt Degrees   := {job_model.sample_tilt_degrees}
  *
- * Sample ID             := {sample_id}
- * Sample Z              := {sample_z}
- * Sample Theta          := {sample_theta}
- * Z Start               := {z_start}
- * Z End                 := {z_end}
- * Z Increment           := {z_increment}
- * Z Repeat              := {z_repeat}
+ * Sample ID             := {recipe.sample}
+ * Sample Z              := {erd_data.mdrive_z["motor_position"]}
+ * Sample Theta          := {erd_data.mdrive_theta["motor_position"]}
+ * Z Start               := {recipe.z_start}
+ * Z End                 := {recipe.z_end}
+ * Z Increment           := {recipe.z_increment}
+ * Z Repeat              := {recipe.z_repeat}
  *
  * Start time            := {start_time}
- * End time              := {end_time}
+ * End time              := {now}
  *
- * Avg Terminal Voltage  := {average_terminal_voltage}
+ * Avg Terminal Voltage  := {-1}
  *
  % Section :=  </raw_data>
- % End comments""".format(
-        title=recipe.name,
-        recipe_name=recipe.name,
-        date=datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
-        measure_time_sec=erd_data.measuring_time_sec,
-        beam_energy=job_model.beam_energy_MeV,
-        beam_type=job_model.beam_type,
-        sample_tilt_degrees=job_model.sample_tilt_degrees,
-        sample_id=recipe.sample,
-        sample_z=erd_data.mdrive_z["motor_position"],
-        sample_theta=erd_data.mdrive_theta["motor_position"],
-        z_start=recipe.z_start,
-        z_end=recipe.z_end,
-        z_increment=recipe.z_increment,
-        z_repeat=recipe.z_repeat,
-        start_time=start_time,
-        end_time=datetime.now(),
-        average_terminal_voltage=0,
-        job_id=job_model.name,
-    )
+ % End comments"""
     return header

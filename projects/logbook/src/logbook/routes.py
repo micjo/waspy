@@ -5,7 +5,7 @@ from typing import Union, Annotated
 from fastapi import FastAPI
 from pydantic import Field
 
-from logbook.db_orm import DbAccelerator, session
+from logbook.db_orm import DbAccelerator, session, fill_in_entry, insert_dict
 from logbook.sqlite_db import SqliteDb
 from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe, \
     Accelerator
@@ -38,24 +38,8 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
 
     @router.post("/log_accelerator_paramaters")
     async def log_accelerator_parameters(accelerator: Accelerator):
-        accel = DbAccelerator(
-            area=accelerator.area,
-            beam_description=accelerator.beam_description,
-            beam_energy_MeV=accelerator.beam_energy_MeV,
-            snics_cathode_target=accelerator.snics_cathode_target,
-            bias_voltage_kV=accelerator.bias_voltage_kV,
-            bias_current_mA=accelerator.bias_current_mA,
-            focus_voltage_kV=accelerator.focus_voltage_kV,
-            focus_current_mA=accelerator.focus_current_mA,
-            oven_power_percentage=accelerator.oven_power_percentage,
-            oven_temperature_celsius=accelerator.oven_temperature_celsius,
-            ionizer_current_A=accelerator.ionizer_current_A,
-            ionizer_voltage_V=accelerator.ionizer_voltage_V,
-            cathode_probe_current_mA=accelerator.cathode_probe_current_mA,
-            cathode_probe_voltage_kV=accelerator.cathode_probe_voltage_kV
-        )
-        session.add(accel)
-        session.commit()
+        entry = fill_in_entry(accelerator)
+        insert_dict(entry)
 
     @router.delete("/accelerator_parameters", status_code=201)
     async def remove_accelerator_parameters(id: int):
@@ -69,6 +53,12 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.get("/get_accelerator_parameters")
     async def check_accelerator_parameters():
         return session.query(DbAccelerator).all()
+
+
+    @router.get("/get_last_accelerator_parameters")
+    async def get_last_accelerator_parameters():
+        return session.query(DbAccelerator).order_by(DbAccelerator.epoch.desc()).first()
+
 
     @router.post("/log_terminated_recipe")
     async def log_terminated_recipe(rbs_recipe: AnyRecipe, reason: str):

@@ -86,6 +86,7 @@ class Accelerator(BaseModel):
     cathode_probe_current_mA: Optional[float]
 
 
+
 class AnyRecipe(BaseModel):
     __root__: Union[RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, ErdRecipeModel] = \
         Field(..., discriminator='type')

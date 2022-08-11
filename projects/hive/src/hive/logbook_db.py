@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 from hive.rbs_entities import RbsJobModel, RbsChanneling, RbsStepwise, RbsSingleStep, RbsStepwiseLeast, RecipeType
 from hive.erd_entities import ErdJobModel, ErdRecipe
+from waspy.hardware_control.http_helper import get_json
 
 
 class LogBookDb:
@@ -26,12 +27,13 @@ class LogBookDb:
         requests.post(self._logbook_url + "/log_finished_job?name=" + job.name)
 
     def recipe_terminate(self, recipe: Dict, reason: str):
-        print(recipe)
         requests.post(self._logbook_url + "/log_terminated_recipe?reason=" + reason, json=recipe)
 
     def recipe_finish(self, recipe: Dict):
-        print(recipe)
         requests.post(self._logbook_url + "/log_finished_recipe", json=recipe)
+
+    def get_last_beam_parameters(self):
+        return get_json(self._logbook_url + "/get_last_accelerator_parameters")
 
     def get_trends(self, start: datetime, end: datetime, starts_with: str):
         start_str = str(start)

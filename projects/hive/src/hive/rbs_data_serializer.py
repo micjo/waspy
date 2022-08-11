@@ -153,9 +153,11 @@ class RbsDataSerializer:
         if self.aborted():
             return
 
+        params = self._db.get_last_beam_parameters()
+
         plt.title(file_stem)
         for histogram_data in rbs_data.histograms:
-            header = _serialize_histogram_header(rbs_data, histogram_data.title, file_stem, sample_id)
+            header = _serialize_histogram_header(rbs_data, histogram_data.title, file_stem, sample_id, params)
             formatted_data = format_caen_histogram(histogram_data.data)
             full_data = header + "\n" + formatted_data
 
@@ -176,30 +178,32 @@ def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsStepwise, start_tim
     return finished_recipe
 
 
-def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str):
-    header = """ % Comments
- % Title                 := {title}
+def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str, params):
+    now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
+
+    header = f""" % Comments
+ % Title                 := {file_stem + "_" + data_title}
  % Section := <raw_data>
  *
- * Filename no extension := {filename}
- * DATE/Time             := {date}
- * MEASURING TIME[sec]   := {measure_time_sec}
- * ndpts                 := {ndpts}
+ * Filename no extension := {file_stem}
+ * DATE/Time             := {now}
+ * MEASURING TIME[sec]   := {rbs_data.measuring_time_msec}
+ * ndpts                 := {1024}
  *
  * ANAL.IONS(Z)          := 4.002600
  * ANAL.IONS(symb)       := He+
- * ENERGY[MeV]           := 1.523 MeV
- * Charge[nC]            := {charge}
+ * ENERGY[MeV]           := {params["beam_energy_MeV"]} MeV
+ * Charge[nC]            := {rbs_data.accumulated_charge}
  *
  * Sample ID             := {sample_id}
- * Sample X              := {sample_x}
- * Sample Y              := {sample_y}
- * Sample Zeta           := {sample_zeta}
- * Sample Theta          := {sample_theta}
- * Sample Phi            := {sample_phi}
- * Sample Det            := {sample_det}
+ * Sample X              := {rbs_data.aml_x_y["motor_1_position"]}
+ * Sample Y              := {rbs_data.aml_x_y["motor_2_position"]}
+ * Sample Zeta           := {rbs_data.aml_phi_zeta["motor_1_position"]}
+ * Sample Theta          := {rbs_data.aml_phi_zeta["motor_2_position"]}
+ * Sample Phi            := {rbs_data.aml_det_theta["motor_1_position"]}
+ * Sample Det            := {rbs_data.aml_det_theta["motor_2_position"]}
  *
- * Detector name         := {det_name}
+ * Detector name         := {data_title}
  * Detector ZETA         := 0.0
  * Detector Omega[mSr]   := 0.42
  * Detector offset[keV]  := 33.14020
@@ -207,20 +211,5 @@ def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: s
  * Detector FWHM[keV]    := 18.0
  *
  % Section :=  </raw_data>
- % End comments""".format(
-        title=file_stem + "_" + data_title,
-        filename=file_stem,
-        date=datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3],
-        measure_time_sec=rbs_data.measuring_time_msec,
-        ndpts=1024,
-        charge=rbs_data.accumulated_charge,
-        sample_id=sample_id,
-        sample_x=rbs_data.aml_x_y["motor_1_position"],
-        sample_y=rbs_data.aml_x_y["motor_2_position"],
-        sample_phi=rbs_data.aml_phi_zeta["motor_1_position"],
-        sample_zeta=rbs_data.aml_phi_zeta["motor_2_position"],
-        sample_det=rbs_data.aml_det_theta["motor_1_position"],
-        sample_theta=rbs_data.aml_det_theta["motor_2_position"],
-        det_name=data_title
-    )
+ % End comments"""
     return header
