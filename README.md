@@ -34,7 +34,7 @@ as an example for using various python packages and libraries. Some packages/lib
   - systemd
 
 # Getting Started
-To get an overview of what this python code can do for you, have a look at the example files in `projects/scripts/examples`.
+To get an overview of what this python code can do for you, have a look at the example files in `projects/scripts/src/scripts/examples`.
 These serve as an easy introduction for first time users/readers.
 
 ## Python setup
