@@ -92,7 +92,7 @@ class RbsJob(Job):
                 progress = active_recipe.accumulated_charge_corrected / active_recipe.accumulated_charge_target * 100
             else:
                 progress = 0
-            self._active_recipe_status.progress = "{:.2f}%".format(progress)
+            self._active_recipe_status.progress = "{:.2f}".format(progress)
 
     def _run_recipe(self, recipe):
         if self._aborted:
