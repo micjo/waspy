@@ -84,9 +84,9 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     async def get_trend(start: datetime, end: datetime, id: str, step: int):
         return sql_db.get_trend(start, end, id, step)
 
-    @router.get("/get_trends_last_month")
-    async def get_trends_last_month():
-        return sql_db.get_trends_last_month()
+    @router.get("/get_trends_last_day")
+    async def get_trends_last_day():
+        return sql_db.get_trends_last_day()
 
 
     @router.get("/get_trend_starts_with")
