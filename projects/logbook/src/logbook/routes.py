@@ -12,11 +12,11 @@ from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRec
 
 
 def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
-    @router.post("/log_message")
+    @router.post("/message")
     async def log_message(message: str, timestamp: Union[datetime, None] = None):
         sql_db._add_to_logbook("note", message, timestamp)
 
-    @router.post("/remove_message")
+    @router.delete("/message")
     async def remove_message(log_id: int):
         sql_db.remove_message(log_id)
 
@@ -83,6 +83,11 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.get("/get_trend")
     async def get_trend(start: datetime, end: datetime, id: str, step: int):
         return sql_db.get_trend(start, end, id, step)
+
+    @router.get("/get_trends_last_month")
+    async def get_trends_last_month():
+        return sql_db.get_trends_last_month()
+
 
     @router.get("/get_trend_starts_with")
     async def get_trend_starts_with(start: datetime, end: datetime, starts_with: str, step: int):

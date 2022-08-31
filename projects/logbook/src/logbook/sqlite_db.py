@@ -147,6 +147,16 @@ class SqliteDb:
         dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='list')
 
+    def get_trends_last_month(self):
+        epoch_end = int(time.time())
+        epoch_start = epoch_end - (3600*24*30)
+
+        dataframe = self._sql_extract("""
+           select * from trend where epoch between '{start}' and '{end}'
+        """.format(start=epoch_start, end=epoch_end))
+        dataframe.replace({np.nan: None}, inplace=True)
+        return dataframe.to_dict(orient='records')
+
     def get_trend_starts_with(self, start: datetime, end: datetime, starts_with: str, step: int):
         epoch_start = int(start.timestamp())
         epoch_end = int(end.timestamp())
