@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict
 
 import requests
+from requests import RequestException
 
 
 class HardwareError(Exception):
@@ -29,12 +30,20 @@ def get_json(url):
     return requests.get(url, timeout=10).json()
 
 
-def get_json_safe(url, timeout, default_value: Dict) -> Dict:
+def get_json_safe(url, default_value: Dict, timeout=10) -> Dict:
     try:
         json_value = requests.get(url, timeout=timeout).json()
-    except TimeoutError as e:
+    except RequestException as e:
         json_value = default_value
     return json_value
+
+
+def post_safe(url, json):
+    try:
+        response = requests.post(url, timeout=10, json=json)
+        return response.status_code, response.text
+    except RequestException as e:
+        return 400, ""
 
 
 def post_dictionary(url, data):

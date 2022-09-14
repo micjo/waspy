@@ -81,7 +81,7 @@ class ErdDataSerializer:
                                             _serialize_meta(erd_data, recipe, self._job, self._time_loaded, params))
 
 
-def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel, start_time, params):
+def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel, start_time, params: Dict):
     now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
 
     header = f""" % Comments
@@ -93,8 +93,8 @@ def _serialize_meta(erd_data: ErdData, recipe: ErdRecipe, job_model: ErdJobModel
  * MEASURING TIME[sec]   := {erd_data.measuring_time_sec}
  * Job id                := {job_model.name}
  *
- * ENERGY[MeV]           := {params["beam_energy_MeV"]} MeV
- * Beam description      := {params["beam_description"]}
+ * ENERGY[MeV]           := {params.get("beam_energy_MeV", default="")} MeV
+ * Beam description      := {params.get("beam_description", default="")}
  * Sample Tilt Degrees   := {job_model.sample_tilt_degrees}
  *
  * Sample ID             := {recipe.sample}

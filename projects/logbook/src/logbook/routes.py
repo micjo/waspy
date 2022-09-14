@@ -54,11 +54,9 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     async def check_accelerator_parameters():
         return session.query(DbAccelerator).all()
 
-
     @router.get("/get_last_accelerator_parameters")
     async def get_last_accelerator_parameters():
         return session.query(DbAccelerator).order_by(DbAccelerator.epoch.desc()).first()
-
 
     @router.post("/log_terminated_recipe")
     async def log_terminated_recipe(rbs_recipe: AnyRecipe, reason: str):
@@ -87,7 +85,6 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.get("/get_trends_last_day")
     async def get_trends_last_day():
         return sql_db.get_trends_last_day()
-
 
     @router.get("/get_trend_starts_with")
     async def get_trend_starts_with(start: datetime, end: datetime, starts_with: str, step: int):

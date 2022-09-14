@@ -178,7 +178,7 @@ def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsStepwise, start_tim
     return finished_recipe
 
 
-def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str, params):
+def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str, params: dict):
     now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
 
     header = f""" % Comments
@@ -192,7 +192,7 @@ def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: s
  *
  * ANAL.IONS(Z)          := 4.002600
  * ANAL.IONS(symb)       := He+
- * ENERGY[MeV]           := {params["beam_energy_MeV"]} MeV
+ * ENERGY[MeV]           := {params.get("beam_energy_MeV","")} MeV
  * Charge[nC]            := {rbs_data.accumulated_charge}
  *
  * Sample ID             := {sample_id}
