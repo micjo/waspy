@@ -68,6 +68,17 @@ def build_detector_endpoints(some_router, from_url, to_url, detectors: List[Caen
             return histogram(response, to_url, active_detector.board, active_detector.channel, 
                     active_detector.bins_min, active_detector.bins_max, active_detector.bins_width)
 
+        @some_router.get(from_url + "/detector/" + detector.identifier + "_compressed", tags=tags)
+        async def get_histogram(request: Request, response: Response):
+            path = str(request.url.path)
+            last_part = path.split("/")[-1]
+
+            active_detector = next(some_detector for some_detector in detectors
+                                   if some_detector.identifier == last_part)
+
+            return histogram(response, to_url, active_detector.board, active_detector.channel,
+                             active_detector.bins_min, active_detector.bins_max, 1024)
+
 
 def _make_hw_schema(class_name, url):
     values = {}

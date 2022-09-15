@@ -4,34 +4,44 @@ import subprocess
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from starlette import status
+from urllib.parse import urlparse
 
 from hive.config import HiveConfig
-
+from hive.entities import SimpleConfig
 
 def build_systemd_endpoints(router, hive_config: HiveConfig):
     @router.post("/api/service")
     async def service(name: str, start: bool):
-        if not does_daemon_exist(hive_config, name):
+        daemon = get_daemon(hive_config, name)
+        if not daemon:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail=f'Daemon is not supported')
 
         start_or_stop = "start" if start else "stop"
-        command = "/bin/systemctl {start_stop} {daemon}".format(start_stop=start_or_stop, daemon=name)
 
-        if name == "caen":
-            command = "/usr/bin/ssh olympus 'sudo " + command + "'"
+        if is_local_daemon(daemon):
+            command = f'sudo /bin/systemctl {start_or_stop} {name}'
+        else:
+            hostname = urlparse(daemon.url).hostname
+            command = f'/usr/bin/ssh {hostname}; sudo /bin/systemctl {start_or_stop} {name}'
 
-        logging.info("Executing : {" + command + "}")
+        logging.info(f"Executing : {command} ")
         subprocess.run([command], shell=True)
 
-    @router.get("/api/service_log")
-    async def service_log(daemon: str):
-        if not (daemon in hive_config.erd.hardware.__dict__ or daemon in hive_config.rbs.hardware.__dict__
-                or daemon in hive_config.any.hardware.__root__):
+    @router.get("/api/service_log/")
+    async def service_log(name: str):
+        daemon = get_daemon(hive_config, name)
+        if not daemon:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail=f'Daemon is not supported')
-        command = '/bin/journalctl -u {daemon} --since="10 minutes ago"'.format(daemon=daemon)
-        logging.info("Executing : {" + command + "}")
+
+        if is_local_daemon(daemon):
+            command = f'sudo /bin/journalctl -u {name} -n 100 --no-pager'
+        else:
+            hostname = urlparse(daemon.url).hostname
+            command = f'/usr/bin/ssh {hostname}; sudo /bin/journalctl -u {name} -n 100 --no-pager'
+
+        logging.info(f"Executing : {command}")
         output = subprocess.run([command], shell=True, capture_output=True).stdout
         return output
 
@@ -40,30 +50,20 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
         completed = subprocess.run(["/bin/journalctl --since='1 day ago' | grep -v nginx > /tmp/logs.txt"], shell=True)
         return FileResponse("/tmp/logs.txt")
 
-    @router.post("/api/rbs/hw_control")
-    async def hw_control(start: bool):
-        # For these commands to work, you have to make sure that these commands can be run without having to provide a
-        # password. Look for 'visudo allow command' in a search engine for more information
-        if start:
-            logging.info("Starting daemons")
-            subprocess.run(["/bin/systemctl start aml_x_y aml_det_theta aml_phi_zeta motrona"], shell=True)
-            subprocess.run(["/usr/bin/ssh olympus 'sudo systemctl start caen'"], shell=True)
-        else:
-            logging.info("Stopping daemons")
-            subprocess.run(["/bin/systemctl stop aml_x_y aml_det_theta aml_phi_zeta motrona"], shell=True)
-            subprocess.run(["/usr/bin/ssh olympus 'sudo systemctl stop caen'"], shell=True)
+
+def is_local_daemon(daemon: SimpleConfig):
+    return "127.0.0.1" in daemon.url or "localhost" in daemon.url
 
 
-
-def does_daemon_exist(hive_config, name:str) -> bool:
-    is_erd_daemon = False
-    is_rbs_daemon = False
-    is_any_daemon = False
+def get_daemon(hive_config, name: str) -> SimpleConfig | None:
     if hive_config.erd:
-        is_erd_daemon = name in hive_config.erd.hardware.__dict__
+        if hasattr(hive_config.erd.hardware, name):
+            return getattr(hive_config.erd.hardware, name)
     if hive_config.rbs:
-        is_rbs_daemon = name in hive_config.rbs.hardware.__dict__
+        if hasattr(hive_config.rbs.hardware, name):
+            return getattr(hive_config.rbs.hardware, name)
     if hive_config.any:
-        is_any_daemon = name in hive_config.any.hardware.__root__
-    return is_erd_daemon or is_rbs_daemon or is_any_daemon
+        if name in hive_config.any.hardware:
+            return hive_config.any.hardware[name]
+    return None
 
