@@ -38,7 +38,8 @@ def get_json_safe(url, default_value: Dict, timeout=10) -> Dict:
     return json_value
 
 
-def post_safe(url, json):
+def post_safe(url, json=None):
+    json = json if json else {}
     try:
         response = requests.post(url, timeout=10, json=json)
         return response.status_code, response.text

@@ -23,12 +23,12 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
             command = f'sudo /bin/systemctl {start_or_stop} {name}'
         else:
             hostname = urlparse(daemon.url).hostname
-            command = f'/usr/bin/ssh {hostname}; sudo /bin/systemctl {start_or_stop} {name}'
+            command = f'/usr/bin/ssh {hostname} "sudo /bin/systemctl {start_or_stop} {name}"'
 
         logging.info(f"Executing : {command} ")
         subprocess.run([command], shell=True)
 
-    @router.get("/api/service_log/")
+    @router.get("/api/service_log")
     async def service_log(name: str):
         daemon = get_daemon(hive_config, name)
         if not daemon:
@@ -39,7 +39,7 @@ def build_systemd_endpoints(router, hive_config: HiveConfig):
             command = f'sudo /bin/journalctl -u {name} -n 100 --no-pager'
         else:
             hostname = urlparse(daemon.url).hostname
-            command = f'/usr/bin/ssh {hostname}; sudo /bin/journalctl -u {name} -n 100 --no-pager'
+            command = f'/usr/bin/ssh {hostname} "sudo /bin/journalctl -u {name} -n 100 --no-pager"'
 
         logging.info(f"Executing : {command}")
         output = subprocess.run([command], shell=True, capture_output=True).stdout
