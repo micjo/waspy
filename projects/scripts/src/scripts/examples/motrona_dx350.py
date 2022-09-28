@@ -16,7 +16,7 @@ motrona_dx350.pause()
 motrona_dx350.start_count()
 
 # Wait for the counting to be done. Warning this is a blocking call
-motrona_dx350.counting_done()
+motrona_dx350.wait_for_counting_done()
 
 # Retrieves the status of the hardware
 print(motrona_dx350.get_status())

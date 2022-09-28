@@ -13,7 +13,7 @@ This is a mono-repo with several projects and libraries. The folder structure is
 
   - lib: Contains namespace libraries to be used by projects
   - projects: Contains projects that can be run independently
-    - hive: hardware controller automation and orchestration
+    - mill: hardware controller automation and orchestration
     - logbook: SQL based logging of tasks
     - scripts: Various standalone scripts 
     - trend: Periodically query and log hardware controller parameters

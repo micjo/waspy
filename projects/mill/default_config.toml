@@ -1,0 +1,62 @@
+[any.drivers.aml_u_v]
+type="aml"
+title="AML U V"
+url="http://localhost:30000/api/latest"
+names = ["U", "V"]
+
+[rbs.drivers.aml_x_y]
+type="aml"
+title="AML X Y"
+url="http://localhost:20000/api/latest"
+names = ["X", "Y"]
+
+[rbs.drivers.aml_det_theta]
+type = "aml"
+title = "AML Detector Theta"
+url = "http://localhost:20000/api/latest"
+names = ["Detector", "Theta"]
+
+[rbs.drivers.aml_phi_zeta]
+type = "aml"
+title = "AML Phi Zeta"
+url = "http://localhost:20000/api/latest"
+names = ["Phi", "Zeta"]
+
+[rbs.drivers.motrona_charge]
+type = "motrona_dx350"
+title = "Motrona Charge"
+url = "http://localhost:20100/api/latest"
+
+[rbs.drivers.caen]
+type = "caen"
+title = "Caen"
+url = "http://localhost:20200/api/latest"
+detectors = [
+	{"board"="33", "channel"=0, "identifier"="MD01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=3, "identifier"="MD04", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=0, "identifier"="d01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+	{"board"="33", "channel"=1, "identifier"="d02", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
+]
+
+[erd.drivers.mdrive_z]
+type = "mdrive"
+title = "MDrive Z"
+url = "http://localhost:22300/api/latest"
+
+[erd.drivers.mdrive_theta]
+type = "mdrive"
+title = "MDrive Theta"
+url = "http://localhost:22300/api/latest"
+
+[erd.drivers.mpa3]
+type = "mpa3"
+title = "MPA 3"
+url = "http://localhost:22400/api/latest"
+
+[rbs]
+local_dir = "/tmp/ACQ/5_data"
+remote_dir = "/tmp/ACQ/REM/_05_data"
+
+[erd]
+local_dir = "/tmp/ACQ/ERD/5_data"
+remote_dir = "/tmp/ACQ/ERD/REM/_05_data"
