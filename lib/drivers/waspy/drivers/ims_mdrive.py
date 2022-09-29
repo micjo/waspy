@@ -16,13 +16,13 @@ class ImsMDrive:
         request = {"request_id": generate_request_id(), "set_motor_target_position": target_position}
         post_request(self._url, request)
         if wait:
-            self.move_done()
+            self.wait_for_move_done()
 
     def load(self, wait=True):
         request = {"request_id": generate_request_id(), "load": True}
         post_request(self._url, request)
         if wait:
-            self.move_done()
+            self.wait_for_move_done()
 
     def wait_for_move_done(self):
         while True:

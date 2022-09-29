@@ -55,9 +55,9 @@ tox
 
 After running tox, a folder `venv` will be created. This will contain your virtual environment. 
 
-## Hive
-Go to the folder `projects/hive`. To run hive, execute the script `run_hive_local.sh` This will, by default, load the
-`default.toml` file, and open a web-server on port 8000. You can change this in the `run_hive_local.sh` script. To 
+## Mill
+Go to the folder `projects/mill`. To run mill, execute the script `run_mill_local.sh` This will, by default, load the
+`default.toml` file, and open a web-server on port 8000. You can change this in the `run_mill_local.sh` script. To 
 verify that it is working, open a web-browser and navigate to: `http://localhost:8000`.
 
 In the `default.toml` configuration file, 2 setups are available. A setup is a logical group of hardware controllers.
