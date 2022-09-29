@@ -2,9 +2,9 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import ANY
 
-import projects.hive.src.hive.entities as entities
+import projects.mill.src.mill.entities as entities
 
-from projects.hive.src.hive.rbs_entities import RbsConfig, AmlConfig, SimpleConfig
+from projects.mill.src.mill.rbs_entities import RbsConfig, AmlConfig, SimpleConfig
 from waspy.hardware_control import rbs_setup as rbs_lib
 from waspy.hardware_control.rbs_entities import PositionCoordinates
 import waspy.hardware_control.hw_action as hw_action
