@@ -111,8 +111,7 @@ class RbsSetup:
 
     def count(self):
         if self._fake:
-            self._fake_count = 0
-            return fake_counter()
+            return fake_call(self.count)
         if self.aborted():
             return
 
@@ -182,6 +181,14 @@ class RbsSetup:
              "motrona": status_charge_counter, "caen": status_data_acquisition, "detectors": self.detectors,
              "histograms": histograms, "measuring_time_msec": self._acquisition_run_time,
              "accumulated_charge": self._acquisition_accumulated_charge})
+
+    def acquire_data(self, total_charge) -> RbsData:
+        """Warning: this function can take a while ( >1 hour)"""
+        self.prepare_counting_with_target(total_charge)
+        self.start_data_acquisition()
+        self.count()
+        self.stop_data_acquisition()
+        return self.get_status(True)
 
     def start_data_acquisition(self):
         if self._fake:

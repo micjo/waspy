@@ -52,6 +52,11 @@ class PositionCoordinates(BaseModel):
                                                                     det=self.detector, theta=self.theta)
 
 
+class RecipeOutput(BaseModel):
+    title: str
+    content: str
+
+
 class Graph(BaseModel):
     title: str
     plots: List[Plot]
@@ -199,8 +204,8 @@ class RbsRecipe(BaseModel):
     vary_coordinate: CoordinateRange
 
 
-class RbsStepwise(BaseModel):
-    """ The model for a stepwise (a.k.a. random) measurement - the vary_coordinate will be changed"""
+class RbsRandom(BaseModel):
+    """ The model for a random measurement - the vary_coordinate will be changed"""
     type: Literal[RecipeType.RANDOM]
     sample: str
     name: str

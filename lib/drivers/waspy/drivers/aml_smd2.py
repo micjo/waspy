@@ -24,7 +24,7 @@ class AmlSmd2:
         self.move_first(positions[0], wait)
         self.move_second(positions[0], wait)
 
-    def move_both_simaltaneously(self, positions: list, wait=True):
+    def move_both_simultaneously(self, positions: list, wait=True):
         if None in positions:
             return
         request = {"request_id": generate_request_id(), "set_m1_target_position": positions[0],

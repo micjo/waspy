@@ -4,22 +4,9 @@ from typing import List
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
-
-from waspy.iba.rbs_entities import RbsHistogramGraphData, RbsData, RbsHistogramGraphDataSet, Graph, GraphGroup
-
-
-def plot_graph(graph: Graph) -> Figure:
-    nr_of_plots = len(graph.plots)
-    fig, axs = plt.subplots(nr_of_plots)
-    fig.suptitle(graph.title)
-
-    if nr_of_plots == 1:
-        axs = [axs]
-
-    for plot, ax in zip(graph.plots, axs):
-        ax.plot(plot.points, label=plot.title)
-        _configure_ax(ax, graph.x_label, graph.y_label)
-    return fig
+from waspy.iba.rbs_entities import RbsData, GraphGroup
+import matplotlib
+matplotlib.use('Agg')
 
 
 def plot_graph_group(graph_group: GraphGroup) -> Figure:
@@ -27,25 +14,14 @@ def plot_graph_group(graph_group: GraphGroup) -> Figure:
     fig, axs = plt.subplots(nr_of_graphs)
     fig.suptitle(graph_group.title)
 
+    if nr_of_graphs == 1:
+        axs = [axs]
+
     for (ax, graph) in zip(axs, graph_group.graphs):
         ax.set_title(graph.title)
         for plot in graph.plots:
             ax.plot(plot.points, label=plot.title)
-        _configure_ax(ax, graph.x_label, graph.y_label.y_label)
-
-    return fig
-
-
-
-def plot_compare_rbs_histograms(histogram_dataset: RbsHistogramGraphDataSet):
-    nr_of_histograms = len(histogram_dataset.histograms)
-    fig, axs = plt.subplots(nr_of_histograms)
-    fig.suptitle(histogram_dataset.graph_title)
-
-    for (ax, histogram_compare) in zip(axs, histogram_dataset.histograms):
-        for histogram in histogram_compare:
-            ax.plot(histogram.data, label=histogram.title)
-            _configure_ax(ax, histogram_dataset.x_label, histogram_dataset.y_label)
+        _configure_ax(ax, graph.x_label, graph.y_label)
 
     return fig
 
@@ -58,29 +34,6 @@ def _configure_ax(ax, x_label, y_label):
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
 
-
-# def plot_histograms(rbs_data: RbsData, file_stem: str):
-#     rbs_histogram_graph_data = RbsHistogramGraphData(graph_title=file_stem, histograms=rbs_data.histograms)
-#     fig = plot_rbs_histograms(rbs_histogram_graph_data)
-#     return fig
-#
-#
-# def plot_compare(fixed_data: List[HistogramData], random_data: List[HistogramData], file_stem):
-#     histograms = []
-#
-#     for (random, fixed) in zip(random_data, fixed_data):
-#         random.title += "_random"
-#         fixed.title += "_fixed"
-#         histograms.append([random, fixed])
-#
-#     rbs_histogram_graph_data_set = RbsHistogramGraphDataSet(graph_title=file_stem,
-#                                                             histograms=histograms,
-#                                                             x_label="energy level",
-#                                                             y_label="yield")
-#
-#     fig = plot_compare_rbs_histograms(rbs_histogram_graph_data_set)
-#     return fig
-#
 
 def plot_energy_yields(title,
                        angles: List[float], yields: List[int], smooth_angles: List[float],

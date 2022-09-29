@@ -8,7 +8,7 @@ from pydantic import BaseModel
 import waspy.iba.rbs_yield_angle_fit as fit
 from mill.logbook_db import LogBookDb
 from mill.rbs_data_serializer import RbsDataSerializer
-from waspy.iba.rbs_entities import RecipeType, RbsStepwise, RbsChanneling, RbsSingleStep, RbsStepwiseLeast, \
+from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, RbsSingleStep, RbsStepwiseLeast, \
     CoordinateRange, Window, RbsData, PositionCoordinates
 from mill.rbs_entities import RbsJobModel
 from mill.job import Job
@@ -118,7 +118,7 @@ class RbsJob(Job):
         self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
 
 
-def run_random_with_db_log(recipe: RbsStepwise, rbs: RbsSetup, file_writer: FileWriter, db: LogBookDb):
+def run_random_with_db_log(recipe: RbsRandom, rbs: RbsSetup, file_writer: FileWriter, db: LogBookDb):
     start_time = datetime.now()
     params = db.get_last_beam_parameters()
     rbs_data = run_random(recipe, rbs, file_writer, params)
@@ -216,12 +216,12 @@ def _make_single_step_recipe(recipe):
                          charge_total=recipe.compare_charge_total)
 
 
-def _make_finished_basic_recipe(recipe: RbsStepwiseLeast | RbsStepwise | RbsSingleStep, start_time: datetime):
+def _make_finished_basic_recipe(recipe: RbsStepwiseLeast | RbsRandom | RbsSingleStep, start_time: datetime):
     return {"start_time": str(start_time), "end_time": str(datetime.now()), "name": recipe.name,
             "type": recipe.type.value, "sample": recipe.sample}
 
 
-def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsStepwise, start_time: datetime):
+def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsRandom, start_time: datetime):
     finished_recipe = _make_finished_basic_recipe(recipe, start_time)
     finished_recipe["vary_axis"] = recipe.coordinate_range.name
     finished_recipe["start"] = recipe.coordinate_range.start
@@ -231,14 +231,14 @@ def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsStepwise, start_tim
 
 
 def _make_stepwise_recipe(recipe):
-    return RbsStepwise(type=RecipeType.RANDOM, sample=recipe.sample,
-                       name=recipe.name + "_random",
-                       charge_total=recipe.compare_charge_total,
-                       start_position={"theta": -2},
-                       vary_coordinate=recipe.random_coordinate_range)
+    return RbsRandom(type=RecipeType.RANDOM, sample=recipe.sample,
+                     name=recipe.name + "_random",
+                     charge_total=recipe.compare_charge_total,
+                     start_position={"theta": -2},
+                     vary_coordinate=recipe.random_coordinate_range)
 
 
-def _get_total_counts_stepwise(recipe: RbsStepwise):
+def _get_total_counts_stepwise(recipe: RbsRandom):
     return recipe.charge_total
 
 
@@ -248,7 +248,7 @@ def _get_total_counts_channeling(recipe: RbsChanneling):
     return yield_optimize_total_charge + compare_total_charge
 
 
-def _get_total_counts(recipe: Union[RbsStepwise, RbsChanneling]):
+def _get_total_counts(recipe: Union[RbsRandom, RbsChanneling]):
     if recipe.type == RecipeType.CHANNELING:
         return _get_total_counts_channeling(recipe)
     if recipe.type == RecipeType.RANDOM:

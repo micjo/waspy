@@ -3,8 +3,8 @@ import unittest
 
 from waspy.iba.file_writer import FileWriter
 from waspy.iba.rbs_entities import RbsChanneling, RecipeType, CoordinateRange, Window, RbsDriverUrls, HardwareUrl, \
-    Detector
-from waspy.iba.rbs_recipes import run_channeling
+    Detector, RbsRandom
+from waspy.iba.rbs_recipes import run_channeling, run_random
 from waspy.iba.rbs_setup import RbsSetup
 from unittest.mock import Mock
 import logging
@@ -35,6 +35,13 @@ class TestRecipes(unittest.TestCase):
         # TODO: dependency on file system in tests -> BAD. need to return text from code and test the text
         self.file_writer = Mock(spec=FileWriter)
 
+    def test_random(self):
+        recipe = RbsRandom(
+            type=RecipeType.RANDOM, sample="sample_001", name="recipe_001",
+            charge_total=50000, coordinate_range=CoordinateRange(start=0, end=30, increment=2, name="phi")
+        )
+        run_random(recipe, self.rbs, self.file_writer, {})
+
     def test_channeling(self):
         recipe = RbsChanneling(
             type=RecipeType.CHANNELING, sample="sample_001", name="recipe_001",
@@ -47,7 +54,7 @@ class TestRecipes(unittest.TestCase):
             ],
             yield_integration_window=Window(start=550, end=650),
             yield_optimize_detector_identifier="d01",
-            random_fixed_charge_total=60000,
+            compare_charge_total=60000,
             random_coordinate_range=CoordinateRange(start=0, end=30, increment=0.2, name="phi")
         )
 

@@ -18,6 +18,7 @@ class DetectorMetadata(BaseModel):
 
 
 class Caen:
+    """A data acquisition system"""
     _url: str
 
     def __init__(self, url: str):
