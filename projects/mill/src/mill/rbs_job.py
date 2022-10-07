@@ -1,21 +1,19 @@
-import logging
 import copy
+import logging
 from datetime import datetime, timedelta
-from typing import List, Union
+from typing import List, Union, Dict
 
 from pydantic import BaseModel
 
-import waspy.iba.rbs_yield_angle_fit as fit
 from mill.logbook_db import LogBookDb
-from mill.rbs_data_serializer import RbsDataSerializer
-from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, RbsSingleStep, RbsStepwiseLeast, \
-    CoordinateRange, Window, RbsData, PositionCoordinates
+from waspy.iba.rbs_data_serializer import plot_energy_yields
+from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJournal, RbsJournal, get_positions_as_float
 from mill.rbs_entities import RbsJobModel
 from mill.job import Job
-import numpy as np
 
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_recipes import run_random
+from waspy.iba.rbs_recipes import run_random, run_channeling, save_channeling_graphs_to_disk, save_rbs_graph_to_disk, \
+    save_fit_result_to_disk, serialize_energy_yields
 from waspy.iba.rbs_setup import RbsSetup
 
 
@@ -43,6 +41,8 @@ class RbsJob(Job):
     _db: LogBookDb
     _file_writer: FileWriter
     _time_loaded: datetime
+    _beam_params: Dict
+    _ays_index: int
 
     def __init__(self, job_model: RbsJobModel, rbs_setup: RbsSetup,
                  file_writer: FileWriter, db: LogBookDb):
@@ -54,6 +54,7 @@ class RbsJob(Job):
         self._db = db
         self._file_writer = file_writer
         self._running = False
+        self._ays_index = 0
 
     def setup(self):
         self._file_writer.set_base_folder(self._job_model.name)
@@ -99,143 +100,72 @@ class RbsJob(Job):
                 progress = 0
             self._active_recipe_status.progress = "{:.2f}".format(progress)
 
-    def _run_recipe(self, recipe):
+    def _ays_report_cb(self, ays_result: AysJournal):
+        yield_coordinate_range = self._recipe.yield_coordinate_ranges[self._ays_index]
+        coordinate_ranging = yield_coordinate_range.name
+        positions = get_positions_as_float(yield_coordinate_range)
+        name = f'{self._recipe.name}_{self._ays_index}_{coordinate_ranging}'
+
+        self._file_writer.cd_folder(name)
+        for index, rbs_journal in enumerate(ays_result.rbs_journals):
+            self._save_rbs_recipe_result(rbs_journal, f'{index:02}_{name}_{positions[index]}')
+
+        text = serialize_energy_yields(ays_result.fit)
+        self._file_writer.write_text_to_disk(f'_{name}_yields.txt', text)
+        if ays_result.fit.success:
+            fig = plot_energy_yields(self._recipe.name, ays_result.fit)
+            self._file_writer.write_matplotlib_fig_to_disk(f'_{self._recipe.name}_{self._ays_index}_{coordinate_ranging}.png', fig)
+        else:
+            self._file_writer.write_text_to_disk(f'_{self._recipe.name}_FAILURE.txt', "Fitting failed")
+        self._ays_index += 1
+        self._file_writer.cd_folder_up()
+        # TODO: Fix
+        # self._db.recipe_finish(ays_result.dict())
+
+    def _run_random_recipe(self, recipe: RbsRandom):
+        journal = run_random(recipe, self._rbs_setup)
+        self._save_rbs_recipe_result(journal, recipe.name)
+        # TODO: fix
+        # self._db.recipe_finish(result.json())
+
+    def _run_channeling_recipe(self, recipe: RbsChanneling):
+        self._ays_index = 0
+        result = run_channeling(recipe, self._rbs_setup, self._ays_report_cb)
+        self._save_rbs_recipe_result(result.fixed, recipe.name + "_fixed")
+        self._save_rbs_recipe_result(result.random, recipe.name + "_random")
+        save_channeling_graphs_to_disk(self._file_writer, result, recipe.name)
+        # TODO: fix
+        # self._db.recipe_finish(result.json())
+
+    def _run_recipe(self, recipe: RbsRandom | RbsChanneling):
+        self._recipe = recipe
         self._rbs_setup.charge_offset = 0
         self._active_recipe_status.start_time = datetime.now()
         self._active_recipe_status.name = recipe.name
         self._active_recipe_status.accumulated_charge_target = _get_total_counts(recipe)
         self._running = True
+        self._beam_params = self._db.get_last_beam_parameters()
         if recipe.type == RecipeType.RANDOM:
-            run_random_with_db_log(recipe, self._rbs_setup, self._file_writer, self._db)
-
+            self._run_random_recipe(recipe)
         if recipe.type == RecipeType.CHANNELING:
-            run_channeling(recipe, self._rbs_setup, self._file_writer, self._db)
-        self._running = True
+            self._run_channeling_recipe(recipe)
+        self._running = False
+
+    def _save_rbs_recipe_result(self, journal: RbsJournal, file_stem):
+        for [detector, histogram] in journal.histograms.items():
+            title = f'{file_stem}_{detector}.txt'
+            header = _serialize_histogram_header(journal, detector, self._recipe, self._beam_params)
+            data = format_caen_histogram(histogram)
+            self._file_writer.write_text_to_disk(title, f'{header}\n{data}')
+        save_rbs_graph_to_disk(self._file_writer, journal, file_stem)
 
     def _finish_recipe(self):
         self._update_active_recipe()
         self._finished_recipes.append(copy.deepcopy(self._active_recipe_status))
         self._active_recipe_status = copy.deepcopy(empty_rbs_recipe_status)
 
-
-def run_random_with_db_log(recipe: RbsRandom, rbs: RbsSetup, file_writer: FileWriter, db: LogBookDb):
-    start_time = datetime.now()
-    params = db.get_last_beam_parameters()
-    rbs_data = run_random(recipe, rbs, file_writer, params)
-    finished_recipe = _make_finished_basic_recipe(recipe, start_time)
-    db.recipe_finish(finished_recipe)
-    return rbs_data
-
-
-def run_channeling(recipe: RbsChanneling, rbs: RbsSetup, data_serializer: RbsDataSerializer):
-    rbs.move(recipe.start_position)
-
-    for index, vary_coordinate in enumerate(recipe.yield_coordinate_ranges):
-        stepwise_least_recipe = _make_stepwise_least_recipe(recipe, vary_coordinate, index)
-        data_serializer.cd_folder(stepwise_least_recipe.name)
-        _stepwise_least(stepwise_least_recipe, rbs, data_serializer)
-        data_serializer.cd_folder_up()
-
-    data_serializer.clear_sub_folder()
-
-    fixed_histograms = _run_fixed(_make_single_step_recipe(recipe), rbs, data_serializer).histograms
-    random_histograms = run_random(_make_stepwise_recipe(recipe), rbs, data_serializer).histograms
-    data_serializer.plot_compare(fixed_histograms, random_histograms, recipe.name)
-
-
-def _run_fixed(recipe: RbsSingleStep, rbs: RbsSetup, data_serializer: RbsDataSerializer) -> RbsData:
-    start_time = datetime.now()
-
-    rbs.prepare_counting_with_target(recipe.charge_total)
-    rbs.start_data_acquisition()
-    rbs.count()
-    rbs.stop_data_acquisition()
-
-    rbs_data = rbs.get_status(True)
-    data_serializer.save_histograms(rbs_data, recipe.name, recipe.sample)
-    data_serializer.plot_histograms(rbs_data, recipe.name)
-
-    data_serializer.single_step_finish(recipe, start_time)
-    return rbs_data
-
-
-def _stepwise_least(recipe: RbsStepwiseLeast, rbs: RbsSetup, data_serializer: RbsDataSerializer):
-    start_time = datetime.now()
-
-    rbs.move(recipe.start_position)
-    positions = get_positions_as_coordinate(recipe.coordinate_range)
-    rbs.prepare_counting_with_target(recipe.total_charge / len(positions))
-
-    detector_optimize = rbs.get_detector(recipe.optimize_detector_identifier)
-    energy_yields = []
-
-    data_serializer.cd_folder("yield_data")
-
-    for position in positions:
-        rbs.start_data_acquisition()
-        rbs.move_and_count(position)
-        rbs.stop_data_acquisition()
-
-        data = rbs.get_packed_histogram(detector_optimize)
-        integrated_energy_yield = get_sum(data, recipe.integration_window)
-        energy_yields.append(integrated_energy_yield)
-
-        rbs_data = rbs.get_status(True)
-        file_stem = recipe.name + "_" + single_coordinate_to_string(position, recipe.coordinate_range)
-        data_serializer.save_histograms(rbs_data, file_stem, recipe.sample)
-        data_serializer.plot_histograms(rbs_data, file_stem)
-
-    data_serializer.cd_folder_up()
-    angles = get_positions_as_float(recipe.coordinate_range)
-    data_serializer.store_yields(recipe.name, angles, energy_yields)
-
-    try:
-        smooth_angles, smooth_yields = fit.fit_and_smooth(angles, energy_yields)
-        min_angle = fit.get_angle_for_minimum_yield(smooth_angles, smooth_yields)
-        min_position = convert_float_to_coordinate(recipe.coordinate_range.name, min_angle)
-        data_serializer.plot_energy_yields(recipe.name, angles, energy_yields, smooth_angles, smooth_yields)
-        rbs.move(min_position)
-        data_serializer.stepwise_least_finish(recipe, angles, energy_yields, min_angle, start_time)
-    except RuntimeError as e:
-        logging.error(e)
-        data_serializer.stepwise_least_terminate(recipe, angles, energy_yields, str(e), start_time)
-
-
-def _make_stepwise_least_recipe(recipe, vary_coordinate, index: int):
-    return RbsStepwiseLeast(type=RecipeType.ANGULAR_YIELD, sample=recipe.sample,
-                            name=recipe.name + "_" + str(index) + "_vary_" + str(vary_coordinate.name),
-                            total_charge=recipe.yield_charge_total,
-                            vary_coordinate=vary_coordinate, integration_window=
-                            recipe.yield_integration_window,
-                            optimize_detector_identifier=recipe.yield_optimize_detector_identifier)
-
-
-def _make_single_step_recipe(recipe):
-    return RbsSingleStep(type=RecipeType.FIXED, sample=recipe.sample,
-                         name=recipe.name + "_fixed",
-                         charge_total=recipe.compare_charge_total)
-
-
-def _make_finished_basic_recipe(recipe: RbsStepwiseLeast | RbsRandom | RbsSingleStep, start_time: datetime):
-    return {"start_time": str(start_time), "end_time": str(datetime.now()), "name": recipe.name,
-            "type": recipe.type.value, "sample": recipe.sample}
-
-
-def _make_finished_vary_recipe(recipe: RbsStepwiseLeast | RbsRandom, start_time: datetime):
-    finished_recipe = _make_finished_basic_recipe(recipe, start_time)
-    finished_recipe["vary_axis"] = recipe.coordinate_range.name
-    finished_recipe["start"] = recipe.coordinate_range.start
-    finished_recipe["end"] = recipe.coordinate_range.end
-    finished_recipe["step"] = recipe.coordinate_range.increment
-    return finished_recipe
-
-
-def _make_stepwise_recipe(recipe):
-    return RbsRandom(type=RecipeType.RANDOM, sample=recipe.sample,
-                     name=recipe.name + "_random",
-                     charge_total=recipe.compare_charge_total,
-                     start_position={"theta": -2},
-                     vary_coordinate=recipe.random_coordinate_range)
+    def abort(self):
+        logging.info("Abort: need to implement")
 
 
 def _get_total_counts_stepwise(recipe: RbsRandom):
@@ -255,29 +185,47 @@ def _get_total_counts(recipe: Union[RbsRandom, RbsChanneling]):
         return _get_total_counts_stepwise(recipe)
 
 
-def single_coordinate_to_string(position: PositionCoordinates, coordinate: CoordinateRange) -> str:
-    position_value = position.dict()[coordinate.name]
-    return coordinate.name[0] + "_" + str(position_value)
+def format_caen_histogram(data: List[int]) -> str:
+    index = 0
+    data_string = ""
+    for energy_level in data:
+        data_string += f'{index}, {energy_level}\n'
+        index += 1
+    return data_string
 
 
-def get_positions_as_coordinate(vary_coordinate: CoordinateRange) -> List[PositionCoordinates]:
-    angles = get_positions_as_float(vary_coordinate)
-    positions = [PositionCoordinates.parse_obj({vary_coordinate.name: angle}) for angle in angles]
-    return positions
+def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe, extra):
+    now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
 
-
-def get_positions_as_float(vary_coordinate: CoordinateRange) -> List[float]:
-    if vary_coordinate.increment == 0:
-        return [vary_coordinate.start]
-    coordinate_range = np.arange(vary_coordinate.start, vary_coordinate.end + vary_coordinate.increment,
-                                 vary_coordinate.increment)
-    numpy_array = np.around(coordinate_range, decimals=2)
-    return [float(x) for x in numpy_array]
-
-
-def convert_float_to_coordinate(coordinate_name: str, position: float) -> PositionCoordinates:
-    return PositionCoordinates.parse_obj({coordinate_name: position})
-
-
-def get_sum(data: List[int], window: Window) -> int:
-    return sum(data[window.start:window.end])
+    header = f""" % Comments
+ % Title                 := {recipe.name + "_" + detector_name}
+ % Section := <raw_data>
+ *
+ * Filename no extension := {recipe.name}
+ * DATE/Time             := {now}
+ * MEASURING TIME[sec]   := {journal.measuring_time_msec}
+ * ndpts                 := {1024}
+ *
+ * ANAL.IONS(Z)          := 4.002600
+ * ANAL.IONS(symb)       := He+
+ * ENERGY[MeV]           := {extra.get("beam_energy_MeV", "")} MeV
+ * Charge[nC]            := {journal.accumulated_charge}
+ *
+ * Sample ID             := {recipe.sample}
+ * Sample X              := {journal.x}
+ * Sample Y              := {journal.y}
+ * Sample Zeta           := {journal.zeta}
+ * Sample Theta          := {journal.theta}
+ * Sample Phi            := {journal.phi}
+ * Sample Det            := {journal.det}
+ *
+ * Detector name         := {detector_name}
+ * Detector ZETA         := 0.0
+ * Detector Omega[mSr]   := 0.42
+ * Detector offset[keV]  := 33.14020
+ * Detector gain[keV/ch] := 1.972060
+ * Detector FWHM[keV]    := 18.0
+ *
+ % Section :=  </raw_data>
+ % End comments"""
+    return header

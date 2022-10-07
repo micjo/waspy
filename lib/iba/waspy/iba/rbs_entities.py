@@ -1,5 +1,6 @@
+from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Optional, Literal
+from typing import List, Dict, Optional, Literal, Callable
 
 import numpy as np
 from pydantic import BaseModel, Field, validator
@@ -39,6 +40,51 @@ class RbsData(BaseModel):
     accumulated_charge: str
 
 
+class RbsJournal(BaseModel):
+    start_time: datetime
+    end_time: datetime
+    x: float
+    y: float
+    det: float
+    theta: float
+    phi: float
+    zeta: float
+    histograms: Dict[str, List[int]] = Field(description="Maps detector name to resulting dataset")
+    measuring_time_msec: str
+    accumulated_charge: str
+
+
+def get_rbs_journal(rbs_data: RbsData, start_time: datetime) -> RbsJournal:
+    return RbsJournal(
+        x=rbs_data.aml_x_y["motor_1_position"], y=rbs_data.aml_x_y["motor_2_position"],
+        phi=rbs_data.aml_phi_zeta["motor_1_position"], zeta=rbs_data.aml_phi_zeta["motor_2_position"],
+        det=rbs_data.aml_det_theta["motor_1_position"], theta=rbs_data.aml_det_theta["motor_2_position"],
+        accumulated_charge=rbs_data.accumulated_charge, measuring_time_msec=rbs_data.measuring_time_msec,
+        histograms=rbs_data.histograms, start_time=start_time, end_time=datetime.now()
+    )
+
+
+class AysFitResult(BaseModel):
+    success: bool
+    minimum: Optional[float]
+    discrete_angles: List[float]
+    discrete_yields: List[int]
+    fit_func: Optional[Callable[[float], float]]
+
+
+class AysJournal(BaseModel):
+    start_time: datetime
+    end_time: datetime
+    rbs_journals: List[RbsJournal]
+    fit: AysFitResult
+
+
+class ChannelingJournal(BaseModel):
+    random: RbsJournal
+    fixed: RbsJournal
+    ays: List[AysJournal]
+
+
 class PositionCoordinates(BaseModel):
     x: Optional[float]
     y: Optional[float]
@@ -52,11 +98,6 @@ class PositionCoordinates(BaseModel):
                                                                     det=self.detector, theta=self.theta)
 
 
-class RecipeOutput(BaseModel):
-    title: str
-    content: str
-
-
 class Graph(BaseModel):
     title: str
     plots: List[Plot]
@@ -65,13 +106,13 @@ class Graph(BaseModel):
 
 
 class GraphGroup(BaseModel):
-    title: str
     graphs: List[Graph]
+    title: str
 
 
 class RbsHistogramGraphData(BaseModel):
     graph_title: str
-    histogram_data:  Dict[str, List[int]] = Field(
+    histogram_data: Dict[str, List[int]] = Field(
         description="For each item in this list, a new graph is created.  There is 1 plot per graph")
     x_label: str = "energy level"
     y_label: str = "yield"
@@ -163,7 +204,7 @@ class Window(BaseModel):
 class RbsChanneling(BaseModel):
     """
     The model for a channeling measurement. This is a combination of recipes. A number of yield optimizations will
-    happen. Next, a random measurement and a fixed measurement are performed.
+    happen. Next, a fixed measurement and a random measurement are performed.
     The outputs of the configured detectors are then compared in a plot.
     """
     type: Literal[RecipeType.CHANNELING]

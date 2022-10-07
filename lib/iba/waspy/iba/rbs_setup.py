@@ -4,7 +4,6 @@ import time
 from threading import Lock
 from typing import List, Dict
 
-import requests
 
 from waspy.drivers.aml_smd2 import AmlSmd2
 from waspy.drivers.caen import Caen

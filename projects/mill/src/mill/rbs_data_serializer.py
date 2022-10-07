@@ -6,7 +6,7 @@ import numpy as np
 
 from waspy.iba.file_writer import FileWriter
 from mill.logbook_db import LogBookDb
-from mill.rbs_entities import RbsJobModel, RbsStepwise, RbsStepwiseLeast, RbsSingleStep
+from mill.rbs_entities import RbsJobModel
 from waspy.iba.rbs_entities import RbsHistogramGraphData, \
     RbsHistogramGraphDataSet, RbsData
 from matplotlib import pyplot as plt
@@ -164,38 +164,3 @@ class RbsDataSerializer:
 
 
 
-def _serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: str, sample_id: str, params: dict):
-    now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
-
-    header = f""" % Comments
- % Title                 := {file_stem + "_" + data_title}
- % Section := <raw_data>
- *
- * Filename no extension := {file_stem}
- * DATE/Time             := {now}
- * MEASURING TIME[sec]   := {rbs_data.measuring_time_msec}
- * ndpts                 := {1024}
- *
- * ANAL.IONS(Z)          := 4.002600
- * ANAL.IONS(symb)       := He+
- * ENERGY[MeV]           := {params.get("beam_energy_MeV","")} MeV
- * Charge[nC]            := {rbs_data.accumulated_charge}
- *
- * Sample ID             := {sample_id}
- * Sample X              := {rbs_data.aml_x_y["motor_1_position"]}
- * Sample Y              := {rbs_data.aml_x_y["motor_2_position"]}
- * Sample Zeta           := {rbs_data.aml_phi_zeta["motor_1_position"]}
- * Sample Theta          := {rbs_data.aml_phi_zeta["motor_2_position"]}
- * Sample Phi            := {rbs_data.aml_det_theta["motor_1_position"]}
- * Sample Det            := {rbs_data.aml_det_theta["motor_2_position"]}
- *
- * Detector name         := {data_title}
- * Detector ZETA         := 0.0
- * Detector Omega[mSr]   := 0.42
- * Detector offset[keV]  := 33.14020
- * Detector gain[keV/ch] := 1.972060
- * Detector FWHM[keV]    := 18.0
- *
- % Section :=  </raw_data>
- % End comments"""
-    return header

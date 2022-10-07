@@ -1,13 +1,38 @@
 import logging
-from typing import Dict, List
+from datetime import datetime
+from typing import List
 
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_data_serializer import serialize_histogram_header, format_caen_histogram, plot_energy_yields, \
-    plot_graph_group
-from waspy.iba.rbs_entities import get_positions_as_coordinate, RbsRecipe, RbsData, CoordinateRange, Graph, Plot, \
-    RbsChanneling, get_positions_as_float, Window, PositionCoordinates, GraphGroup, RecipeOutput, RbsRandom
+from waspy.iba.rbs_data_serializer import plot_energy_yields, plot_graph_group
+from waspy.iba.rbs_entities import get_positions_as_coordinate, CoordinateRange, Graph, Plot, \
+    RbsChanneling, get_positions_as_float, Window, PositionCoordinates, GraphGroup, RbsRandom, \
+    AysFitResult, AysJournal, RbsData, ChannelingJournal, RbsJournal, get_rbs_journal
 from waspy.iba.rbs_setup import RbsSetup
-from waspy.iba.rbs_yield_angle_fit import fit_and_smooth, get_angle_for_minimum_yield
+from waspy.iba.rbs_yield_angle_fit import fit_and_smooth
+
+
+def run_random(recipe: RbsRandom, rbs: RbsSetup) -> RbsJournal:
+    start_time = datetime.now()
+    rbs.move(recipe.start_position)
+    rbs_data = run_rbs_recipe(recipe.coordinate_range, recipe.charge_total, rbs)
+    return get_rbs_journal(rbs_data, start_time)
+
+
+def run_channeling(recipe: RbsChanneling, rbs: RbsSetup,
+                   ays_report_cb: callable(AysJournal) = None) -> ChannelingJournal:
+    rbs.move(recipe.start_position)
+
+    ays = run_ays(recipe, rbs, ays_report_cb)
+
+    start_time = datetime.now()
+    fixed_data = rbs.acquire_data(recipe.compare_charge_total)
+    fixed = get_rbs_journal(fixed_data, start_time)
+
+    start_time = datetime.now()
+    random_data = run_rbs_recipe(recipe.random_coordinate_range, recipe.compare_charge_total, rbs)
+    random = get_rbs_journal(random_data, start_time)
+
+    return ChannelingJournal(random=random, fixed=fixed, ays=ays, title=recipe.name)
 
 
 def run_rbs_recipe(coordinate_range: CoordinateRange, charge_total: int, rbs: RbsSetup) -> RbsData:
@@ -19,99 +44,83 @@ def run_rbs_recipe(coordinate_range: CoordinateRange, charge_total: int, rbs: Rb
     return rbs.get_status(True)
 
 
-def serialize_output(name: str, sample: str, rbs_data: RbsData, beam_params: Dict) -> [RecipeOutput, GraphGroup]:
+def save_channeling_graphs_to_disk(file_writer, channeling_result: ChannelingJournal, file_stem):
     graphs = []
-    recipe_output = ""
-
-    for [detector_name, histogram] in rbs_data.histograms.items():
-        header = serialize_histogram_header(rbs_data, detector_name, name, sample, beam_params)
-        full_data = header + "\n" + format_caen_histogram(histogram)
-        recipe_output = RecipeOutput(title=f'{name}_{detector_name}.txt', content=full_data)
-        plot = Plot(title=detector_name, points=histogram)
-        graphs.append(Graph(title="", plots=[plot], x_label="energy level", y_label="yield"))
-
-    graph_group = GraphGroup(title=name, graphs=graphs)
-    return recipe_output, graph_group
-
-
-def write_output_to_disk(file_writer: FileWriter, recipe_output: RecipeOutput, graph_group: GraphGroup):
-    file_writer.write_text_to_disk(recipe_output.title, recipe_output.content)
-    figure = plot_graph_group(graph_group)
-    file_writer.write_matplotlib_fig_to_disk(graph_group.title, figure)
-
-
-# TODO: return diagnostics with start and end time ?
-def run_random(recipe: RbsRandom, rbs: RbsSetup, file_writer: FileWriter, beam_params: Dict):
-    rbs.move(recipe.start_position)
-    rbs_data = run_rbs_recipe(recipe.coordinate_range, recipe.charge_total, rbs)
-    recipe_output, graph_group = serialize_output(recipe.name, recipe.sample, rbs_data, beam_params)
-    write_output_to_disk(file_writer, recipe_output, graph_group)
-
-
-# TODO: remove FileWriter dependency. Writing should happen in another call
-# TODO: Comments inline in function -> split off other functions
-def run_channeling(recipe: RbsChanneling, rbs: RbsSetup, file_writer: FileWriter, beam_params: Dict):
-    rbs.move(recipe.start_position)
-
-    # AYS
-    for index, coordinate_range in enumerate(recipe.yield_coordinate_ranges):
-        recipe_name = recipe.name + str(index) + str(coordinate_range.name)
-
-        # Gather yields
-        file_writer.cd_folder(recipe_name)
-        energy_yields = []
-        for step in get_positions_as_float(coordinate_range):
-            single = CoordinateRange.init_single(coordinate_range.name, step)
-            step_name = f'{recipe_name}_{coordinate_range.name}_{step}'
-
-            rbs_data = run_rbs_recipe(single, recipe.yield_charge_total, rbs)
-            recipe_output, graph_group = serialize_output(step_name, recipe.sample, rbs_data, beam_params)
-            write_output_to_disk(file_writer, recipe_output, graph_group)
-
-            data_to_optimize = rbs_data.histograms[recipe.yield_optimize_detector_identifier]
-            energy_yields.append(get_sum(data_to_optimize, recipe.yield_integration_window))
-
-        file_writer.cd_folder_up()
-        angles = get_positions_as_float(coordinate_range)
-        content = ""
-        for [angle, energy_yield] in zip(angles, energy_yields):
-            content += f'{angle}, {energy_yield}\n'
-        file_writer.write_text_to_disk(recipe_name, content)
-
-        # Move to minimum
-        try:
-            smooth_angles, smooth_yields = fit_and_smooth(angles, energy_yields)
-            min_angle = get_angle_for_minimum_yield(smooth_angles, smooth_yields)
-            min_position = convert_float_to_coordinate(coordinate_range.name, min_angle)
-            plot_energy_yields(recipe.name, angles, energy_yields, smooth_angles, smooth_yields)
-            rbs.move(min_position)
-            # TODO: send something to db (stepwise_least finish) (callback? - also callback for file writing?)
-        except RuntimeError as e:
-            logging.error(e)
-            # TODO: send something to db (terminate) (callback? - also callback for file writing?)
-
-    # FIXED
-    fixed_data = rbs.acquire_data(recipe.compare_charge_total)
-    recipe_output, graph_group = serialize_output(recipe.name + "_fixed", recipe.sample, fixed_data, beam_params)
-    write_output_to_disk(file_writer, recipe_output, graph_group)
-
-    # RANDOM
-    random_data = run_rbs_recipe(recipe.random_coordinate_range, recipe.compare_charge_total, rbs)
-    recipe_output, graph_group = serialize_output(recipe.name + "_random", recipe.sample, random_data, beam_params)
-    write_output_to_disk(file_writer, recipe_output, graph_group)
-
-    graphs = []
-
+    fixed_data = channeling_result.fixed
+    random_data = channeling_result.random
     for detector_name in fixed_data.histograms.keys():
         fixed_plot = Plot(title=f'fixed', points=fixed_data.histograms[detector_name])
         random_plot = Plot(title=f'random', points=random_data.histograms[detector_name])
         graph = Graph(title=f'{detector_name}', plots=[fixed_plot, random_plot], x_label="energy level",
                       y_label="yield")
         graphs.append(graph)
-
-    graph_group = GraphGroup(title=f'{recipe.name}', graphs=graphs)
+    graph_group = GraphGroup(title=f'{file_stem}', graphs=graphs)
     fig = plot_graph_group(graph_group)
-    file_writer.write_matplotlib_fig_to_disk(recipe.name + ".png", fig)
+    file_writer.write_matplotlib_fig_to_disk(f'{graph_group.title}.png', fig)
+
+
+def save_rbs_graph_to_disk(file_writer, journal: RbsJournal, file_stem):
+    graphs = []
+    for [detector, histogram] in journal.histograms.items():
+        plot = Plot(title=detector, points=histogram)
+        graphs.append(Graph(title="", plots=[plot], x_label="energy level", y_label="yield"))
+
+    graph_group = GraphGroup(graphs=graphs, title=file_stem)
+    fig = plot_graph_group(graph_group)
+    file_writer.write_matplotlib_fig_to_disk(f'{graph_group.title}.png', fig)
+
+
+def save_fit_result_to_disk(file_writer: FileWriter, fit_result: AysFitResult, file_stem: str):
+    text = ""
+    for [angle, energy_yield] in zip(fit_result.discrete_angles, fit_result.discrete_yields):
+        text += f'{angle}, {energy_yield}\n'
+    file_writer.write_text_to_disk(f'{file_stem}_yields.txt', text)
+    fig = plot_energy_yields(file_stem, fit_result)
+    file_writer.write_matplotlib_fig_to_disk(file_stem, fig)
+
+
+def serialize_energy_yields(fit_data: AysFitResult) -> str:
+    text = ""
+    for [angle, energy_yield] in zip(fit_data.discrete_angles, fit_data.discrete_yields):
+        text += f'{angle}, {energy_yield}\n'
+    return text
+
+
+def run_ays(recipe: RbsChanneling, rbs: RbsSetup, ays_report_callback: callable(AysJournal)) -> List[AysJournal]:
+    """ays: angular yield scan"""
+    start_time = datetime.now()
+    result = []
+    for coordinate_range in recipe.yield_coordinate_ranges:
+        rbs_journals = []
+        yields = []
+        angles = get_positions_as_float(coordinate_range)
+        for angle in angles:
+            single = CoordinateRange.init_single(coordinate_range.name, angle)
+            ays_step_start_time = datetime.now()
+            rbs_data = run_rbs_recipe(single, recipe.yield_charge_total, rbs)
+            rbs_journal = get_rbs_journal(rbs_data, ays_step_start_time)
+            rbs_journals.append(rbs_journal)
+            yields.append(get_sum(rbs_journal.histograms[recipe.yield_optimize_detector_identifier],
+                                  recipe.yield_integration_window))
+        fit_result = find_minimum(angles, yields)
+        if fit_result.success:
+            rbs.move(convert_float_to_coordinate(coordinate_range.name, fit_result.minimum))
+        result.append(AysJournal(start_time=start_time, end_time=datetime.now(), rbs_journals=rbs_journals,
+                                 fit=fit_result))
+        if ays_report_callback:
+            ays_report_callback(result[-1])
+
+    return result
+
+
+def find_minimum(angles, yields) -> AysFitResult:
+    try:
+        fit_func, min_angle = fit_and_smooth(angles, yields)
+        return AysFitResult(success=True, minimum=min_angle, discrete_angles=angles,
+                            discrete_yields=yields, fit_func=fit_func)
+    except RuntimeError as e:
+        logging.error(e)
+        return AysFitResult(success=False, discrete_angles=angles, discrete_yields=yields)
 
 
 def get_sum(data: List[int], window: Window) -> int:

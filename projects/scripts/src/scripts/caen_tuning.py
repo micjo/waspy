@@ -84,6 +84,6 @@ if __name__ == "__main__":
         for histogram_data in rbs_data.histograms:
             text_filename = Path(registry).stem + "_" + histogram_data.title + ".txt"
             fig_filename = Path(registry).stem + "_" + histogram_data.title + ".png"
-            data_serializer.write_text_to_disk(text_filename, format_caen_histogram(histogram_data.data))
+            data_serializer.write_text_to_disk(text_filename, format_caen_histogram(histogram_data.dataset))
             fig = plot_rbs_histograms(RbsHistogramGraphData(graph_title=registry, histograms=[histogram_data]))
             data_serializer.write_matplotlib_fig_to_disk(fig_filename, fig)

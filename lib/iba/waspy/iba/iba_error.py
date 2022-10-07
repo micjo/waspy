@@ -4,6 +4,9 @@ class IbaError(Exception):
 
 
 class FitError(IbaError):
-    """ An exception for when fitting a curve over a list of 2D points fails"""
+    """ fitting a curve over a list of 2D points failed"""
     pass
 
+
+class RangeError(IbaError):
+    """ Invalid range specified"""

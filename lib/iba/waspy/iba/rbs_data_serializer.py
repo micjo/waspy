@@ -1,11 +1,13 @@
+import copy
 from datetime import datetime
 from typing import List
 
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
-from waspy.iba.rbs_entities import RbsData, GraphGroup
+from waspy.iba.rbs_entities import RbsData, GraphGroup, AysFitResult, Graph
 import matplotlib
+
 matplotlib.use('Agg')
 
 
@@ -26,6 +28,11 @@ def plot_graph_group(graph_group: GraphGroup) -> Figure:
     return fig
 
 
+def plot_graph(graph: Graph) -> Figure:
+    graph_group = GraphGroup(graphs=[graph])
+    return plot_graph_group(graph_group)
+
+
 def _configure_ax(ax, x_label, y_label):
     ax.grid(which='major')
     ax.grid(which='minor', linestyle=":")
@@ -35,12 +42,12 @@ def _configure_ax(ax, x_label, y_label):
     ax.set_ylabel(y_label)
 
 
-def plot_energy_yields(title,
-                       angles: List[float], yields: List[int], smooth_angles: List[float],
-                       smooth_yields: List[float]):
+def plot_energy_yields(title, fit_result: AysFitResult):
     fig, ax = plt.subplots()
-    ax.scatter(angles, yields, marker="+", color="red", label="Data Points")
-    ax.axhline(np.amin(yields), label="Minimum", linestyle=":")
+    ax.scatter(fit_result.discrete_angles, fit_result.discrete_yields, marker="+", color="red", label="Data Points")
+    ax.axhline(np.amin(fit_result.discrete_yields), label="Minimum", linestyle=":")
+    smooth_angles = np.arange(fit_result.discrete_angles[1], fit_result.discrete_angles[-1], 0.01)
+    smooth_yields = fit_result.fit_func(smooth_angles)
     ax.plot(smooth_angles, smooth_yields, color="green", label="Fit")
     ax.legend(loc=0)
     plt.xlabel("degrees").set_fontsize(15)
@@ -71,7 +78,7 @@ def serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: st
  *
  * ANAL.IONS(Z)          := 4.002600
  * ANAL.IONS(symb)       := He+
- * ENERGY[MeV]           := {params.get("beam_energy_MeV","")} MeV
+ * ENERGY[MeV]           := {params.get("beam_energy_MeV", "")} MeV
  * Charge[nC]            := {rbs_data.accumulated_charge}
  *
  * Sample ID             := {sample_id}
@@ -92,6 +99,7 @@ def serialize_histogram_header(rbs_data: RbsData, data_title: str, file_stem: st
  % Section :=  </raw_data>
  % End comments"""
     return header
+
 
 
 def format_caen_histogram(data: List[int]) -> str:

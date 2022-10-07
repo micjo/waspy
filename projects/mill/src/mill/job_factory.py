@@ -3,16 +3,14 @@ from typing import Union, Dict, List
 
 import pandas as pd
 
-from mill.erd_data_serializer import ErdDataSerializer
 from mill.erd_entities import ErdJobModel
 from mill.erd_job import ErdJob
 from mill.logbook_db import LogBookDb
 from waspy.iba.erd_setup import ErdSetup
-from mill.rbs_data_serializer import RbsDataSerializer
-from mill.rbs_entities import RbsJobModel, VaryCoordinate
+from mill.rbs_entities import RbsJobModel
 from mill.rbs_job import RbsJob
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_entities import PositionCoordinates
+from waspy.iba.rbs_entities import PositionCoordinates, CoordinateRange
 from waspy.iba.rbs_setup import RbsSetup
 
 
@@ -97,17 +95,16 @@ def parse_rbs_recipes(recipes_section, rbs_setup: RbsSetup):
 def parse_random_recipe(recipe_section: Dict) -> Dict:
     setting = drop_nan(recipe_section)
     convert_coordinates_to_position("start_position", setting)
-    setting["vary_coordinate"] = VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
+    setting["coordinate_range"] = CoordinateRange(name="phi", start=0, end=30, increment=2).dict()
     return setting
 
 
 def parse_channeling_recipe(recipe_section: Dict) -> Dict:
     setting = drop_nan(recipe_section)
     convert_coordinates_to_position("start_position", setting)
-    setting["random_vary_coordinate"] = VaryCoordinate(name="phi", start=0, end=30, increment=2).dict()
-    setting["random_fixed_charge_total"] = setting['charge_total']
+    setting["compare_charge_total"] = setting['charge_total']
     setting.pop("charge_total")
-    setting["yield_vary_coordinates"] = [
+    setting["yield_coordinate_ranges"] = [
         {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
         {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
         {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
@@ -117,7 +114,7 @@ def parse_channeling_recipe(recipe_section: Dict) -> Dict:
     setting.pop("ays_charge")
     setting["yield_optimize_detector_identifier"] = setting["ays_detector_identifier"]
     setting.pop("ays_detector_identifier")
-    setting["random_vary_coordinate"] = {"name": "phi", "start": 0, "end": 30, "increment": 2}
+    setting["random_coordinate_range"] = {"name": "phi", "start": 0, "end": 30, "increment": 2}
     setting["yield_integration_window"] = {}
     setting["yield_integration_window"]["start"] = setting["ays_window_start"]
     setting.pop("ays_window_start")
