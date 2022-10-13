@@ -1,7 +1,7 @@
 import logging
 from typing import Dict
 
-from mill.mill_error import AbortedError, MillError
+from mill.mill_error import CancelledError, MillError
 from waspy.iba.iba_error import IbaError
 from waspy.drivers.driver_error import DriverError
 
@@ -22,7 +22,7 @@ class Job:
     def serialize(self) -> Dict:
         raise NotImplementedError("")
 
-    def abort(self):
+    def cancel(self):
         raise NotImplementedError("")
 
 
@@ -42,7 +42,7 @@ class EmptyJob(Job):
     def serialize(self) -> Dict:
         return {}
 
-    def abort(self):
+    def cancel(self):
         pass
 
 
@@ -55,7 +55,7 @@ def execute(job: Job):
     try:
         job.exec()
         job.teardown()
-    except (AbortedError, DriverError, IbaError, MillError) as e:
+    except (CancelledError, DriverError, IbaError, MillError) as e:
         job.terminate(str(e))
         return
 

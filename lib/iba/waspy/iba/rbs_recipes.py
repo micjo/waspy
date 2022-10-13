@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_data_serializer import plot_energy_yields, plot_graph_group
+from waspy.iba.rbs_plot import plot_energy_yields, plot_graph_group
 from waspy.iba.rbs_entities import get_positions_as_coordinate, CoordinateRange, Graph, Plot, \
     RbsChanneling, get_positions_as_float, Window, PositionCoordinates, GraphGroup, RbsRandom, \
     AysFitResult, AysJournal, RbsData, ChannelingJournal, RbsJournal, get_rbs_journal
@@ -70,6 +70,48 @@ def save_rbs_graph_to_disk(file_writer, journal: RbsJournal, file_stem):
     file_writer.write_matplotlib_fig_to_disk(f'{graph_group.title}.png', fig)
 
 
+def save_rbs_journal(file_writer: FileWriter, recipe: RbsRandom, journal: RbsJournal, extra=None):
+    save_rbs_journal_with_file_stem(file_writer, recipe.name, recipe, journal, extra)
+
+
+def save_rbs_journal_with_file_stem(file_writer: FileWriter, file_stem, recipe: RbsChanneling | RbsRandom,
+                                    journal: RbsJournal, extra=None):
+    for [detector, histogram] in journal.histograms.items():
+        title = f'{file_stem}_{detector}.txt'
+        header = _serialize_histogram_header(journal, detector, recipe, extra)
+        data = format_caen_histogram(histogram)
+        file_writer.write_text_to_disk(title, f'{header}\n{data}')
+    save_rbs_graph_to_disk(file_writer, journal, file_stem)
+
+
+def save_channeling_journal(file_writer: FileWriter, recipe: RbsChanneling, journal: ChannelingJournal, extra=None):
+    for ays_index, ays_journal in enumerate(journal.ays):
+        yield_coordinate_range = recipe.yield_coordinate_ranges[ays_index]
+        coordinate_ranging = yield_coordinate_range.name
+        positions = get_positions_as_float(yield_coordinate_range)
+        name = f'{recipe.name}_{ays_index}_{coordinate_ranging}'
+        file_writer.cd_folder(name)
+        for rbs_index, rbs_journal in enumerate(ays_journal.rbs_journals):
+            save_rbs_journal_with_file_stem(file_writer, f'{rbs_index:02}_{name}_{positions[ays_index]}', recipe,
+                                            rbs_journal, extra)
+        text = serialize_energy_yields(ays_journal.fit)
+        file_writer.write_text_to_disk(f'_{name}_yields.txt', text)
+
+        file_name = f'_{recipe.name}_{ays_index}_{coordinate_ranging}'
+        if ays_journal.fit.success:
+            fig = plot_energy_yields(recipe.name, ays_journal.fit)
+            file_writer.write_matplotlib_fig_to_disk(f'{file_name}.png', fig)
+        else:
+            file_writer.write_text_to_disk(f'{file_name}.txt', "Fitting failed")
+            file_writer.cd_folder_up()
+            return
+        file_writer.cd_folder_up()
+
+    save_rbs_journal_with_file_stem(file_writer, recipe.name + "_fixed", recipe, journal.fixed, extra)
+    save_rbs_journal_with_file_stem(file_writer, recipe.name + "_random", recipe, journal.random, extra)
+    save_channeling_graphs_to_disk(file_writer, journal, recipe.name)
+
+
 def save_fit_result_to_disk(file_writer: FileWriter, fit_result: AysFitResult, file_stem: str):
     text = ""
     for [angle, energy_yield] in zip(fit_result.discrete_angles, fit_result.discrete_yields):
@@ -129,3 +171,51 @@ def get_sum(data: List[int], window: Window) -> int:
 
 def convert_float_to_coordinate(coordinate_name: str, position: float) -> PositionCoordinates:
     return PositionCoordinates.parse_obj({coordinate_name: position})
+
+
+def format_caen_histogram(data: List[int]) -> str:
+    index = 0
+    data_string = ""
+    for energy_level in data:
+        data_string += f'{index}, {energy_level}\n'
+        index += 1
+    return data_string
+
+
+def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe: RbsRandom | RbsChanneling, extra):
+    now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
+    if extra is None:
+        extra = {}
+
+    header = f""" % Comments
+ % Title                 := {recipe.name + "_" + detector_name}
+ % Section := <raw_data>
+ *
+ * Filename no extension := {recipe.name}
+ * DATE/Time             := {now}
+ * MEASURING TIME[sec]   := {journal.measuring_time_sec}
+ * ndpts                 := {1024}
+ *
+ * ANAL.IONS(Z)          := 4.002600
+ * ANAL.IONS(symb)       := He+
+ * ENERGY[MeV]           := {extra.get("beam_energy_MeV", "")} MeV
+ * Charge[nC]            := {journal.accumulated_charge}
+ *
+ * Sample ID             := {recipe.sample}
+ * Sample X              := {journal.x}
+ * Sample Y              := {journal.y}
+ * Sample Zeta           := {journal.zeta}
+ * Sample Theta          := {journal.theta}
+ * Sample Phi            := {journal.phi}
+ * Sample Det            := {journal.det}
+ *
+ * Detector name         := {detector_name}
+ * Detector ZETA         := 0.0
+ * Detector Omega[mSr]   := 0.42
+ * Detector offset[keV]  := 33.14020
+ * Detector gain[keV/ch] := 1.972060
+ * Detector FWHM[keV]    := 18.0
+ *
+ % Section :=  </raw_data>
+ % End comments"""
+    return header

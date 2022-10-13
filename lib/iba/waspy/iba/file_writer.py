@@ -19,7 +19,7 @@ class FileWriter:
     _sub_folder: Path
     _remote_enable: bool
 
-    def __init__(self, local_dir: Path, remote_dir: Union[Path, None]):
+    def __init__(self, local_dir: Path, remote_dir: Union[Path, None] = None):
         self._local = local_dir
         self._remote = remote_dir
         self._sub_folder = Path("")

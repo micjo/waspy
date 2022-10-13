@@ -52,6 +52,8 @@ class FastcomMpa3:
         post_request(self._url, {"request_id": generate_request_id(), "convert": True})
 
     def get_measurement_time(self):
+        print(self._url)
+        print(get_json(self._url))
         return get_json(self._url)["acquisition_status"]["real_time"]
 
     def get_histogram(self):

@@ -12,16 +12,12 @@ class Detector(DetectorMetadata):
         description="This will be used in the filenames for storage and in the plots for titles")
 
 
-class HardwareUrl(BaseModel):
-    url: str
-
-
 class RbsDriverUrls(BaseModel):
-    aml_x_y: HardwareUrl
-    aml_phi_zeta: HardwareUrl
-    aml_det_theta: HardwareUrl
-    caen: HardwareUrl
-    motrona_charge: HardwareUrl
+    aml_x_y: str
+    aml_phi_zeta: str
+    aml_det_theta: str
+    caen: str
+    motrona_charge: str
 
 
 class Plot(BaseModel):
@@ -36,7 +32,7 @@ class RbsData(BaseModel):
     caen: Dict
     motrona: Dict
     histograms: Dict[str, List[int]] = Field(description="Maps detector name to resulting dataset")
-    measuring_time_msec: str
+    measuring_time_sec: str
     accumulated_charge: str
 
 
@@ -50,8 +46,8 @@ class RbsJournal(BaseModel):
     phi: float
     zeta: float
     histograms: Dict[str, List[int]] = Field(description="Maps detector name to resulting dataset")
-    measuring_time_msec: str
-    accumulated_charge: str
+    measuring_time_sec: int
+    accumulated_charge: float
 
 
 def get_rbs_journal(rbs_data: RbsData, start_time: datetime) -> RbsJournal:
@@ -59,7 +55,7 @@ def get_rbs_journal(rbs_data: RbsData, start_time: datetime) -> RbsJournal:
         x=rbs_data.aml_x_y["motor_1_position"], y=rbs_data.aml_x_y["motor_2_position"],
         phi=rbs_data.aml_phi_zeta["motor_1_position"], zeta=rbs_data.aml_phi_zeta["motor_2_position"],
         det=rbs_data.aml_det_theta["motor_1_position"], theta=rbs_data.aml_det_theta["motor_2_position"],
-        accumulated_charge=rbs_data.accumulated_charge, measuring_time_msec=rbs_data.measuring_time_msec,
+        accumulated_charge=rbs_data.accumulated_charge, measuring_time_sec=rbs_data.measuring_time_sec,
         histograms=rbs_data.histograms, start_time=start_time, end_time=datetime.now()
     )
 
@@ -204,14 +200,14 @@ class Window(BaseModel):
 class RbsChanneling(BaseModel):
     """
     The model for a channeling measurement. This is a combination of recipes. A number of yield optimizations will
-    happen. Next, a fixed measurement and a random measurement are performed.
+    happen (ays - angular yield scan). Next, a fixed measurement and a random measurement are performed.
     The outputs of the configured detectors are then compared in a plot.
     """
     type: Literal[RecipeType.CHANNELING]
     sample: str
     name: str
     start_position: Optional[PositionCoordinates]
-    yield_charge_total: int
+    yield_charge_total: int = Field(description="How much charge to accumulate per each step of ays")
     yield_coordinate_ranges: List[CoordinateRange]
     yield_integration_window: Window
     yield_optimize_detector_identifier: str

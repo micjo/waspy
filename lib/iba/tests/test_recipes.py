@@ -41,7 +41,7 @@ class TestRecipes(unittest.TestCase):
             type=RecipeType.RANDOM, sample="sample_001", name="recipe_001",
             charge_total=50000, coordinate_range=CoordinateRange(start=0, end=30, increment=2, name="phi")
         )
-        run_random(recipe, self.rbs, self.file_writer, {})
+        run_random(recipe, self.rbs)
 
     def test_channeling(self):
         recipe = RbsChanneling(
@@ -59,4 +59,4 @@ class TestRecipes(unittest.TestCase):
             random_coordinate_range=CoordinateRange(start=0, end=30, increment=0.2, name="phi")
         )
 
-        run_channeling(recipe, self.rbs, self.file_writer, {})
+        run_channeling(recipe, self.rbs)

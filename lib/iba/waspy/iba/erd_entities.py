@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Dict, Literal
 
 from pydantic import Field
@@ -9,14 +10,10 @@ class PositionCoordinates(BaseModel):
     theta: Optional[float]
 
 
-class HardwareUrl(BaseModel):
-    url: str
-
-
 class ErdDriverUrls(BaseModel):
-    mdrive_z: HardwareUrl
-    mdrive_theta: HardwareUrl
-    mpa3: HardwareUrl
+    mdrive_z: str
+    mdrive_theta: str
+    mpa3: str
 
 
 class ErdData(BaseModel):
@@ -32,7 +29,6 @@ class ErdResult(BaseModel):
     title: str
 
 
-
 class ErdRecipe(BaseModel):
     measuring_time_sec: int
     type: Literal["erd"] = "erd"
@@ -44,3 +40,18 @@ class ErdRecipe(BaseModel):
     z_increment: float
     z_repeat: int = Field(1, description="The recipe will run from z_start to z_end, for z_repeat times.")
 
+
+class ErdJournal(BaseModel):
+    start_time: datetime
+    end_time: datetime
+    measuring_time_sec: int
+    z: float
+    theta: float
+    histogram: str
+
+
+def get_erd_journal(erd_data: ErdData, start_time: datetime) -> ErdJournal:
+    return ErdJournal(
+        start_time=start_time, end_time=datetime.now(), measuring_time_sec=erd_data.measuring_time_sec,
+        z=erd_data.mdrive_z["motor_position"], theta=erd_data.mdrive_theta["motor_position"],
+        histogram=erd_data.histogram)

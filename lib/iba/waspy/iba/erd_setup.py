@@ -1,6 +1,4 @@
-import copy
 import time
-from pydantic.env_settings import BaseSettings
 
 import logging
 from threading import Lock
@@ -8,50 +6,44 @@ from threading import Lock
 from waspy.drivers.fastcom_mpa3 import FastcomMpa3
 from waspy.drivers.ims_mdrive import ImsMDrive
 from waspy.iba.erd_entities import ErdDriverUrls, PositionCoordinates, ErdData
-
-
-class GlobalConfig(BaseSettings):
-    FAKER = False
-
-
-env_conf = GlobalConfig()
-faker = env_conf.FAKER
-
-
-def fake_call(func, *args, **kw):
-    saved_args = locals()
-    time.sleep(0.1)
-    logging.info("Function '" + str(saved_args) + "' faked")
-    return ""
+from waspy.iba.preempt import preemptive
 
 
 class ErdSetup:
     _fake: bool
     _fake_count: int
+    _cancel: bool
 
     def __init__(self, erd_driver_urls: ErdDriverUrls):
-        self.mdrive_z = ImsMDrive(erd_driver_urls.mdrive_z.url)
-        self.mdrive_theta = ImsMDrive(erd_driver_urls.mdrive_theta.url)
-        self.mpa3 = FastcomMpa3(erd_driver_urls.mpa3.url)
+        self.mdrive_z = ImsMDrive(erd_driver_urls.mdrive_z)
+        self.mdrive_theta = ImsMDrive(erd_driver_urls.mdrive_theta)
+        self.mpa3 = FastcomMpa3(erd_driver_urls.mpa3)
         self._lock = Lock()
         self._abort = False
         self._fake = False
         self._fake_count = 0
+        self._cancel = False
+
+    def cancel(self):
+        self._cancel = True
+
+    def resume(self):
+        if not self._fake:
+            self._cancel = False
 
     def fake(self):
         self._fake = True
+        self._cancel = True
 
+    @preemptive
     def move(self, position: PositionCoordinates):
-        if self._fake:
-            return fake_call(self.move, position)
-        if self._aborted():
-            return
         if position is None:
             return
         logging.info("moving erd system to '" + str(position) + "'")
         self.mdrive_z.move(position.z)
         self.mdrive_theta.move(position.theta)
 
+    @preemptive
     def load(self):
         self.mdrive_z.load()
         self.mdrive_theta.load()
@@ -66,108 +58,78 @@ class ErdSetup:
             histogram = self.get_histogram()
         return ErdData.parse_obj(
             {"mdrive_z": status_mdrive_z, "mdrive_theta": status_mdrive_theta, "mpa3": status_mpa3,
-             "histogram": histogram, "measuring_time_sec": self.get_measurement_time()})
+             "histogram": histogram, "measuring_time_sec": self.get_measuring_time()})
 
+    @preemptive
     def wait_for_arrival(self):
-        if self._fake:
-            return fake_call(self.wait_for_arrival)
-        if self._aborted():
-            return
-
         self.mdrive_theta.wait_for_move_done()
         self.mdrive_z.wait_for_move_done()
         logging.info("Motors have arrived")
 
-    def abort(self):
-        with self._lock:
-            self._abort = True
-
-    def resume(self):
-        with self._lock:
-            self._abort = False
-
+    @preemptive
     def wait_for(self, seconds):
         sleep_time = 0
         while sleep_time < seconds:
-            if self._aborted():
-                return
+            yield
             time.sleep(1)
             sleep_time += 1
 
+    @preemptive
     def wait_for_acquisition_done(self):
-        if self._fake:
-            return fake_call(self.wait_for_acquisition_done)
-        if self._aborted():
-            return
         logging.info("Wait for acquisition completed")
-        self._acquisition_done(self.hw.mpa3.url)
+        self._acquisition_done()
         logging.info("Acquisition completed")
 
+    @preemptive
     def wait_for_acquisition_started(self):
-        if self._fake:
-            return fake_call(self.wait_for_acquisition_started)
-        if self._aborted():
-            return
-        acquisition_started(self.hw.mpa3.url)
+        self._acquisition_started()
         logging.info("Acquisition Started")
 
     def get_histogram(self):
-        if self._fake:
-            return fake_call(self.get_histogram)
         logging.info("get histogram")
-        if self._aborted():
+        if self._cancel:
             return ""
         return self.mpa3.get_histogram()
 
+    @preemptive
     def configure_acquisition(self, measuring_time_sec: int, spectrum_filename: str):
-        if self._fake:
-            return fake_call(self.configure_acquisition)
-        if self._aborted():
-            return ""
         self.mpa3.stop_and_clear()
         self.mpa3.configure(measuring_time_sec, spectrum_filename)
 
-    def reupload_config(self):
-        if self._fake:
-            return fake_call(self.reupload_config)
-        if self._aborted():
-            return ""
+    @preemptive
+    def reupload_cnf(self):
         self.mpa3.reupload_mpa3_cnf()
 
     def initialize(self):
-        self.reupload_config()
+        self.reupload_cnf()
 
+    @preemptive
     def start_acquisition(self):
-        if self._fake:
-            self._fake_count = 0
-            return fake_call(self.start_acquisition)
-        if self._aborted():
-            return ""
         self.mpa3.start()
 
+    @preemptive
     def convert_data_to_ascii(self):
-        if self._fake:
-            return fake_call(self.convert_data_to_ascii)
-        if self._aborted():
-            return ""
         logging.info("Request conversion to ascii")
         self.mpa3.convert_data_to_ascii()
         logging.info("Conversion to ascii done")
 
-    def get_measurement_time(self):
+    def get_measuring_time(self):
         return self.mpa3.get_measurement_time()
 
-    def _aborted(self):
-        with self._lock:
-            return copy.deepcopy(self._abort)
-
-    def _acquisition_done(self, url):
-        print("wait for acquisition done")
+    @preemptive
+    def _acquisition_done(self):
         while True:
             time.sleep(1)
+            yield
             if not self.mpa3.acquiring():
                 logging.info("Acquisition has completed")
                 break
-            if self._aborted():
-                logging.info("acquisition done: abort requested")
+
+    @preemptive
+    def _acquisition_started(self):
+        while True:
+            time.sleep(1)
+            yield
+            if self.mpa3.acquiring():
+                logging.info("Acquisition has started")
                 break

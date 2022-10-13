@@ -23,7 +23,7 @@ class JobRunner(Thread):
 
     def abort_active(self) -> None:
         with self._lock:
-            self._active_job.abort()
+            self._active_job.cancel()
 
     def abort_schedule(self) -> None:
         with self._lock:

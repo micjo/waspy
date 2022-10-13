@@ -3,6 +3,6 @@ class MillError(Exception):
     pass
 
 
-class AbortedError(MillError):
-    """An exception for when a job is aborted"""
+class CancelledError(MillError):
+    """An exception for when a job is cancelled"""
     pass

@@ -70,11 +70,11 @@ def build_job_and_hw_routes(router, mill_config: MillConfig, logbook_db: LogBook
     if mill_config.rbs and mill_config.erd:
         job_runner = JobRunner()
 
-        rbs_setup = rbs_lib.RbsSetup(RbsDriverUrls.parse_obj(mill_config.rbs.drivers))
+        rbs_setup = rbs_lib.RbsSetup(mill_config.rbs.get_driver_urls())
         rbs_file_writer = FileWriter(mill_config.rbs.local_dir, mill_config.rbs.remote_dir)
         rbs_setup.configure_detectors(mill_config.rbs.drivers.caen.detectors)
 
-        erd_setup = ErdSetup(ErdDriverUrls.parse_obj(mill_config.erd.drivers))
+        erd_setup = ErdSetup(mill_config.erd.get_driver_urls())
         erd_file_writer = FileWriter(mill_config.erd.local_dir, mill_config.erd.remote_dir)
 
         factory = JobFactory(rbs_setup, rbs_file_writer, erd_setup, erd_file_writer, logbook_db)

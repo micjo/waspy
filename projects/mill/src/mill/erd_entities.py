@@ -4,6 +4,7 @@ from typing import List, Literal
 from pydantic import BaseModel, Field
 
 from mill.entities import SimpleConfig
+from waspy.iba.erd_entities import ErdDriverUrls
 
 
 class ErdDriverGroup(BaseModel):
@@ -17,6 +18,12 @@ class ErdConfig(BaseModel):
     local_dir: Path
     remote_dir: Path
 
+    def get_driver_urls(self) -> ErdDriverUrls:
+        return ErdDriverUrls(
+            mdrive_z=self.drivers.mdrive_z.url,
+            mdrive_theta=self.drivers.mdrive_theta.url,
+            mpa3=self.drivers.mpa3.url
+        )
 
 class ErdRecipe(BaseModel):
     measuring_time_sec: int

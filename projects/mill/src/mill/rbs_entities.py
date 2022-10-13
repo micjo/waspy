@@ -7,7 +7,7 @@ from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
 from mill.entities import SimpleConfig, AmlConfig, CaenConfig
-from waspy.iba.rbs_entities import PositionCoordinates, RbsChanneling, RbsRandom
+from waspy.iba.rbs_entities import PositionCoordinates, RbsChanneling, RbsRandom, RbsDriverUrls
 
 
 class RbsDriverGroup(BaseModel):
@@ -22,6 +22,15 @@ class RbsConfig(BaseModel):
     local_dir: Path
     remote_dir: Path
     drivers: RbsDriverGroup
+
+    def get_driver_urls(self) -> RbsDriverUrls:
+        return RbsDriverUrls(
+            aml_x_y=self.drivers.aml_x_y.url,
+            aml_phi_zeta=self.drivers.aml_phi_zeta.url,
+            aml_det_theta=self.drivers.aml_det_theta.url,
+            caen=self.drivers.caen.url,
+            motrona_charge=self.drivers.motrona_charge.url
+        )
 
 
 class StatusModel(str, Enum):
