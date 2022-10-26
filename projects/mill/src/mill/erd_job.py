@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 
-from mill.erd_entities import ErdJobModel, ErdRecipe
+from mill.erd_entities import ErdJobModel, ErdRecipe, make_erd_status
 from mill.logbook_db import LogBookDb
 from waspy.iba.erd_recipes import run_erd_recipe, save_erd_journal
 from waspy.iba.erd_setup import ErdSetup
@@ -22,7 +22,7 @@ class ErdJob(Job):
     _job_model: ErdJobModel
     _active_recipe: ErdRecipe
     _recipe_start_time: datetime
-    _finished_recipes: List[ErdRecipe]
+    _finished_recipes: List
     _running: bool
     _file_writer: FileWriter
     _db: LogBookDb
@@ -67,13 +67,9 @@ class ErdJob(Job):
         self._db.job_terminate(self._job_model.name, message)
 
     def serialize(self):
-        recipe_run_time = datetime.now() - self._recipe_start_time
-        recipe_progress = self.get_recipe_progress()
-
-        finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
-        status = {"job": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
-                  "active_recipe_progress":recipe_progress, "active_recipe_run_time": recipe_run_time,
-                  "finished_recipes": finished_recipes}
+        active_recipe_status = make_erd_status(self._active_recipe, self.get_recipe_progress(), self._recipe_start_time)
+        status = {"job": self._job_model.dict(), "active_recipe": active_recipe_status.dict(),
+                  "finished_recipes": self._finished_recipes}
         return status
 
     def get_recipe_progress(self):
@@ -88,9 +84,6 @@ class ErdJob(Job):
         self._cancelled = True
 
     def _run_recipe(self, recipe):
-        if self._cancelled:
-            raise CancelledError("Job Cancelled")
-
         self._active_recipe = recipe
         self._recipe_start_time = datetime.now()
         self._running = True
@@ -101,7 +94,8 @@ class ErdJob(Job):
         self._running = False
 
     def _finish_recipe(self):
-        self._finished_recipes.append(copy.deepcopy(self._active_recipe))
+        finished_recipe_status = make_erd_status(self._active_recipe, 100, self._recipe_start_time)
+        self._finished_recipes.append(finished_recipe_status.dict())
         self._active_recipe = empty_erd_recipe
 
 

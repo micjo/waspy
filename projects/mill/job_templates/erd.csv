@@ -2,6 +2,6 @@ name,job_type,beam_type,beam_energy_MeV,sample_tilt_degrees,,,,
 ERD22_043,erd,35Cl4+,8,15,,,,
 ,,,,,,,,
 type,sample,name,measuring_time_sec,theta,z_start,z_end,z_increment,z_repeat
-erd,SiC:H,ERD22_043_01A,10,50,50,60,1,
-erd,SiC:H,ERD22_043_02A,10,50,50,60,1,5
+erd,SiC:H,ERD22_043_01A,10,50,50,53,1,1
+erd,SiC:H,ERD22_043_02A,10,50,50,53,1,2
 erd,Parking,ERD22_000_000_parking,15,50,-50,-50,0,

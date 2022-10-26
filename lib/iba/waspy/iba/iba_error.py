@@ -8,5 +8,9 @@ class FitError(IbaError):
     pass
 
 
+class CancelError(IbaError):
+    """ Operation was cancelled"""
+    pass
+
 class RangeError(IbaError):
     """ Invalid range specified"""

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pathlib import Path
 from enum import Enum
 from typing import List, Union, Annotated
@@ -31,6 +31,19 @@ class RbsConfig(BaseModel):
             caen=self.drivers.caen.url,
             motrona_charge=self.drivers.motrona_charge.url
         )
+
+
+class RbsStatus(BaseModel):
+    progress: str
+    run_time: float
+    name: str
+    type: str
+    sample: str
+
+
+def make_rbs_status(recipe: RbsRandom | RbsChanneling, progress, start_time):
+    return RbsStatus(progress=progress, run_time=(datetime.now() - start_time).total_seconds(),
+                     name=recipe.name, type=recipe.type, sample=recipe.sample)
 
 
 class StatusModel(str, Enum):

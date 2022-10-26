@@ -1,10 +1,10 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pathlib import Path
 from typing import List, Literal
 from pydantic import BaseModel, Field
 
 from mill.entities import SimpleConfig
-from waspy.iba.erd_entities import ErdDriverUrls
+from waspy.iba.erd_entities import ErdDriverUrls, ErdRecipe
 
 
 class ErdDriverGroup(BaseModel):
@@ -26,16 +26,17 @@ class ErdConfig(BaseModel):
         )
 
 
-class ErdRecipe(BaseModel):
-    measuring_time_sec: int
-    type: Literal["erd"] = "erd"
-    sample: str
+class ErdStatus(BaseModel):
+    progress: str
+    run_time: float
     name: str
-    theta: float
-    z_start: float
-    z_end: float
-    z_increment: float
-    z_repeat: int = Field(1, description="The recipe will run from z_start to z_end, for z_repeat times.")
+    type: str
+    sample: str
+
+
+def make_erd_status(recipe: ErdRecipe, progress, start_time):
+    return ErdStatus(progress=progress, run_time=(datetime.now() - start_time).total_seconds(),
+                     name=recipe.name, type=recipe.type, sample=recipe.sample)
 
 
 class ErdJobModel(BaseModel):

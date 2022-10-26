@@ -7,7 +7,7 @@ import numpy as np
 from waspy.iba.erd_entities import ErdRecipe, PositionCoordinates, ErdJournal, get_erd_journal
 from waspy.iba.erd_setup import ErdSetup
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.iba_error import RangeError
+from waspy.iba.iba_error import RangeError, CancelError
 
 
 def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup) -> ErdJournal:
@@ -25,6 +25,8 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup) -> ErdJournal:
     for z in z_range:
         erd_setup.move(z)
         erd_setup.wait_for(wait_time)
+        if erd_setup._cancel:
+            raise CancelError("ERD Recipe was cancelled")
 
     erd_setup.wait_for_acquisition_done()
     erd_setup.convert_data_to_ascii()

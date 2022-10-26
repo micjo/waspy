@@ -3,11 +3,10 @@ import logging
 from datetime import datetime
 from typing import List, Union, Dict
 
-
 from mill.logbook_db import LogBookDb
 from mill.mill_error import CancelledError
 from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJournal, CoordinateRange
-from mill.rbs_entities import RbsJobModel
+from mill.rbs_entities import RbsJobModel, RbsStatus, make_rbs_status
 from mill.job import Job
 
 from waspy.iba.file_writer import FileWriter
@@ -21,7 +20,7 @@ empty_recipe = RbsRandom(type="rbs_random", sample="", name="", charge_total=0,
 class RbsJob(Job):
     _rbs_setup: RbsSetup
     _job_model: RbsJobModel
-    _finished_recipes: List[RbsRandom | RbsChanneling]
+    _finished_recipes: List
     _running: bool
     _db: LogBookDb
     _file_writer: FileWriter
@@ -71,13 +70,9 @@ class RbsJob(Job):
         self._db.job_terminate(self._job_model.name, message)
 
     def serialize(self):
-        recipe_progress = self.get_recipe_progress()
-        recipe_run_time = str(datetime.now() - self._recipe_start_time)
-        finished_recipes = [recipe.dict() for recipe in self._finished_recipes]
-
-        status = {"job": self._job_model.dict(), "active_recipe": self._active_recipe.dict(),
-                  "active_recipe_progress": recipe_progress, "active_recipe_run_time": recipe_run_time,
-                  "finished_recipes": finished_recipes}
+        active_recipe_status = make_rbs_status(self._active_recipe, self.get_recipe_progress(), self._recipe_start_time)
+        status = {"job": self._job_model.dict(), "active_recipe": active_recipe_status.dict(),
+                  "finished_recipes": self._finished_recipes}
         return status
 
     def get_recipe_progress(self):
@@ -103,9 +98,6 @@ class RbsJob(Job):
         # TODO: log finish in db
 
     def _run_recipe(self, recipe: RbsRandom | RbsChanneling):
-        if self._cancelled:
-            raise CancelledError("Job Cancelled")
-
         self._active_recipe = recipe
         self._rbs_setup.clear_charge_offset()
         self._recipe_start_time = datetime.now()
@@ -118,7 +110,8 @@ class RbsJob(Job):
         self._running = False
 
     def _finish_recipe(self):
-        self._finished_recipes.append(copy.deepcopy(self._active_recipe))
+        finished_recipe_status = make_rbs_status(self._active_recipe, 100, self._recipe_start_time)
+        self._finished_recipes.append(finished_recipe_status.dict())
         self._active_recipe = copy.deepcopy(empty_recipe)
 
     def cancel(self):

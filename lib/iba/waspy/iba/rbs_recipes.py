@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 
 from waspy.iba.file_writer import FileWriter
+from waspy.iba.iba_error import CancelError
 from waspy.iba.rbs_plot import plot_energy_yields, plot_graph_group
 from waspy.iba.rbs_entities import get_positions_as_coordinate, CoordinateRange, Graph, Plot, \
     RbsChanneling, get_positions_as_float, Window, PositionCoordinates, GraphGroup, RbsRandom, \
@@ -41,6 +42,8 @@ def run_rbs_recipe(coordinate_range: CoordinateRange, charge_total: int, rbs: Rb
     for position in positions:
         rbs.move(position)
         rbs.acquire_data(charge_per_step)
+        if rbs._cancel:
+            raise CancelError("RBS Recipe was cancelled")
     return rbs.get_status(True)
 
 
