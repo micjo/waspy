@@ -1,8 +1,8 @@
 import logging
 from typing import Dict
 
-from mill.mill_error import CancelledError, MillError
-from waspy.iba.iba_error import IbaError
+from mill.mill_error import MillError
+from waspy.iba.iba_error import IbaError, CancelError
 from waspy.drivers.driver_error import DriverError
 
 
@@ -55,7 +55,7 @@ def execute(job: Job):
     try:
         job.exec()
         job.teardown()
-    except (CancelledError, DriverError, IbaError, MillError) as e:
+    except (CancelError, DriverError, IbaError, MillError) as e:
         job.terminate(str(e))
         return
 

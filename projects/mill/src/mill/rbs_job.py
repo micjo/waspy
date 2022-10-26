@@ -4,9 +4,8 @@ from datetime import datetime
 from typing import List, Union, Dict
 
 from mill.logbook_db import LogBookDb
-from mill.mill_error import CancelledError
 from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJournal, CoordinateRange
-from mill.rbs_entities import RbsJobModel, RbsStatus, make_rbs_status
+from mill.rbs_entities import RbsJobModel, make_rbs_status
 from mill.job import Job
 
 from waspy.iba.file_writer import FileWriter

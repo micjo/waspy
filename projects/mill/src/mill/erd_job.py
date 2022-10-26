@@ -11,7 +11,6 @@ from waspy.iba.erd_setup import ErdSetup
 from waspy.iba.file_writer import FileWriter
 
 from mill.job import Job
-from mill.mill_error import CancelledError
 
 empty_erd_recipe = ErdRecipe(measuring_time_sec=0, type="erd", sample="", name="", theta=0, z_start=0, z_end=0,
                              z_increment=0, z_repeat=0)
