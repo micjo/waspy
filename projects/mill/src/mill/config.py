@@ -15,7 +15,7 @@ logging.basicConfig(
 
 
 class MillConfig(BaseModel):
-    any: AnyDriverConfig
+    any: Optional[AnyDriverConfig]
     rbs: Optional[RbsConfig]
     erd: Optional[ErdConfig]
 
