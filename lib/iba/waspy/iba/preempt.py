@@ -36,8 +36,11 @@ def preemptive(func):
         if self._cancel:
             cancel_function(func, *args, **kwargs)
         else:
-            for _ in func(self, *args, **kwargs):
-                if self._cancel:
-                    cancel_function(func, *args, **kwargs)
-                    break
+            try:
+                for _ in func(self, *args, **kwargs):
+                    if self._cancel:
+                        cancel_function(func, *args, **kwargs)
+                        break
+            except TypeError:
+                pass
     return wrapper

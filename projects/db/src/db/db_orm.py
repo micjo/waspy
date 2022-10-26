@@ -4,7 +4,7 @@ from typing import Dict
 from sqlalchemy import String, Column, Float, Integer, text, create_engine, insert
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from logbook.entities import Accelerator
+from db.entities import Accelerator
 
 Base = declarative_base()
 engine = create_engine('sqlite:///imec.db')

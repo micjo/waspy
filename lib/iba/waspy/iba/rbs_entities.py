@@ -32,8 +32,8 @@ class RbsData(BaseModel):
     caen: Dict
     motrona: Dict
     histograms: Dict[str, List[int]] = Field(description="Maps detector name to resulting dataset")
-    measuring_time_sec: str
-    accumulated_charge: str
+    measuring_time_sec: float
+    accumulated_charge: float
 
 
 class RbsJournal(BaseModel):
@@ -46,7 +46,7 @@ class RbsJournal(BaseModel):
     phi: float
     zeta: float
     histograms: Dict[str, List[int]] = Field(description="Maps detector name to resulting dataset")
-    measuring_time_sec: int
+    measuring_time_sec: float
     accumulated_charge: float
 
 
@@ -230,15 +230,6 @@ class RbsStepwiseLeast(BaseModel):
     coordinate_range: CoordinateRange
     integration_window: Window
     optimize_detector_identifier: str
-
-
-class RbsRecipe(BaseModel):
-    type: Literal[RecipeType.RANDOM]
-    sample: str
-    name: str
-    start_position: Optional[PositionCoordinates]
-    charge_total: int
-    vary_coordinate: CoordinateRange
 
 
 class RbsRandom(BaseModel):

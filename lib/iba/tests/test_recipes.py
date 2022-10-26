@@ -1,12 +1,10 @@
-import tempfile
 import unittest
 
-from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_entities import RbsChanneling, RecipeType, CoordinateRange, Window, RbsDriverUrls, HardwareUrl, \
-    Detector, RbsRandom
+from waspy.iba.rbs_entities import RbsChanneling, RecipeType, CoordinateRange, Window, \
+    RbsRandom, RbsData, PositionCoordinates
 from waspy.iba.rbs_recipes import run_channeling, run_random
 from waspy.iba.rbs_setup import RbsSetup
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock, call
 import logging
 
 logging.basicConfig(
@@ -15,26 +13,16 @@ logging.basicConfig(
     datefmt='%Y.%m.%d__%H:%M__%S')
 
 
-
 class TestRecipes(unittest.TestCase):
     def setUp(self):
-        self.rbs = RbsSetup(RbsDriverUrls(
-            aml_x_y=HardwareUrl(url="http://127.0.0.1:20000/api/latest"),
-            aml_phi_zeta=HardwareUrl(url="http://127.0.0.1:20000/api/latest"),
-            aml_det_theta=HardwareUrl(url="http://127.0.0.1:20000/api/latest"),
-            caen=HardwareUrl(url="http://127.0.0.1:20200/api/latest"),
-            motrona_charge=HardwareUrl(url="http://127.0.0.1:20100/api/latest"),
+        self.rbs = MagicMock(spec=RbsSetup)
+        self.rbs.get_status = MagicMock(return_value=RbsData(
+            aml_x_y={"motor_1_position": 5, "motor_2_position": 10},
+            aml_phi_zeta={"motor_1_position": 6, "motor_2_position": 11},
+            aml_det_theta={"motor_1_position": 7, "motor_2_position": 12},
+            caen={}, motrona={},
+            histograms={"d01": [0, 1, 2, 3], "d02": [1, 2, 3, 4]}, measuring_time_sec=0, accumulated_charge=0
         ))
-
-        d01 = Detector(board="33", channel=0, identifier="d01", bins_min=0, bins_max=11264, bins_width=1024)
-        d02 = Detector(board="33", channel=0, identifier="d02", bins_min=0, bins_max=11264, bins_width=1024)
-        md01 = Detector(board="33", channel=0, identifier="md01", bins_min=0, bins_max=11264, bins_width=1024)
-        md02 = Detector(board="33", channel=0, identifier="md02", bins_min=0, bins_max=11264, bins_width=1024)
-        self.rbs.configure_detectors([d01, d02, md01, md02])
-        self.rbs.fake()
-
-        # TODO: dependency on file system in tests -> BAD. need to return text from code and test the text
-        self.file_writer = Mock(spec=FileWriter)
 
     def test_random(self):
         recipe = RbsRandom(
@@ -58,5 +46,20 @@ class TestRecipes(unittest.TestCase):
             compare_charge_total=60000,
             random_coordinate_range=CoordinateRange(start=0, end=30, increment=0.2, name="phi")
         )
-
         run_channeling(recipe, self.rbs)
+
+    def test_run_random(self):
+        recipe = RbsRandom(
+            type="rbs_random", sample="AE007607_D02_A", name="RBS21_071_01B_A",
+            start_position=PositionCoordinates(x=10, y=22, phi=0), charge_total=45000,
+            coordinate_range=CoordinateRange(name="phi", start=0, end=30, increment=2)
+        )
+
+        run_random(recipe, self.rbs)
+
+        call_list = [call.move(PositionCoordinates(x=10, y=22, phi=0))]
+        for phi in range(0, 31, 2):
+            call_list.append(call.move(PositionCoordinates(phi=phi)))
+            call_list.append(call.acquire_data(45000 / 16))
+
+        self.rbs.assert_has_calls(call_list)

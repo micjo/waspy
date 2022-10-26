@@ -25,6 +25,7 @@ class ErdConfig(BaseModel):
             mpa3=self.drivers.mpa3.url
         )
 
+
 class ErdRecipe(BaseModel):
     measuring_time_sec: int
     type: Literal["erd"] = "erd"

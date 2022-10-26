@@ -16,6 +16,7 @@ def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory
 
     @http_server.post("/api/job/rbs", tags=["JOBS"], summary="Schedule an RBS experiment")
     async def run_rbs(job: RbsJobModel):
+        logging.info("running job " + str(job.dict()))
         job = job_factory.make_rbs_job(job)
         job_runner.add_job_to_queue(job)
 

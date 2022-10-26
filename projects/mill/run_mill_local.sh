@@ -1,6 +1,6 @@
 #!/bin/bash
 export config_file="./default_config.toml"
-export faker=true
+export faker=false
 export env_state="dev"
 export trend_store="/tmp/trends/"
 export logbook_url="http://127.0.0.1:8001"

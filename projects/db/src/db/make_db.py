@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from logbook.db_orm import Base
-from logbook.sqlite_db import SqliteDb
+from db.db_orm import Base
+from db.sqlite_db import SqliteDb
 import sys
 from sqlalchemy import create_engine
 

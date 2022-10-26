@@ -32,10 +32,10 @@ class MotronaDx350:
         return self.get_status()["status"] != "Done"
 
     def get_charge(self):
-        return self.get_status()["charge(nC)"]
+        return float(self.get_status()["charge(nC)"])
 
     def get_target_charge(self):
-        return self.get_status()["target_charge(nC)"]
+        return float(self.get_status()["target_charge(nC)"])
 
     def set_target_charge(self, target_charge):
         request = {"request_id": generate_request_id(), "target_charge": target_charge}

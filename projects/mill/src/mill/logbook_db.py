@@ -19,13 +19,13 @@ class LogBookDb:
         post_safe(self._logbook_url + "/log_started_job?name=" + job.name)
 
     def job_terminate(self, name: str, reason: str):
-        post_safe(self._logbook_url + "/log_terminated_job?name=" + name + "&reason=" + reason)
+        post_safe(f'{self._logbook_url}/log_terminated_job?name={name}&reason="{reason}"')
 
     def job_finish(self, job: RbsJobModel | ErdJobModel):
-        post_safe(self._logbook_url + "/log_finished_job?name=" + job.name)
+        post_safe(f'{self._logbook_url}/log_finished_job?name={job.name}')
 
     def recipe_terminate(self, recipe: Dict, reason: str):
-        post_safe(self._logbook_url + "/log_terminated_recipe?reason=" + reason, json=recipe)
+        post_safe(f'{self._logbook_url}/log_terminated_recipe?reason="{reason}"', json=recipe)
 
     def recipe_finish(self, recipe: Dict):
         post_safe(self._logbook_url + "/log_finished_recipe", json=recipe)

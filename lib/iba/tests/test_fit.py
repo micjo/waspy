@@ -4,8 +4,8 @@ from typing import List
 import numpy as np
 
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_data_serializer import plot_energy_yields
 from waspy.iba.rbs_entities import AysFitResult
+from waspy.iba.rbs_plot import plot_energy_yields
 from waspy.iba.rbs_yield_angle_fit import fit_and_smooth
 import unittest
 

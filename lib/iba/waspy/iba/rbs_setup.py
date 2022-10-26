@@ -157,7 +157,7 @@ class RbsSetup:
 
     @preemptive
     def stop_data_acquisition(self):
-        self._acquisition_run_time = time.time() - self._start_time
+        self._acquisition_run_time = float(time.time() - self._start_time)
         self.data_acquisition.stop()
 
     @preemptive

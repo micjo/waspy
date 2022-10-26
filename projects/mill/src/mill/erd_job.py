@@ -6,13 +6,12 @@ from typing import List
 
 from mill.erd_entities import ErdJobModel, ErdRecipe
 from mill.logbook_db import LogBookDb
-from waspy.iba.erd_entities import ErdJournal
 from waspy.iba.erd_recipes import run_erd_recipe, save_erd_journal
-from waspy.iba.erd_setup import ErdSetup, PositionCoordinates
+from waspy.iba.erd_setup import ErdSetup
 from waspy.iba.file_writer import FileWriter
 
 from mill.job import Job
-from mill.mill_error import MillError, CancelledError
+from mill.mill_error import CancelledError
 
 empty_erd_recipe = ErdRecipe(measuring_time_sec=0, type="erd", sample="", name="", theta=0, z_start=0, z_end=0,
                              z_increment=0, z_repeat=0)
@@ -30,13 +29,15 @@ class ErdJob(Job):
     _time_loaded: datetime
     _cancelled: bool
 
-    def __init__(self, job_model: ErdJobModel, file_writer: FileWriter, log_book_db: LogBookDb):
+    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, file_writer: FileWriter, log_book_db: LogBookDb):
         self._job_model = job_model
+        self._erd_setup = erd_setup
         self._run_time = timedelta(0)
         self._active_recipe = copy.deepcopy(empty_erd_recipe)
         self._finished_recipes = []
         self._running = False
         self._file_writer = file_writer
+        self._recipe_start_time = datetime.now()
         self._db = log_book_db
         self._cancelled = False
 
@@ -90,16 +91,14 @@ class ErdJob(Job):
         if self._cancelled:
             raise CancelledError("Job Cancelled")
 
+        self._active_recipe = recipe
+        self._recipe_start_time = datetime.now()
         self._running = True
-        self._active_recipe.start_time = datetime.now()
-        self._active_recipe.name = recipe.name
-        self._active_recipe.run_time = timedelta(0)
-        self._active_recipe.measurement_time = 0
-        self._active_recipe.measurement_time_target = recipe.measuring_time_sec
 
         erd_journal = run_erd_recipe(recipe, self._erd_setup)
         extra = self._db.get_last_beam_parameters()
         save_erd_journal(self._file_writer, recipe, erd_journal, extra)
+        self._running = False
 
     def _finish_recipe(self):
         self._finished_recipes.append(copy.deepcopy(self._active_recipe))

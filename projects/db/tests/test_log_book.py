@@ -1,11 +1,11 @@
 from typing import Literal
 
-from logbook.sqlite_db import SqliteDb
-from logbook.make_db import make_imec_db
+from db.sqlite_db import SqliteDb
+from db.make_db import make_imec_db
 from pathlib import Path
 import os
 from datetime import datetime, timedelta
-from logbook.entities import RbsSingleStepRecipe, RbsRecipeType, RbsStepwiseRecipe, RbsStepwiseLeastRecipe, \
+from db.entities import RbsSingleStepRecipe, RbsRecipeType, RbsStepwiseRecipe, RbsStepwiseLeastRecipe, \
     ErdRecipeModel
 
 import unittest

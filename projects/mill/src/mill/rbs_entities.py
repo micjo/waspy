@@ -1,13 +1,13 @@
 from datetime import timedelta
 from pathlib import Path
 from enum import Enum
-from typing import List, Optional, Union, Literal, Annotated
+from typing import List, Union, Annotated
 
 from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
 from mill.entities import SimpleConfig, AmlConfig, CaenConfig
-from waspy.iba.rbs_entities import PositionCoordinates, RbsChanneling, RbsRandom, RbsDriverUrls
+from waspy.iba.rbs_entities import RbsChanneling, RbsRandom, RbsDriverUrls
 
 
 class RbsDriverGroup(BaseModel):

@@ -1,21 +1,17 @@
 import copy
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Union, Dict
 
-from pydantic import BaseModel
 
 from mill.logbook_db import LogBookDb
 from mill.mill_error import CancelledError
-from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJournal, RbsJournal, get_positions_as_float, \
-    CoordinateRange
+from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJournal, CoordinateRange
 from mill.rbs_entities import RbsJobModel
 from mill.job import Job
 
 from waspy.iba.file_writer import FileWriter
-from waspy.iba.rbs_plot import plot_energy_yields
-from waspy.iba.rbs_recipes import run_random, run_channeling, save_channeling_graphs_to_disk, save_rbs_graph_to_disk, \
-    serialize_energy_yields, save_rbs_journal, save_rbs_journal_with_file_stem, save_channeling_journal
+from waspy.iba.rbs_recipes import run_random, run_channeling, save_rbs_journal, save_channeling_journal
 from waspy.iba.rbs_setup import RbsSetup
 
 empty_recipe = RbsRandom(type="rbs_random", sample="", name="", charge_total=0,
@@ -128,6 +124,7 @@ class RbsJob(Job):
     def cancel(self):
         logging.info("[RBS] Recipe" + str(self._active_recipe) + "cancelled")
         self._rbs_setup.cancel()
+        self._cancelled = True
 
 
 def _get_total_counts_stepwise(recipe: RbsRandom):

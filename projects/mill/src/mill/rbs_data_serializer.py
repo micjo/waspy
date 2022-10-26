@@ -7,11 +7,9 @@ import numpy as np
 from waspy.iba.file_writer import FileWriter
 from mill.logbook_db import LogBookDb
 from mill.rbs_entities import RbsJobModel
-from waspy.iba.rbs_entities import RbsHistogramGraphData, \
-    RbsHistogramGraphDataSet, RbsData
+from waspy.iba.rbs_entities import RbsData
 from matplotlib import pyplot as plt
 import matplotlib
-# from waspy.iba.plot import plot_rbs_histograms, plot_compare_rbs_histograms
 
 matplotlib.use('Agg')
 
@@ -56,27 +54,6 @@ class RbsDataSerializer:
         self._db.job_finish(job_model)
         self.resume()
 
-    # def stepwise_finish(self, recipe: RbsStepwise, start_time: datetime):
-    #     finished_recipe = _make_finished_vary_recipe(recipe, start_time)
-    #     self._db.recipe_finish(finished_recipe)
-    #
-    # def single_step_finish(self, recipe: RbsSingleStep, start_time: datetime):
-    #     finished_recipe = _make_finished_basic_recipe(recipe, start_time)
-    #     self._db.recipe_finish(finished_recipe)
-    #
-    # def stepwise_least_finish(self, recipe: RbsStepwiseLeast, angles: List[float], energy_yields: List[int],
-    #                           position: float, start_time: datetime):
-    #     finished_recipe = _make_finished_vary_recipe(recipe, start_time)
-    #     finished_recipe["yield_positions"] = list(zip(angles, energy_yields))
-    #     finished_recipe["least_yield_position"] = position
-    #     self._db.recipe_finish(finished_recipe)
-    #
-    # def stepwise_least_terminate(self, recipe: RbsStepwiseLeast, angles: List[float], energy_yields: List[int],
-    #                              reason: str, start_time: datetime):
-    #     terminated_recipe = _make_finished_vary_recipe(recipe, start_time)
-    #     terminated_recipe["yield_positions"] = np.column_pack((angles, energy_yields))
-    #     self._db.recipe_terminate(terminated_recipe, reason)
-
     def cd_folder(self, sub_folder: str):
         self._data_store.cd_folder(sub_folder)
 
@@ -94,33 +71,6 @@ class RbsDataSerializer:
         if self.aborted():
             return
         self._data_store.write_matplotlib_fig_to_disk(file_stem + ".png", fig)
-
-    # def plot_histograms(self, rbs_data: RbsData, file_stem: str):
-    #     if self.aborted():
-    #         return
-    #
-    #     rbs_histogram_graph_data = RbsHistogramGraphData(graph_title=file_stem, histograms=rbs_data.histograms)
-    #     fig = plot_rbs_histograms(rbs_histogram_graph_data)
-    #     self._flush_plot(fig, file_stem)
-    #
-    # def plot_compare(self, fixed_data: List[HistogramData], random_data: List[HistogramData], file_stem):
-    #     if self.aborted():
-    #         return
-    #
-    #     histograms = []
-    #
-    #     for (random, fixed) in zip(random_data, fixed_data):
-    #         random.title += "_random"
-    #         fixed.title += "_fixed"
-    #         histograms.append([random, fixed])
-    #
-    #     rbs_histogram_graph_data_set = RbsHistogramGraphDataSet(graph_title=file_stem,
-    #                                                             histograms=histograms,
-    #                                                             x_label="energy level",
-    #                                                             y_label="yield")
-    #
-    #     fig = plot_compare_rbs_histograms(rbs_histogram_graph_data_set)
-    #     self._flush_plot(fig, file_stem)
 
     def plot_energy_yields(self, file_stem,
                            angles: List[float], yields: List[int], smooth_angles: List[float],
@@ -151,15 +101,15 @@ class RbsDataSerializer:
         if self.aborted():
             return
 
-        params = self._db.get_last_beam_parameters()
-
-        plt.title(file_stem)
-        for histogram_data in rbs_data.histograms:
-            header = _serialize_histogram_header(rbs_data, histogram_data.title, file_stem, sample_id, params)
-            formatted_data = format_caen_histogram(histogram_data.data)
-            full_data = header + "\n" + formatted_data
-
-            self._data_store.write_text_to_disk(file_stem + "_" + histogram_data.title + ".txt", full_data)
+        # params = self._db.get_last_beam_parameters()
+        #
+        # plt.title(file_stem)
+        # for histogram_data in rbs_data.histograms:
+        #     header = _serialize_histogram_header(rbs_data, histogram_data.title, file_stem, sample_id, params)
+        #     formatted_data = format_caen_histogram(histogram_data.data)
+        #     full_data = header + "\n" + formatted_data
+        #
+        #     self._data_store.write_text_to_disk(file_stem + "_" + histogram_data.title + ".txt", full_data)
 
 
 

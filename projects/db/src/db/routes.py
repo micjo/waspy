@@ -5,9 +5,9 @@ from typing import Union, Annotated
 from fastapi import FastAPI
 from pydantic import Field
 
-from logbook.db_orm import DbAccelerator, session, fill_in_entry, insert_dict
-from logbook.sqlite_db import SqliteDb
-from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe, \
+from db.db_orm import DbAccelerator, session, fill_in_entry, insert_dict
+from db.sqlite_db import SqliteDb
+from db.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe, \
     Accelerator
 
 

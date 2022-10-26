@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from pydantic import Field
 
-from logbook.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, \
+from db.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, \
     RbsRecipeType, RbsRecipeModel
 import time
 
