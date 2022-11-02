@@ -1,14 +1,12 @@
-import http
 from datetime import datetime
-from typing import Union, Annotated
+from typing import Union, List, Dict
 
 from fastapi import FastAPI
-from pydantic import Field
 
 from db.db_orm import DbAccelerator, session, fill_in_entry, insert_dict
+from db.key_value_store import set_active_template, fill_in_template, get_filled_data
 from db.sqlite_db import SqliteDb
-from db.entities import ErdRecipeModel, RbsStepwiseRecipe, RbsSingleStepRecipe, RbsStepwiseLeastRecipe, AnyRecipe, \
-    Accelerator
+from db.entities import AnyRecipe, Accelerator
 
 
 def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
@@ -89,3 +87,17 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.get("/get_trend_starts_with")
     async def get_trend_starts_with(start: datetime, end: datetime, starts_with: str, step: int):
         return sql_db.get_trend_starts_with(start, end, starts_with, step)
+
+    @router.put("/data_template")
+    async def set_template(template: List):
+        set_active_template(template)
+
+    @router.post("/data")
+    async def fill_template(filled: Dict):
+        fill_in_template(filled)
+
+    @router.get("/data")
+    async def get_template_data():
+        return get_filled_data()
+
+
