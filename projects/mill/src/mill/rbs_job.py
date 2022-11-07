@@ -114,7 +114,7 @@ class RbsJob(Job):
         self._active_recipe = copy.deepcopy(empty_recipe)
 
     def cancel(self):
-        logging.info("[RBS] Recipe" + str(self._active_recipe) + "cancelled")
+        logging.info("[RBS] Recipe cancelled {" + str(self._active_recipe) + "}")
         self._rbs_setup.cancel()
         self._cancelled = True
 

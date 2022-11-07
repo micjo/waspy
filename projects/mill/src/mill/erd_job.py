@@ -78,7 +78,7 @@ class ErdJob(Job):
         return f'{progress:02}'
 
     def cancel(self):
-        logging.info("[ERD] Recipe" + str(self._active_recipe) + "cancelled")
+        logging.info("[ERD] Recipe cancelled {" + str(self._active_recipe) + "}")
         self._erd_setup.cancel()
         self._cancelled = True
 
