@@ -77,7 +77,7 @@ class RbsJob(Job):
     def get_recipe_progress(self):
         target_charge = _get_total_counts(self._active_recipe)
         actual_charge = self._rbs_setup.get_total_clipped_charge()
-        progress = actual_charge / target_charge * 100 if self._running else 0
+        progress = round(actual_charge / target_charge * 100, 2) if self._running else 0
         return f'{progress:02}'
 
     def _ays_report_cb(self, ays_result: AysJournal):

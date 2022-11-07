@@ -74,7 +74,7 @@ class ErdJob(Job):
     def get_recipe_progress(self):
         measuring_time = self._erd_setup.get_measuring_time()
         total_time = self._active_recipe.measuring_time_sec
-        progress = measuring_time / total_time * 100 if self._running else 0
+        progress = round(measuring_time / total_time * 100,2) if self._running else 0
         return f'{progress:02}'
 
     def cancel(self):
