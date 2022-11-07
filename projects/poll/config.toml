@@ -4,9 +4,8 @@ trend =  [
     ["rbs_phi","http://127.0.0.1:22001/api/latest", "motor_1_position"],
     ["rbs_zeta","http://127.0.0.1:22001/api/latest", "motor_2_position"],
     ["rbs_current","http://127.0.0.1:22100/api/latest", "current(nA)"],
-
-    ["erd_ad1_count_rate","http://169.254.155.94:25000/api/latest", "ad1.total_rate"],
-    ["erd_ad2_count_rate","http://169.254.155.94:25000/api/latest", "ad2.total_rate"],
+    ["erd_ad1_count_rate","http://172.16.0.11:25000/api/latest", "ad1.total_rate"],
+    ["erd_ad2_count_rate","http://172.16.0.11:25000/api/latest", "ad2.total_rate"],
     ["erd_z","http://127.0.0.1:22124/api/latest", "motor_position"],
     ["erd_theta","http://127.0.0.1:22123/api/latest", "motor_position"],
 
