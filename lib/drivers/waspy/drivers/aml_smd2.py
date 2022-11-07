@@ -22,7 +22,7 @@ class AmlSmd2:
 
     def move_both(self, positions, wait=True):
         self.move_first(positions[0], wait)
-        self.move_second(positions[0], wait)
+        self.move_second(positions[1], wait)
 
     def move_both_simultaneously(self, positions: list, wait=True):
         if None in positions:
