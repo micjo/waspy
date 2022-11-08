@@ -97,7 +97,7 @@ def save_channeling_journal(file_writer: FileWriter, recipe: RbsChanneling, jour
         name = f'{recipe.name}_{ays_index}_{coordinate_ranging}'
         file_writer.cd_folder(name)
         for rbs_index, rbs_journal in enumerate(ays_journal.rbs_journals):
-            save_rbs_journal_with_file_stem(file_writer, f'{rbs_index:02}_{name}_{positions[ays_index]}', recipe,
+            save_rbs_journal_with_file_stem(file_writer, f'{rbs_index:02}_{name}_{positions[rbs_index]}', recipe,
                                             rbs_journal, extra)
         text = serialize_energy_yields(ays_journal.fit)
         file_writer.write_text_to_disk(f'_{name}_yields.txt', text)
