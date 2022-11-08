@@ -22,7 +22,7 @@ def build_and_run_ui(url: str):
     target_charge_entry = tk.Entry(grid_frame)
     target_charge_value = tk.Label(grid_frame, text="-")
 
-    accumulated_charge_label = tk.Label(grid_frame, text="Accumulated Charge")
+    accumulated_charge_label = tk.Label(grid_frame, text="Accumulated Charge -> Target Charge")
     accumulated_charge_value = tk.Label(grid_frame, text="-")
 
     motrona = MotronaDx350(url)
@@ -43,11 +43,13 @@ def build_and_run_ui(url: str):
     def update():
         try:
             motrona_status = requests.get(url+"/api/latest").json()
-            target_charge_value.config(text=motrona_status.get("target_charge(nC)", "-"))
-            accumulated_charge_value.config(text=motrona_status.get("charge(nC)", "-"))
         except:
-            target_charge_value.config(text="-")
-            accumulated_charge_value.config(text="-")
+            motrona_status = {}
+
+        target_charge = motrona_status.get("target_charge(nC)", "")
+        charge = motrona_status.get("charge(nC)", "")
+        target_charge_value.config(text=f'{target_charge}')
+        accumulated_charge_value.config(text=f'{charge} -> {target_charge}')
         root.after(2000, update)
 
     update()
