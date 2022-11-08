@@ -57,7 +57,7 @@ class RbsSetup:
     def move(self, position: PositionCoordinates):
         if position is None:
             return
-        logging.info("Moving rbs system to '" + str(position) + "'")
+        logging.info("[RBS_SETUP] Moving rbs system to '" + str(position) + "'")
         self.motor_x_y.move_both([position.x, position.y])
         self.motor_phi_zeta.move_both([position.phi, position.zeta])
         self.motor_det_theta.move_both([position.detector, position.theta])
@@ -81,7 +81,7 @@ class RbsSetup:
 
     @preemptive
     def count(self):
-        logging.info("acquiring till target")
+        logging.info("[RBS_SETUP] acquiring till target")
         self.charge_counter.start_count_from_zero()
         self._wait_for_count_finished()
         self._acquisition_accumulated_charge += self.charge_counter.get_charge()
@@ -144,25 +144,21 @@ class RbsSetup:
     def acquire_data(self, total_charge) -> RbsData:
         """Warning: this function can take a while ( >1 hour)"""
         self.prepare_counting_with_target(total_charge)
-        self.start_data_acquisition()
+        self.data_acquisition.start()
         self.count()
-        self.stop_data_acquisition()
+        self.data_acquisition.stop()
         return self.get_status(True)
 
     @preemptive
-    def clear_data(self):
+    def prepare_acquisition(self):
+        self.data_acquisition.stop()
         self.data_acquisition.clear()
-
-    @preemptive
-    def start_data_acquisition(self):
         self._start_time = time.time()
-        self.data_acquisition.start()
         self._acquisition_accumulated_charge = 0
 
     @preemptive
-    def stop_data_acquisition(self):
+    def finalize_acquisition(self):
         self._acquisition_run_time = float(time.time() - self._start_time)
-        self.data_acquisition.stop()
 
     @preemptive
     def prepare_counting_with_target(self, target):

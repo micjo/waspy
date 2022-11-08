@@ -39,14 +39,13 @@ def run_channeling(recipe: RbsChanneling, rbs: RbsSetup,
 def run_rbs_recipe(coordinate_range: CoordinateRange, charge_total: int, rbs: RbsSetup) -> RbsData:
     positions = get_positions_as_coordinate(coordinate_range)
     charge_per_step = charge_total / len(positions)
-    rbs.stop_data_acquisition()
-    rbs.clear_data()
-
+    rbs.prepare_acquisition()
     for position in positions:
         rbs.move(position)
         rbs.acquire_data(charge_per_step)
         if rbs._cancel:
             raise CancelError("RBS Recipe was cancelled")
+    rbs.finalize_acquisition()
     return rbs.get_status(True)
 
 

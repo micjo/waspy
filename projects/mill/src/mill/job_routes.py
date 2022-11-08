@@ -12,12 +12,13 @@ def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory
     @http_server.post("/api/job/erd", tags=["JOBS"], summary="Schedule an ERD experiment")
     async def run_rbs(job: ErdJobModel):
         job = job_factory.make_erd_job(job)
+        logging.info("[JOB_ROUTES] adding ERD job to queue : " + str(job.dict()))
         job_runner.add_job_to_queue(job)
 
     @http_server.post("/api/job/rbs", tags=["JOBS"], summary="Schedule an RBS experiment")
     async def run_rbs(job: RbsJobModel):
-        logging.info("running job " + str(job.dict()))
         job = job_factory.make_rbs_job(job)
+        logging.info("[JOB_ROUTES] adding RBS job to queue : " + str(job.dict()))
         job_runner.add_job_to_queue(job)
 
     @http_server.get("/api/job/state", tags=["JOBS"], summary="Get the state of the job(s)")
@@ -26,10 +27,12 @@ def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory
 
     @http_server.post("/api/job/abort_active", tags=["JOBS"], summary="Abort the running job")
     async def abort_active():
+        logging.info("[JOB_ROUTES] Cancelling active job")
         job_runner.abort_active()
 
     @http_server.post("/api/job/abort_schedule", tags=["JOBS"], summary="Abort the scheduled jobs")
     async def abort_schedule():
+        logging.info("[JOB_ROUTES] Cancelling scheduled jobs")
         job_runner.abort_schedule()
 
     @http_server.post("/api/job/csv_conversion", tags=["JOBS"])

@@ -37,7 +37,6 @@ class JobRunner(Thread):
         return state
 
     def add_job_to_queue(self, job: Job):
-        logging.info("adding job to queue")
         with self._lock:
             self._scheduled_jobs.append(job)
 

@@ -53,8 +53,10 @@ class RbsJob(Job):
         """ Can raise: AbortedError, HardwareError"""
         self._time_loaded = datetime.now()
         for recipe in self._job_model.recipes:
+            logging.info(f"[RBS_JOB] start (job, recipe): ({self._job_model.name}, {recipe.name})")
             self._run_recipe(recipe)
             self._finish_recipe()
+            logging.info(f"[RBS_JOB] finished (job, recipe): ({self._job_model.name}, {recipe.name})")
 
     def teardown(self):
         trends = self._db.get_trends(self._time_loaded, datetime.now(), "rbs")
@@ -82,7 +84,7 @@ class RbsJob(Job):
 
     def _ays_report_cb(self, ays_result: AysJournal):
         if not ays_result.fit.success:
-            logging.error("Fit failure:" + str(ays_result))
+            logging.error("[RBS_JOB] Fit failure")
             self.cancel()
 
     def _run_random_recipe(self, recipe: RbsRandom):
@@ -114,7 +116,7 @@ class RbsJob(Job):
         self._active_recipe = copy.deepcopy(empty_recipe)
 
     def cancel(self):
-        logging.info("[RBS] Recipe cancelled {" + str(self._active_recipe) + "}")
+        logging.info("[RBS_JOB] cancelled during recipe {" + str(self._active_recipe) + "}")
         self._rbs_setup.cancel()
         self._cancelled = True
 
