@@ -150,9 +150,13 @@ class RbsSetup:
         return self.get_status(True)
 
     @preemptive
+    def clear_data(self):
+        self.data_acquisition.clear()
+
+    @preemptive
     def start_data_acquisition(self):
         self._start_time = time.time()
-        self.data_acquisition.restart()
+        self.data_acquisition.start()
         self._acquisition_accumulated_charge = 0
 
     @preemptive

@@ -24,14 +24,14 @@ class Caen:
     def __init__(self, url: str):
         self._url = url
 
-    def restart(self):
-        self.stop()
+    def clear(self):
         post_request(self._url, {'request_id': generate_request_id(), 'clear': True})
+
+    def start(self):
         post_request(self._url, {'request_id': generate_request_id(), 'start': True})
 
     def stop(self):
         post_request(self._url, {'request_id': generate_request_id(), 'stop': True})
-
 
     def read_register(self, board_id: str, hex_register_address: str) -> str:
         request = {
