@@ -22,7 +22,7 @@ def build_and_run_ui(url: str):
     target_charge_entry = tk.Entry(grid_frame)
     target_charge_value = tk.Label(grid_frame, text="-")
 
-    accumulated_charge_label = tk.Label(grid_frame, text="Accumulated Charge -> Target Charge")
+    accumulated_charge_label = tk.Label(grid_frame, text="Charge")
     accumulated_charge_value = tk.Label(grid_frame, text="-")
 
     motrona = MotronaDx350(url)
