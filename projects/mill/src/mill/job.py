@@ -51,7 +51,7 @@ empty_job = EmptyJob()
 
 def execute(job: Job):
     job.setup()
-    logging.info("[JOB] start: " + str(job.serialize()))
+    logging.info("[JOB] start: ---\n" + str(job.serialize()) + "\n---")
     try:
         job.exec()
         job.teardown()

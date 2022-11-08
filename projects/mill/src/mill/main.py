@@ -22,7 +22,7 @@ from mill.config import GlobalConfig, make_mill_config, MillConfig
 
 def create_app():
     env_conf = GlobalConfig()
-    logging.info("Loaded config: " + env_conf.json())
+    logging.info("[MILL MAIN] Loaded config: " + env_conf.json())
     mill_config = make_mill_config(env_conf.CONFIG_FILE)
 
     if env_conf.ENV_STATE == "dev":

@@ -31,7 +31,7 @@ class GlobalConfig(BaseSettings):
 def make_mill_config(config_file) -> MillConfig:
     with open(config_file, "rb") as f:
         conf_from_file = tomli.load(f)
-        logging.info(conf_from_file)
+        logging.info("[MILL CONFIG] Loaded:---\n" + str(conf_from_file) + "\n---")
 
         for setup_key, setup_item in conf_from_file.items():
             for hardware_key, hardware_item in setup_item["drivers"].items():
