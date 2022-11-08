@@ -2,6 +2,8 @@ import argparse
 import tkinter as tk
 import requests
 from waspy.drivers.aml_smd2 import AmlSmd2
+import ctypes
+import os
 
 
 def put_horizontal_grid(row, elements):
@@ -24,14 +26,17 @@ def build_and_run_ui(first_name: str, second_name: str, url: str):
     second_entry = tk.Entry(grid_frame)
     second_value = tk.Label(grid_frame, text="-")
 
+    aml = AmlSmd2(url)
 
     def move_first():
-        aml = AmlSmd2(url)
-        aml.move_first(first_entry.va)
+        aml.move_first(first_entry.get())
+
+    def move_second():
+        aml.move_second(second_entry.get())
 
     first_go = tk.Button(oneline_frame, text=f"Move {first_name}", command=move_first)
-    second_go = tk.Button(oneline_frame, text=f"Move {second_name}")
-    load = tk.Button(oneline_frame, text="Load")
+    second_go = tk.Button(oneline_frame, text=f"Move {second_name}", command=move_second)
+    load = tk.Button(oneline_frame, text="Load", command=aml.load)
 
     put_horizontal_grid(0, [first_label, first_entry, first_value])
     put_horizontal_grid(1, [second_label, second_entry, second_value])
@@ -39,11 +44,9 @@ def build_and_run_ui(first_name: str, second_name: str, url: str):
     grid_frame.pack(side="top", fill="x")
     oneline_frame.pack(side="top", fill="x")
 
-
     def update():
         try:
             aml_status = requests.get(url+"/api/latest").json()
-            print(aml_status)
             first_value.configure(text=aml_status.get("motor_1_position", "-"))
             second_value.configure(text=aml_status.get("motor_2_position", "-"))
         except:
@@ -56,7 +59,6 @@ def build_and_run_ui(first_name: str, second_name: str, url: str):
     tk.mainloop()
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='minimal interface',
@@ -66,6 +68,12 @@ if __name__ == "__main__":
     parser.add_argument('second_name', type=str)
     parser.add_argument('driver_url', type=str)
     args = parser.parse_args()
+
+    if os.name == 'nt':
+        kernel32 = ctypes.WinDLL('kernel32')
+        user32 = ctypes.WinDLL('user32')
+        hWnd = kernel32.GetConsoleWindow()
+        user32.ShowWindow(hWnd, False)
 
     build_and_run_ui(args.first_name, args.second_name, args.driver_url)
 
