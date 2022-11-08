@@ -96,7 +96,7 @@ class FileWriter:
         files_to_move = [x for x in (base / self._base_folder).iterdir() if not x.stem.startswith("old_")]
         if files_to_move:
             full_subdir = base / self._base_folder / subdir
-            logging.info("Existing files found, moving them to: '" + str(full_subdir) + "'.")
+            logging.info("[FILE_WRITER] Existing files found, moving them to: '" + str(full_subdir) + "'.")
             Path.mkdir(full_subdir, exist_ok=True)
             for file in files_to_move:
                 move(file, full_subdir)
