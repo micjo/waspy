@@ -28,7 +28,7 @@ class SlowCall(object):
 
 def cancel_function(func, *args, **kw):
     saved_args = locals()
-    logging.info("Function '" + str(saved_args) + "' cancelled")
+    logging.info("[WASPY.IBA.PREEMPT] Function '" + str(saved_args) + "' cancelled")
 
 
 def preemptive(func):

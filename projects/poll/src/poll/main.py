@@ -76,11 +76,11 @@ if __name__ == "__main__":
         conf_from_file = tomli.load(f)
         trend_conf = conf_from_file['trend']
 
-    logging.info("Loaded config: " + str(env_conf))
-    logging.info("Trending daemons: " + str(trend_conf))
+    logging.info("[WASPY.POLL] Loaded config: " + str(env_conf))
+    logging.info("[WASPY.POLL] Trending daemons: " + str(trend_conf))
 
     if not write_or_check_title(trend_conf, env_conf):
-        sys.exit("Invalid config. Exitting")
+        sys.exit("[WASPY.POLL] Invalid config. Exitting")
 
     while True:
         trends = trend(trend_conf)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             try:
                 requests.post(env_conf.LOGBOOK_URL + "/log_trend", json=trends)
             except Exception as e:
-                logging.info("Could not reach the logbook api. Retrying")
+                logging.info("[WASPY.POLL] Could not reach the logbook api. Retrying")
 
 
         time.sleep(1)

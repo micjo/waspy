@@ -39,7 +39,7 @@ class ErdSetup:
     def move(self, position: PositionCoordinates):
         if position is None:
             return
-        logging.info("moving erd system to '" + str(position) + "'")
+        logging.info("[WASPY.IBA.ERD_SETUP] moving erd system to '" + str(position) + "'")
         self.mdrive_z.move(position.z)
         self.mdrive_theta.move(position.theta)
 
@@ -64,7 +64,7 @@ class ErdSetup:
     def wait_for_arrival(self):
         self.mdrive_theta.wait_for_move_done()
         self.mdrive_z.wait_for_move_done()
-        logging.info("Motors have arrived")
+        logging.info("[WASPY.IBA.ERD_SETUP] Motors have arrived")
 
     @preemptive
     def wait_for(self, seconds):
@@ -76,17 +76,17 @@ class ErdSetup:
 
     @preemptive
     def wait_for_acquisition_done(self):
-        logging.info("Wait for acquisition completed")
+        logging.info("[WASPY.IBA.ERD_SETUP] Wait for acquisition completed")
         self._acquisition_done()
-        logging.info("Acquisition completed")
+        logging.info("[WASPY.IBA.ERD_SETUP] Acquisition completed")
 
     @preemptive
     def wait_for_acquisition_started(self):
         self._acquisition_started()
-        logging.info("Acquisition Started")
+        logging.info("[WASPY.IBA.ERD_SETUP] Acquisition Started")
 
     def get_histogram(self):
-        logging.info("get histogram")
+        logging.info("[WASPY.IBA.ERD_SETUP] get histogram")
         if self._cancel:
             return ""
         return self.mpa3.get_histogram()
@@ -109,9 +109,9 @@ class ErdSetup:
 
     @preemptive
     def convert_data_to_ascii(self):
-        logging.info("Request conversion to ascii")
+        logging.info("[WASPY.IBA.ERD_SETUP] Request conversion to ascii")
         self.mpa3.convert_data_to_ascii()
-        logging.info("Conversion to ascii done")
+        logging.info("[WASPY.IBA.ERD_SETUP] Conversion to ascii done")
 
     def get_measuring_time(self):
         return self.mpa3.get_measurement_time()
@@ -122,7 +122,7 @@ class ErdSetup:
             time.sleep(1)
             yield
             if not self.mpa3.acquiring():
-                logging.info("Acquisition has completed")
+                logging.info("[WASPY.IBA.ERD_SETUP] Acquisition has completed")
                 break
 
     @preemptive
@@ -131,5 +131,5 @@ class ErdSetup:
             time.sleep(1)
             yield
             if self.mpa3.acquiring():
-                logging.info("Acquisition has started")
+                logging.info("[WASPY.IBA.ERD_SETUP] Acquisition has started")
                 break

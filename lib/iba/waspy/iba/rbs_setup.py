@@ -57,7 +57,7 @@ class RbsSetup:
     def move(self, position: PositionCoordinates):
         if position is None:
             return
-        logging.info("[RBS_SETUP] Moving rbs system to '" + str(position) + "'")
+        logging.info("[WASPY.IBA.RBS_SETUP] Moving rbs system to '" + str(position) + "'")
         self.motor_x_y.move_both([position.x, position.y])
         self.motor_phi_zeta.move_both([position.phi, position.zeta])
         self.motor_det_theta.move_both([position.detector, position.theta])
@@ -81,7 +81,7 @@ class RbsSetup:
 
     @preemptive
     def count(self):
-        logging.info("[RBS_SETUP] acquiring till target")
+        logging.info("[WASPY.IBA.RBS_SETUP] acquiring till target")
         self.charge_counter.start_count_from_zero()
         self._wait_for_count_finished()
         self._acquisition_accumulated_charge += self.charge_counter.get_charge()

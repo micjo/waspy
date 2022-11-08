@@ -96,14 +96,15 @@ class FileWriter:
         files_to_move = [x for x in (base / self._base_folder).iterdir() if not x.stem.startswith("old_")]
         if files_to_move:
             full_subdir = base / self._base_folder / subdir
-            logging.info("[FILE_WRITER] Existing files found, moving them to: '" + str(full_subdir) + "'.")
+            logging.info("[WASPY.IBA.FILE_WRITER] Existing files found, moving them to: '" + str(full_subdir) + "'.")
             Path.mkdir(full_subdir, exist_ok=True)
             for file in files_to_move:
                 move(file, full_subdir)
 
 
 def _try_copy(source, destination):
-    logging.info("copying {source} to {destination}".format(source=source, destination=destination))
+    logging.info(
+        "[WASPY.IBA.FILE_WRITER] copying {source} to {destination}".format(source=source, destination=destination))
     try:
         Path.mkdir(destination.parent, exist_ok=True)
         copy2(source, destination)

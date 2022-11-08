@@ -42,7 +42,7 @@ def post_safe(url, json=None):
         response = requests.post(url, timeout=10, json=json)
         return response.status_code, response.text
     except RequestException as e:
-        logging.info(f'failed to post ({json}) to ({url})')
+        logging.info(f'[WASPY.DRIVERS.HTTP_HELPER] failed to post ({json}) to ({url})')
         return 400, ""
 
 

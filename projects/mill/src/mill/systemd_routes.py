@@ -25,7 +25,7 @@ def build_systemd_endpoints(router, mill_config: MillConfig):
             hostname = urlparse(daemon.url).hostname
             command = f'/usr/bin/ssh {hostname} "sudo /bin/systemctl {start_or_stop} {name}"'
 
-        logging.info(f"Executing : {command} ")
+        logging.info(f"[WASPY.MILL.SYSTEMD_ROUTES] Executing : {command} ")
         subprocess.run([command], shell=True)
 
     @router.get("/api/service_log")
@@ -41,7 +41,7 @@ def build_systemd_endpoints(router, mill_config: MillConfig):
             hostname = urlparse(daemon.url).hostname
             command = f'/usr/bin/ssh {hostname} "sudo /bin/journalctl -u {name} -n 100 --no-pager"'
 
-        logging.info(f"Executing : {command}")
+        logging.info(f"[WASPY.MILL.SYSTEMD_ROUTES] Executing : {command}")
         output = subprocess.run([command], shell=True, capture_output=True).stdout
         return output
 

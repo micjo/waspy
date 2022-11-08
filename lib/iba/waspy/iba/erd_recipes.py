@@ -41,7 +41,7 @@ def get_z_range(start, end, increment, repeat=1) -> List[PositionCoordinates]:
         positions = [PositionCoordinates(z=start)]
     else:
         coordinate_range = np.arange(start, end + increment, increment)
-        logging.info("start: " + str(start) + ", end: " + str(end) + ", inc: " + str(increment))
+        logging.info("[WASPY.IBA.ERD_RECIPES] start: " + str(start) + ", end: " + str(end) + ", inc: " + str(increment))
         numpy_z_steps = np.around(coordinate_range, decimals=2)
         positions = [PositionCoordinates(z=float(z_step)) for z_step in numpy_z_steps]
 
@@ -54,7 +54,7 @@ def _log_recipe(recipe, wait_time, z_range):
     position_list = "("
     position_list += "; ".join([str(position.z) for position in z_range])
     position_list += ")"
-    logging.info("Recipe: " + recipe.name + ", wait_time_sec between steps: " + str(wait_time) +
+    logging.info("[WASPY.IBA.ERD_RECIPES] Recipe: " + recipe.name + ", wait_time_sec between steps: " + str(wait_time) +
                  ", total measurement time: " + str(recipe.measuring_time_sec) +
                  ", z-positions: \n\t" + position_list)
 

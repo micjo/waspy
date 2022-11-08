@@ -15,14 +15,14 @@ class FastcomMpa3:
         while True:
             time.sleep(1)
             if not self.acquiring():
-                logging.info("Acquisition has completed")
+                logging.info("[WASPY.DRIVERS.FASTCOM_MPA3] Acquisition has completed")
                 break
 
     def wait_acquisition_started(self):
         while True:
             time.sleep(1)
             if self.acquiring():
-                logging.info("Acquisition has started")
+                logging.info("[WASPY.DRIVERS.FASTCOM_MPA3] Acquisition has started")
                 break
 
     def acquiring(self) -> bool:
