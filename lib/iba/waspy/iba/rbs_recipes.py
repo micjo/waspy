@@ -2,6 +2,8 @@ import logging
 from datetime import datetime
 from typing import List
 
+from scipy.optimize import OptimizeWarning
+
 from waspy.iba.file_writer import FileWriter
 from waspy.iba.iba_error import CancelError
 from waspy.iba.rbs_plot import plot_energy_yields, plot_graph_group
@@ -166,7 +168,7 @@ def find_minimum(angles, yields) -> AysFitResult:
         fit_func, min_angle = fit_and_smooth(angles, yields)
         return AysFitResult(success=True, minimum=min_angle, discrete_angles=angles,
                             discrete_yields=yields, fit_func=fit_func)
-    except RuntimeError as e:
+    except (RuntimeError, OptimizeWarning, ValueError) as e:
         logging.error(e)
         return AysFitResult(success=False, discrete_angles=angles, discrete_yields=yields)
 
