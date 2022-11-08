@@ -12,13 +12,13 @@ def build_job_routes(http_server, job_runner: JobRunner, job_factory: JobFactory
     @http_server.post("/api/job/erd", tags=["JOBS"], summary="Schedule an ERD experiment")
     async def run_rbs(job: ErdJobModel):
         run_job = job_factory.make_erd_job(job)
-        logging.info("[WASPY.MILL.JOB_ROUTES] adding ERD job to queue : -" + str(job.dict()) + "-")
+        logging.info("[WASPY.MILL.JOB_ROUTES] adding ERD job to queue : " + str(job.dict()))
         job_runner.add_job_to_queue(run_job)
 
     @http_server.post("/api/job/rbs", tags=["JOBS"], summary="Schedule an RBS experiment")
     async def run_rbs(job: RbsJobModel):
         run_job = job_factory.make_rbs_job(job)
-        logging.info("[WASPY.MILL.JOB_ROUTES] adding RBS job to queue : -" + str(job.dict()) + "-")
+        logging.info("[WASPY.MILL.JOB_ROUTES] adding RBS job to queue : " + str(job.dict()))
         job_runner.add_job_to_queue(run_job)
 
     @http_server.get("/api/job/state", tags=["JOBS"], summary="Get the state of the job(s)")

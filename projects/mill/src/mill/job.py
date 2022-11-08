@@ -51,7 +51,7 @@ empty_job = EmptyJob()
 
 def execute(job: Job):
     job.setup()
-    logging.info("[WASPY.MILL.JOB] start: -" + str(job.serialize()) + "-")
+    logging.info("[WASPY.MILL.JOB] start: " + str(job.serialize()))
     try:
         job.exec()
         job.teardown()
