@@ -60,8 +60,6 @@ if __name__ == "__main__":
         prog='minimal interface',
         description='minimal interface'
     )
-    parser.add_argument('first_name', type=str)
-    parser.add_argument('second_name', type=str)
     parser.add_argument('driver_url', type=str)
     args = parser.parse_args()
 
@@ -71,5 +69,5 @@ if __name__ == "__main__":
         hWnd = kernel32.GetConsoleWindow()
         user32.ShowWindow(hWnd, False)
 
-    build_and_run_ui(args.first_name, args.second_name, args.driver_url)
+    build_and_run_ui(args.driver_url)
 
