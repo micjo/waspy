@@ -85,7 +85,6 @@ class RbsJob(Job):
     def _ays_report_cb(self, ays_result: AysJournal):
         if not ays_result.fit.success:
             logging.error("[WASPY.MILL.RBS_JOB] Fit failure")
-            self.cancel()
 
     def _run_random_recipe(self, recipe: RbsRandom):
         journal = run_random(recipe, self._rbs_setup)
