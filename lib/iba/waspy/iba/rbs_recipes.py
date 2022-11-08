@@ -151,6 +151,7 @@ def run_ays(recipe: RbsChanneling, rbs: RbsSetup, ays_report_callback: callable(
                                   recipe.yield_integration_window))
         fit_result = find_minimum(angles, yields)
         if fit_result.success:
+            logging.info(f"[WASPY.IBA.RBS_RECIPES] Minimum found at {coordinate_range.name}={fit_result.minimum}")
             rbs.move(convert_float_to_coordinate(coordinate_range.name, fit_result.minimum))
         result.append(AysJournal(start_time=start_time, end_time=datetime.now(), rbs_journals=rbs_journals,
                                  fit=fit_result))
