@@ -28,6 +28,7 @@ def run_channeling(recipe: RbsChanneling, rbs: RbsSetup,
     ays = run_ays(recipe, rbs, ays_report_cb)
 
     start_time = datetime.now()
+    rbs.prepare_acquisition()
     fixed_data = rbs.acquire_data(recipe.compare_charge_total)
     fixed = get_rbs_journal(fixed_data, start_time)
 
