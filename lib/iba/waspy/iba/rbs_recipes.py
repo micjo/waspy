@@ -25,13 +25,17 @@ def run_channeling(recipe: RbsChanneling, rbs: RbsSetup,
                    ays_report_cb: callable(AysJournal) = None) -> ChannelingJournal:
     rbs.move(recipe.start_position)
 
+    logging.info("[WASPY.IBA.RBS_RECIPES] Start ays")
     ays = run_ays(recipe, rbs, ays_report_cb)
 
+    logging.info("[WASPY.IBA.RBS_RECIPES] Start Fixed")
     start_time = datetime.now()
     rbs.prepare_acquisition()
     fixed_data = rbs.acquire_data(recipe.compare_charge_total)
     fixed = get_rbs_journal(fixed_data, start_time)
 
+    logging.info("[WASPY.IBA.RBS_RECIPES] Start Random")
+    rbs.move(PositionCoordinates(theta=-2))
     start_time = datetime.now()
     random_data = run_rbs_recipe(recipe.random_coordinate_range, recipe.compare_charge_total, rbs)
     random = get_rbs_journal(random_data, start_time)
@@ -40,6 +44,7 @@ def run_channeling(recipe: RbsChanneling, rbs: RbsSetup,
 
 
 def run_rbs_recipe(coordinate_range: CoordinateRange, charge_total: int, rbs: RbsSetup) -> RbsData:
+    logging.info("[WASPY.IBA.RBS_RECIPES] run_rbs_recipe")
     positions = get_positions_as_coordinate(coordinate_range)
     charge_per_step = charge_total / len(positions)
     rbs.prepare_acquisition()

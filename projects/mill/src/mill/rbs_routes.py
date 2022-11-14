@@ -1,6 +1,7 @@
 from mill.entities import CaenConfig
 from mill.mill_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram, build_detector_endpoints
+from waspy.iba.rbs_entities import PositionCoordinates
 from waspy.iba.rbs_setup import RbsSetup
 
 
@@ -24,3 +25,7 @@ def build_setup_endpoints(http_server, rbs_setup:RbsSetup):
     def rbs_load(load: bool):
         if load:
             rbs_setup.load()
+
+    @http_server.post("/api/rbs/position", tags=["RBS"], summary="Move the rbs setup to a specified position")
+    def rbs_move(position: PositionCoordinates):
+        rbs_setup.move(position)
