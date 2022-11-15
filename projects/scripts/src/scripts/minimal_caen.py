@@ -16,10 +16,9 @@ def build_and_run_ui(url: str):
     root.title(f'Caen')
 
     grid_frame = tk.Frame(root)
-    channels_frame = tk.Frame(root)
     oneline_frame = tk.Frame(root)
 
-    acquiring_label = tk.Label(grid_frame, text="Acquiring")
+    acquiring_label = tk.Label(grid_frame, text="Acquiring: ", width=20)
     acquiring_value = tk.Label(grid_frame, text="-")
 
     caen = Caen(url)
@@ -30,8 +29,8 @@ def build_and_run_ui(url: str):
 
     put_horizontal_grid(0, [acquiring_label, acquiring_value])
     put_horizontal_grid(0, [clear, start, stop])
+
     grid_frame.pack(side="top", fill="x")
-    channels_frame.pack(side="top", fill="x")
     oneline_frame.pack(side="bottom", fill="x")
 
     def update():
@@ -40,24 +39,7 @@ def build_and_run_ui(url: str):
         except:
             caen_status = {}
 
-        if caen_status:
-            for board in caen_status["boards"]:
-                flat_top_values = [tk.Label(channels_frame, text="trapezoid flat top")]
-                rise_time_values = [tk.Label(channels_frame, text="trapezoid rise time")]
-                for channel in board["channels"]:
-                    flat_top_values.append(tk.Label(channels_frame, text=channel["trapezoid_flat_top"]))
-                    rise_time_values.append(tk.Label(channels_frame, text=channel["trapezoid_rise_time"]))
-                put_horizontal_grid()
-
-
-
-
-
-
-
-
-
-        acquiring = caen_status.get("acquiring", "-")
+        acquiring = caen_status.get("acquisition_active", "-")
         acquiring_value.config(text=f'{acquiring}')
         root.after(2000, update)
 

@@ -51,15 +51,18 @@ class TestStringMethods(unittest.TestCase):
             [260.0, 249.0, 225.0, 241.0, 258.0, 217.0, 230.0, 251.0, 249.0, 250.0, 236.0, 250.0, 270.0, 232.0, 91.0,
              36.0, 52.0, 106.0, 213.0, 220.0, 263.0],
             [1354, 1630, 1664, 1775, 1775, 1819, 1708, 660, 502, 1342, 1600, 1569, 1511, 1537, 1459, 1192, 1420, 1620,
-             1621, 1689, 1704]
+             1621, 1689, 1704],
+            [3806, 3754, 3546, 3309, 3018, 2642, 2157, 1956, 1617, 1358, 1391, 1354, 1441, 1481,
+             1605, 2156, 2620, 3040, 3349, 3462, 3431]
         ]
-        expected_results = [-0.53, 0.38, 0.73, 0.59, 0.0, -0.15, -0.1, 1.26, 1.1, -0.48]
+        expected_results = [-0.53, 0.38, 0.73, 0.59, 0.0, -0.15, -0.1, 1.26, 1.1, -0.48, 0.2]
 
         for expected_result, energy_yields in zip(expected_results, yields):
             fit_func, min_angle = fit_and_smooth(angles, energy_yields)
             fit_result = AysFitResult(success=True, minimum=min_angle, discrete_angles=angles,
                                       discrete_yields=energy_yields,
                                       fit_func=fit_func)
+
             fig = plot_energy_yields("test1", fit_result)
 
             file_writer = FileWriter(Path("./out"), remote_dir=None)

@@ -14,6 +14,11 @@ def get_angle_for_minimum_yield(smooth_angles, smooth_yields) -> float:
     return smooth_angle_for_minimum_yield
 
 
+def constant_func(x, constant):
+    # Simply returning the constant makes np arange return a single value, We want a list of the same value
+    return [constant for _ in range(len(x))]
+
+
 def fit_and_smooth(angles, yields, algorithm_type=0):
     """Will fit a curve using x and y. When the fit is found, recalculate the y values with a more finely
     distributed x (smooth) (interpolated)."""
@@ -21,7 +26,14 @@ def fit_and_smooth(angles, yields, algorithm_type=0):
     # Tried to use scipy minimize, fminbound here - but it doesnt work as expected in all cases
     # Just eval the entire range and get the minimum - will get very slow with large arrays
     if algorithm_type == 0:
-        return attempt_lower_fit(angles, yields)
+        try:
+            return attempt_lower_fit(angles, yields)
+        except:
+            minimum = min(yields)
+            def fit_func(x):
+                return constant_func(x, minimum)
+            return fit_func, angles[yields.index(minimum)]
+
     else:
         return attempt_fit(angles, yields)
 
@@ -53,6 +65,8 @@ def fit(x, p, q, r, s, t, u):
 def attempt_lower_fit(angles, yields):
     p_start = np.amax(yields)
     r_start = angles[np.argmin(yields)]
+    # [p, q, r, s, t, u], covariance = optimize.curve_fit(lower_order_fit, angles, yields,
+    #                                                     p0=[p_start, 100.0, r_start, 0.3, -1.0, -1.0])
     [p, q, r, s, t, u], covariance = optimize.curve_fit(lower_order_fit, angles, yields,
                                                         p0=[p_start, 100.0, r_start, 0.3, -1.0, -1.0])
 
