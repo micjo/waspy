@@ -7,6 +7,7 @@ from waspy.iba.file_writer import FileWriter
 from waspy.iba.rbs_entities import AysFitResult
 from waspy.iba.rbs_plot import plot_energy_yields
 from waspy.iba.rbs_yield_angle_fit import fit_and_smooth
+
 import unittest
 
 
@@ -31,6 +32,7 @@ class TestStringMethods(unittest.TestCase):
     def test_fit(self):
         angles = np.arange(-2, 2.1, 0.2)
         angles = list(np.around(angles, decimals=2))
+
         yields = [
             [2443.0, 2497.0, 2547.0, 2614.0, 2597.0, 2680.0, 1966.0, 725.0, 1001.0, 2269.0, 2393.0, 2272.0, 2226.0,
              2215.0, 2208.0, 2196.0, 2025.0, 2246.0, 2486.0, 2524.0, 2551.0],
@@ -52,11 +54,22 @@ class TestStringMethods(unittest.TestCase):
              36.0, 52.0, 106.0, 213.0, 220.0, 263.0],
             [1354, 1630, 1664, 1775, 1775, 1819, 1708, 660, 502, 1342, 1600, 1569, 1511, 1537, 1459, 1192, 1420, 1620,
              1621, 1689, 1704],
-            [3806, 3754, 3546, 3309, 3018, 2642, 2157, 1956, 1617, 1358, 1391, 1354, 1441, 1481,
-             1605, 2156, 2620, 3040, 3349, 3462, 3431]
+            [3806, 3754, 3546, 3309, 3018, 2642, 2157, 1956, 1617, 1358, 1391, 1354, 1441, 1481, 1605, 2156, 2620, 3040,
+             3349, 3462, 3431],
+            [2811, 3076, 2976, 2641, 2249, 1930, 1462, 1177, 1238, 1032, 1022, 1017, 1030, 1148, 1210, 1346, 1692, 2073,
+             2520, 3013, 3198],
+            [2970, 2890, 3022, 2803, 2643, 2215, 1812, 1448, 1292, 1215, 1176, 1134, 1167, 1450, 1593, 1972, 2422, 2727,
+             3026, 3155, 3227],
+            [3713, 3629, 3638, 3433, 2775, 2142, 2147, 1601, 1290, 1039, 935, 880, 991, 1092, 1327, 1634, 1954, 2781,
+             3290, 3523, 3624],
+            [3565, 3559, 3558, 3217, 2831, 2454, 1890, 1405, 1221, 1200, 985, 996, 1092, 1155, 1362, 1386, 2000, 2614,
+             3069, 3295, 3379],
+            [3644, 3616, 3422, 3197, 2806, 2345, 2058, 1427, 1331, 1237, 1067, 958, 880, 1001, 1042, 1080, 1316, 1521,
+             1594, 1769, 2538]
         ]
-        expected_results = [-0.53, 0.38, 0.73, 0.59, 0.0, -0.15, -0.1, 1.26, 1.1, -0.48, 0.07]
+        expected_results = [-0.53, 0.38, 0.73, 0.59, 0.0, -0.15, -0.1, 1.26, 1.1, -0.48, 0.07, 0.11, 0.04, 0.11, 0.1, 0.36]
 
+        index = 0
         for expected_result, energy_yields in zip(expected_results, yields):
             fit_func, min_angle = fit_and_smooth(angles, energy_yields)
             fit_result = AysFitResult(success=True, minimum=min_angle, discrete_angles=angles,
@@ -66,6 +79,7 @@ class TestStringMethods(unittest.TestCase):
             fig = plot_energy_yields("test1", fit_result)
 
             file_writer = FileWriter(Path("./out"), remote_dir=None)
-            file_writer.write_matplotlib_fig_to_disk(f'plot_{min_angle}.png', fig)
+            file_writer.write_matplotlib_fig_to_disk(f'{index:02d}_plot_{min_angle}.png', fig)
 
             self.assertAlmostEqual(expected_result, min_angle, 2)
+            index += 1

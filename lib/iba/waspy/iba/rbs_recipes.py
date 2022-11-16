@@ -112,7 +112,7 @@ def save_channeling_journal(file_writer: FileWriter, recipe: RbsChanneling, jour
 
         file_name = f'_{recipe.name}_{ays_index}_{coordinate_ranging}'
         if ays_journal.fit.success:
-            fig = plot_energy_yields(recipe.name, ays_journal.fit)
+            fig = plot_energy_yields(f'{recipe.name}_{ays_index}_{coordinate_ranging}', ays_journal.fit)
             file_writer.write_matplotlib_fig_to_disk(f'{file_name}.png', fig)
         else:
             file_writer.write_text_to_disk(f'{file_name}.txt', "Fitting failed")

@@ -19,7 +19,7 @@ def fit_and_smooth(angles, yields, algorithm_type=0):
     """Will fit a curve using x and y. When the fit is found, recalculate the y values with a more finely
     distributed x (smooth) (interpolated)."""
 
-    # Tried to use scipy minimize, fminbound here - but it doesnt work as expected in all cases
+    # Tried to use scipy minimize, fminbound here - but it does not work as expected in all cases
     # Just eval the entire range and get the minimum - will get very slow with large arrays
     if algorithm_type == 0:
         return attempt_lower_fit(angles, yields)
