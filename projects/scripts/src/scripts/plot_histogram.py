@@ -34,13 +34,24 @@ class Graph:
         # self.axes.xaxis.set_major_locator(ticker.AutoLocator())
 
     def consume_data(self, data):
+        if data is None:
+            print("No data available !!")
+            self.axes.set_facecolor('lightgrey')
+            self.axes.get_lines()[0].set_color("black")
+            return
+        else:
+            self.axes.set_facecolor('white')
         self.reset_axes()
         self.axes.plot(data)
 
     def get_data(self):
         while True:
-            data = requests.get("http://169.254.150.200/hive/api/rbs/caen/detector/{}".format(sys.argv[1])).json()
+            try:
+                data = requests.get("http://mill.capitan.imec.be/api/rbs/caen/detector/{}".format(sys.argv[1])).json()
+            except Exception as e:
+                data = None
             yield data
+
 
 
 if __name__ == "__main__":
