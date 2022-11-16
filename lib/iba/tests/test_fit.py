@@ -55,7 +55,7 @@ class TestStringMethods(unittest.TestCase):
             [3806, 3754, 3546, 3309, 3018, 2642, 2157, 1956, 1617, 1358, 1391, 1354, 1441, 1481,
              1605, 2156, 2620, 3040, 3349, 3462, 3431]
         ]
-        expected_results = [-0.53, 0.38, 0.73, 0.59, 0.0, -0.15, -0.1, 1.26, 1.1, -0.48, 0.2]
+        expected_results = [-0.53, 0.38, 0.73, 0.59, 0.0, -0.15, -0.1, 1.26, 1.1, -0.48, 0.07]
 
         for expected_result, energy_yields in zip(expected_results, yields):
             fit_func, min_angle = fit_and_smooth(angles, energy_yields)
