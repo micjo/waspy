@@ -17,6 +17,9 @@ logging.basicConfig(
     datefmt='%Y.%m.%d__%H:%M__%S')
 
 
+# TODO WARNING: NOT CHECKED FOR SQL INJECTION ATTACKS - https://docs.python.org/2/library/sqlite3.html
+
+
 def build_query(sql_filter=""):
     return f"""
     SELECT l.log_id                                       as log_id,
@@ -80,7 +83,8 @@ class SqliteDb:
                         )
 
     def log_job_terminated(self, name: str, reason: str):
-        active_log_id = self._add_to_logbook('job', '{name} terminated: {reason}'.format(name=name, reason=reason), None)
+        active_log_id = self._add_to_logbook('job', '{name} terminated: {reason}'.format(name=name, reason=reason),
+                                             None)
         self.sql_insert("INSERT INTO job_book (log_id, job_id)"
                         " VALUES ('{log_id}','{job_id}')"
                         .format(log_id=active_log_id, job_id=self._active_job_id)
@@ -92,8 +96,10 @@ class SqliteDb:
         self._log_some_recipe_end(recipe, active_recipe_id)
 
     def log_recipe_terminated(self, recipe: RbsStepwiseRecipe | RbsSingleStepRecipe |
-                                             RbsStepwiseLeastRecipe | ErdRecipeModel, reason: str):
-        active_log_id = self._add_to_logbook('recipe', '{recipe} failed: {reason}'.format(recipe=recipe.name, reason=reason), None)
+                                            RbsStepwiseLeastRecipe | ErdRecipeModel, reason: str):
+        active_log_id = self._add_to_logbook('recipe',
+                                             '{recipe} failed: {reason}'.format(recipe=recipe.name, reason=reason),
+                                             None)
         active_recipe_id = self._add_to_recipe_book(active_log_id, recipe)
         self._log_some_recipe_end(recipe, active_recipe_id)
 
@@ -149,14 +155,29 @@ class SqliteDb:
 
     def get_trends_last_day(self):
         epoch_end = int(time.time())
-        epoch_start = epoch_end - (3600*24)
+        epoch_start = epoch_end - (3600 * 24)
 
         dataframe = self._sql_extract("""
            select * from trend where epoch between '{start}' and '{end}'
         """.format(start=epoch_start, end=epoch_end))
         dataframe.replace({np.nan: None}, inplace=True)
+        return dataframe.to_dict(orient='records')
 
-
+    def get_key_last_seconds_bucket(self, seconds, key):
+        epoch_start = int(time.time()) - (60 * 20)
+        bucket_size = int(seconds / 500)
+        dataframe = self._sql_extract(f'''
+            select
+                id/{bucket_size} as range_id,
+                max({key}) as max_{key},
+                min({key}) as min_{key},
+                min(epoch) as min_epoch,
+                max(epoch) as max_epoch
+            from trend
+            where epoch > {epoch_start}
+            group by range_id
+        ''')
+        dataframe.replace({np.nan: None}, inplace=True)
         return dataframe.to_dict(orient='records')
 
     def get_trend_starts_with(self, start: datetime, end: datetime, starts_with: str, step: int):
@@ -195,7 +216,7 @@ class SqliteDb:
                                )
 
     def _log_some_recipe_end(self, recipe: RbsStepwiseRecipe | RbsSingleStepRecipe |
-                                           RbsStepwiseLeastRecipe | ErdRecipeModel, recipe_id:int):
+                                           RbsStepwiseLeastRecipe | ErdRecipeModel, recipe_id: int):
 
         if recipe.type == RbsRecipeType.RANDOM:
             self.sql_insert("INSERT INTO rbs_random_book (recipe_id, axis, start, end, step)"
@@ -209,9 +230,9 @@ class SqliteDb:
             self.sql_insert(
                 "INSERT INTO rbs_angular_yield_book (recipe_id, axis, start, end, step, least_yield_position)"
                 "VALUES ('{recipe_id}','{axis}','{start}','{end}','{step}','{least_yield_position}')"
-                    .format(recipe_id=recipe_id, axis=recipe.vary_axis, start=recipe.start,
-                            end=recipe.end,
-                            step=recipe.step, least_yield_position=recipe.least_yield_position)
+                .format(recipe_id=recipe_id, axis=recipe.vary_axis, start=recipe.start,
+                        end=recipe.end,
+                        step=recipe.step, least_yield_position=recipe.least_yield_position)
             )
             for angleYield in recipe.yield_positions:
                 self.sql_insert("INSERT INTO rbs_yield_book (recipe_id, angle, yield)"
@@ -238,7 +259,7 @@ class SqliteDb:
                        z_repeat=recipe.z_repeat,
                        average_terminal_voltage=recipe.average_terminal_voltage))
 
-    def get_filtered_log_messages(self, mode:str, start_time:datetime, end_time:datetime):
+    def get_filtered_log_messages(self, mode: str, start_time: datetime, end_time: datetime):
         mode_filter = "where"
         if mode == "job":
             mode_filter += ' mode = "job" and'

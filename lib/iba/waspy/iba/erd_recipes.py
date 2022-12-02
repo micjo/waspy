@@ -6,7 +6,7 @@ import numpy as np
 
 from waspy.iba.erd_entities import ErdRecipe, PositionCoordinates, ErdJournal, get_erd_journal
 from waspy.iba.erd_setup import ErdSetup
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from waspy.iba.iba_error import RangeError, CancelError
 
 
@@ -59,10 +59,10 @@ def _log_recipe(recipe, wait_time, z_range):
                  ", z-positions: \n\t" + position_list)
 
 
-def save_erd_journal(file_writer: FileWriter, recipe: ErdRecipe, erd_journal: ErdJournal, extra=None):
-    file_writer.write_text_to_disk(f'{recipe.name}.flt', erd_journal.histogram)
+def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: ErdJournal, extra=None):
+    file_handler.write_text_to_disk(f'{recipe.name}.flt', erd_journal.histogram)
     meta = _serialize_meta(erd_journal, recipe, extra)
-    file_writer.write_text_to_disk(f'{recipe.name}.meta', meta)
+    file_handler.write_text_to_disk(f'{recipe.name}.meta', meta)
 
 
 def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra=None):

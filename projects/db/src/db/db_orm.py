@@ -1,7 +1,7 @@
 import copy
 from typing import Dict
 
-from sqlalchemy import String, Column, Float, Integer, text, create_engine, insert
+from sqlalchemy import String, Column, Float, Integer, text, create_engine, insert, cast, JSON, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from db.entities import Accelerator
@@ -17,6 +17,58 @@ def row2dict(row):
     for column in row.__table__.columns:
         d[column.name] = str(getattr(row, column.name))
     return d
+
+
+class DbDayBook(Base):
+    __tablename__ = "day_book"
+    id = Column('id', Integer, primary_key=True)
+    epoch = Column('epoch', Integer, server_default=text("(strftime(\'%s\', \'now\')) not null"))
+    entry = Column("entry", JSON)
+
+
+class DbDayBookAccountFormat(Base):
+    __tablename__ = "day_book_account_format"
+    account = Column('account', String, primary_key=True)
+    format = Column("format", JSON)
+
+
+def add_account_entry(account, new_entry: Dict):
+    entry_with_account = new_entry
+    entry_with_account["account"] = account
+
+    account_format = session.query(DbDayBookAccountFormat).filter(DbDayBookAccountFormat.account == account).first().format
+    account_formatted_entry = {"account": account}
+    for key in account_format:
+        if key in new_entry:
+            account_formatted_entry[key] = new_entry[key]
+
+    new_value = DbDayBook(entry=account_formatted_entry)
+    session.add(new_value)
+    session.commit()
+
+
+def get_entry_from_daybook(account, nr_of_entries):
+    query = session.query(DbDayBook).filter(DbDayBook.entry['account'] == f'"{account}"').order_by(DbDayBook.epoch.desc()).limit(nr_of_entries)
+    records = query[:]
+    return records
+
+
+def update_account_format(account, format):
+    new_value = DbDayBookAccountFormat(account=account, format=format)
+    session.merge(new_value)
+    session.commit()
+
+
+def get_daybook_all_formats():
+    query = session.query(DbDayBookAccountFormat)
+    records = query.all()
+    available_keys = []
+
+    for record in records:
+        for parameter in record.format:
+            available_keys.append(f'{record.account}/{parameter}')
+
+    return available_keys
 
 
 class DbAccelerator(Base):

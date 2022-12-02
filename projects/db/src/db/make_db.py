@@ -161,7 +161,6 @@ def make_imec_trend(sql_db):
 
 
 def make_vdg_trend(sql_db):
-
     sql_db.sql_insert(
     """
     create table trend
@@ -179,8 +178,25 @@ def make_vdg_trend(sql_db):
     """)
 
     sql_db.sql_insert("""
-create unique index trend_id_uindex
-    on trend (id);
+    create unique index trend_id_uindex
+        on trend (id);
+    """)
+
+
+def make_day_book(sql_db):
+    sql_db.sql_insert("""
+        create table day_book
+    (
+        id    INTEGER not null
+            constraint day_book_pk
+                primary key autoincrement,
+        epoch INTEGER default (strftime('%s', 'now')) not null,
+        entry TEXT
+    );
+    """)
+    sql_db.sql_insert("""
+    create unique index day_book_id_uindex
+        on day_book (id);
     """)
 
 

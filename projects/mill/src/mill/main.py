@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from mill import mill_routes, rbs_routes, erd_routes
 from waspy.iba import rbs_setup as rbs_lib
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from waspy.iba.erd_entities import ErdDriverUrls
 from waspy.iba.erd_setup import ErdSetup
 from waspy.iba.rbs_entities import RbsDriverUrls
@@ -71,11 +71,11 @@ def build_job_and_hw_routes(router, mill_config: MillConfig, logbook_db: LogBook
         job_runner = JobRunner()
 
         rbs_setup = rbs_lib.RbsSetup(mill_config.rbs.get_driver_urls())
-        rbs_file_writer = FileWriter(mill_config.rbs.local_dir, mill_config.rbs.remote_dir)
+        rbs_file_writer = FileHandler(mill_config.rbs.local_dir, mill_config.rbs.remote_dir)
         rbs_setup.configure_detectors(mill_config.rbs.drivers.caen.detectors)
 
         erd_setup = ErdSetup(mill_config.erd.get_driver_urls())
-        erd_file_writer = FileWriter(mill_config.erd.local_dir, mill_config.erd.remote_dir)
+        erd_file_writer = FileHandler(mill_config.erd.local_dir, mill_config.erd.remote_dir)
 
         factory = JobFactory(rbs_setup, rbs_file_writer, erd_setup, erd_file_writer, logbook_db)
         build_job_routes(router, job_runner, factory)

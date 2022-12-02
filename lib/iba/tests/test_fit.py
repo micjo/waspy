@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from waspy.iba.rbs_entities import AysFitResult
 from waspy.iba.rbs_plot import plot_energy_yields
 from waspy.iba.rbs_yield_angle_fit import fit_and_smooth
@@ -21,7 +21,7 @@ def fit_and_smooth_for_each(angles, yields_set) -> List[float]:
                                   fit_func=fit_func)
         fig = plot_energy_yields("test1", fit_result)
 
-        file_writer = FileWriter(Path("."), remote_dir=None)
+        file_writer = FileHandler(Path("."), remote_dir=None)
         file_writer.write_matplotlib_fig_to_disk(f'plot_{min_angle}.png', fig)
 
     return fit_results
@@ -78,8 +78,8 @@ class TestStringMethods(unittest.TestCase):
 
             fig = plot_energy_yields("test1", fit_result)
 
-            file_writer = FileWriter(Path("./out"), remote_dir=None)
-            file_writer.write_matplotlib_fig_to_disk(f'{index:02d}_plot_{min_angle}.png', fig)
+            file_handler = FileHandler(Path("./out"), remote_dir=None)
+            file_handler.write_matplotlib_fig_to_disk(f'{index:02d}_plot_{min_angle}.png', fig)
 
             self.assertAlmostEqual(expected_result, min_angle, 2)
             index += 1

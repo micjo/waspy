@@ -4,7 +4,7 @@ from typing import List
 
 from scipy.optimize import OptimizeWarning
 
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from waspy.iba.iba_error import CancelError
 from waspy.iba.rbs_plot import plot_energy_yields, plot_graph_group
 from waspy.iba.rbs_entities import get_positions_as_coordinate, CoordinateRange, Graph, Plot, \
@@ -83,11 +83,11 @@ def save_rbs_graph_to_disk(file_writer, journal: RbsJournal, file_stem):
     file_writer.write_matplotlib_fig_to_disk(f'{graph_group.title}.png', fig)
 
 
-def save_rbs_journal(file_writer: FileWriter, recipe: RbsRandom, journal: RbsJournal, extra=None):
-    save_rbs_journal_with_file_stem(file_writer, recipe.name, recipe, journal, extra)
+def save_rbs_journal(file_handler: FileHandler, recipe: RbsRandom, journal: RbsJournal, extra=None):
+    save_rbs_journal_with_file_stem(file_handler, recipe.name, recipe, journal, extra)
 
 
-def save_rbs_journal_with_file_stem(file_writer: FileWriter, file_stem, recipe: RbsChanneling | RbsRandom,
+def save_rbs_journal_with_file_stem(file_writer: FileHandler, file_stem, recipe: RbsChanneling | RbsRandom,
                                     journal: RbsJournal, extra=None):
     for [detector, histogram] in journal.histograms.items():
         title = f'{file_stem}_{detector}.txt'
@@ -97,41 +97,32 @@ def save_rbs_journal_with_file_stem(file_writer: FileWriter, file_stem, recipe: 
     save_rbs_graph_to_disk(file_writer, journal, file_stem)
 
 
-def save_channeling_journal(file_writer: FileWriter, recipe: RbsChanneling, journal: ChannelingJournal, extra=None):
+def save_channeling_journal(file_handler: FileHandler, recipe: RbsChanneling, journal: ChannelingJournal, extra=None):
     for ays_index, ays_journal in enumerate(journal.ays):
         yield_coordinate_range = recipe.yield_coordinate_ranges[ays_index]
         coordinate_ranging = yield_coordinate_range.name
         positions = get_positions_as_float(yield_coordinate_range)
         name = f'{recipe.name}_{ays_index}_{coordinate_ranging}'
-        file_writer.cd_folder(name)
+        file_handler.cd_folder(name)
         for rbs_index, rbs_journal in enumerate(ays_journal.rbs_journals):
-            save_rbs_journal_with_file_stem(file_writer, f'{rbs_index:02}_{name}_{positions[rbs_index]}', recipe,
+            save_rbs_journal_with_file_stem(file_handler, f'{rbs_index:02}_{name}_{positions[rbs_index]}', recipe,
                                             rbs_journal, extra)
         text = serialize_energy_yields(ays_journal.fit)
-        file_writer.write_text_to_disk(f'_{name}_yields.txt', text)
+        file_handler.write_text_to_disk(f'_{name}_yields.txt', text)
 
-        file_name = f'_{recipe.name}_{ays_index}_{coordinate_ranging}'
+        file_name = f'_{name}'
         if ays_journal.fit.success:
-            fig = plot_energy_yields(f'{recipe.name}_{ays_index}_{coordinate_ranging}', ays_journal.fit)
-            file_writer.write_matplotlib_fig_to_disk(f'{file_name}.png', fig)
+            fig = plot_energy_yields(name, ays_journal.fit)
+            file_handler.write_matplotlib_fig_to_disk(f'{file_name}.png', fig)
         else:
-            file_writer.write_text_to_disk(f'{file_name}.txt', "Fitting failed")
-            file_writer.cd_folder_up()
+            file_handler.write_text_to_disk(f'{file_name}.txt', "Fitting failed")
+            file_handler.cd_folder_up()
             return
-        file_writer.cd_folder_up()
+        file_handler.cd_folder_up()
 
-    save_rbs_journal_with_file_stem(file_writer, recipe.name + "_fixed", recipe, journal.fixed, extra)
-    save_rbs_journal_with_file_stem(file_writer, recipe.name + "_random", recipe, journal.random, extra)
-    save_channeling_graphs_to_disk(file_writer, journal, recipe.name)
-
-
-def save_fit_result_to_disk(file_writer: FileWriter, fit_result: AysFitResult, file_stem: str):
-    text = ""
-    for [angle, energy_yield] in zip(fit_result.discrete_angles, fit_result.discrete_yields):
-        text += f'{angle}, {energy_yield}\n'
-    file_writer.write_text_to_disk(f'{file_stem}_yields.txt', text)
-    fig = plot_energy_yields(file_stem, fit_result)
-    file_writer.write_matplotlib_fig_to_disk(file_stem, fig)
+    save_rbs_journal_with_file_stem(file_handler, recipe.name + "_fixed", recipe, journal.fixed, extra)
+    save_rbs_journal_with_file_stem(file_handler, recipe.name + "_random", recipe, journal.random, extra)
+    save_channeling_graphs_to_disk(file_handler, journal, recipe.name)
 
 
 def serialize_energy_yields(fit_data: AysFitResult) -> str:

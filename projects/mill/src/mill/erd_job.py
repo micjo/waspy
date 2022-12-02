@@ -8,7 +8,7 @@ from mill.erd_entities import ErdJobModel, ErdRecipe, make_erd_status
 from mill.logbook_db import LogBookDb
 from waspy.iba.erd_recipes import run_erd_recipe, save_erd_journal
 from waspy.iba.erd_setup import ErdSetup
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 
 from mill.job import Job
 
@@ -23,25 +23,25 @@ class ErdJob(Job):
     _recipe_start_time: datetime
     _finished_recipes: List
     _running: bool
-    _file_writer: FileWriter
+    _file_handler: FileHandler
     _db: LogBookDb
     _time_loaded: datetime
     _cancelled: bool
 
-    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, file_writer: FileWriter, log_book_db: LogBookDb):
+    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, file_handler: FileHandler, log_book_db: LogBookDb):
         self._job_model = job_model
         self._erd_setup = erd_setup
         self._run_time = timedelta(0)
         self._active_recipe = copy.deepcopy(empty_erd_recipe)
         self._finished_recipes = []
         self._running = False
-        self._file_writer = file_writer
+        self._file_handler = file_handler
         self._recipe_start_time = datetime.now()
         self._db = log_book_db
         self._cancelled = False
 
     def setup(self) -> None:
-        self._file_writer.set_base_folder(self._job_model.name)
+        self._file_handler.set_base_folder(self._job_model.name)
         self._db.job_start(self._job_model)
         self._erd_setup.resume()
         self._erd_setup.reupload_cnf()
@@ -55,10 +55,10 @@ class ErdJob(Job):
 
     def teardown(self):
         trends = self._db.get_trends(self._time_loaded, datetime.now(), "erd")
-        self._file_writer.write_csv_panda_to_disk("erd_trends.csv", trends)
+        self._file_handler.write_csv_panda_to_disk("erd_trends.csv", trends)
         trends = self._db.get_trends(self._time_loaded, datetime.now(), "any")
-        self._file_writer.write_csv_panda_to_disk("any_trends.csv", trends)
-        self._file_writer.write_json_to_disk("job.json", self.serialize())
+        self._file_handler.write_csv_panda_to_disk("any_trends.csv", trends)
+        self._file_handler.write_json_to_disk("job.json", self.serialize())
         self._db.job_finish(self._job_model)
         self._erd_setup.resume()
 
@@ -89,7 +89,7 @@ class ErdJob(Job):
 
         erd_journal = run_erd_recipe(recipe, self._erd_setup)
         extra = self._db.get_last_beam_parameters()
-        save_erd_journal(self._file_writer, recipe, erd_journal, extra)
+        save_erd_journal(self._file_handler, recipe, erd_journal, extra)
         self._running = False
 
     def _finish_recipe(self):

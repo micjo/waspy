@@ -9,18 +9,18 @@ from mill.logbook_db import LogBookDb
 from waspy.iba.erd_setup import ErdSetup
 from mill.rbs_entities import RbsJobModel
 from mill.rbs_job import RbsJob
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from waspy.iba.rbs_entities import PositionCoordinates, CoordinateRange
 from waspy.iba.rbs_setup import RbsSetup
 
 
 class JobFactory:
-    def __init__(self, rbs_setup: RbsSetup, rbs_file_writer: FileWriter, erd_setup: ErdSetup,
-                 erd_file_writer: FileWriter, db: LogBookDb):
+    def __init__(self, rbs_setup: RbsSetup, rbs_file_handler: FileHandler, erd_setup: ErdSetup,
+                 erd_file_handler: FileHandler, db: LogBookDb):
         self._rbs_setup = rbs_setup
-        self._rbs_file_writer = rbs_file_writer
+        self._rbs_file_writer = rbs_file_handler
         self._erd_setup = erd_setup
-        self._erd_file_writer = erd_file_writer
+        self._erd_file_writer = erd_file_handler
         self._db = db
 
     def make_rbs_job(self, job_model: RbsJobModel):

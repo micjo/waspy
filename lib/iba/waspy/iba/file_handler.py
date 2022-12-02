@@ -12,7 +12,7 @@ import pandas as pd
 import json
 
 
-class FileWriter:
+class FileHandler:
     _local: Path
     _remote: Union[Path, None]
     _base_folder: Path
@@ -72,6 +72,14 @@ class FileWriter:
             f.write(content)
         if self._remote:
             _try_copy(self._in_local_path(filename), self._in_remote_path(filename))
+
+    def read_text_from_disk(self, filename: str):
+        with open(self._in_local_path(filename), 'r') as f:
+            return f.read()
+
+    def read_json_from_disk(self, filename: str):
+        with open(self._in_local_path(filename), 'r') as f:
+            return json.load(f)
 
     def write_csv_panda_to_disk(self, filename: str, content: Dict):
         df = pd.DataFrame.from_dict(content)

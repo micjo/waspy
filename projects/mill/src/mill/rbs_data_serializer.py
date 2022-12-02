@@ -4,7 +4,7 @@ from threading import Lock
 from typing import List, Dict
 import numpy as np
 
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from mill.logbook_db import LogBookDb
 from mill.rbs_entities import RbsJobModel
 from waspy.iba.rbs_entities import RbsData
@@ -15,11 +15,11 @@ matplotlib.use('Agg')
 
 
 class RbsDataSerializer:
-    _data_store: FileWriter
+    _data_store: FileHandler
     _db: LogBookDb
     _time_loaded: datetime
 
-    def __init__(self, data_serializer: FileWriter, db: LogBookDb):
+    def __init__(self, data_serializer: FileHandler, db: LogBookDb):
         self._data_store = data_serializer
         self._lock = Lock()
         self._abort = False

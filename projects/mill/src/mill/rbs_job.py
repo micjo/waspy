@@ -8,7 +8,7 @@ from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJour
 from mill.rbs_entities import RbsJobModel, make_rbs_status
 from mill.job import Job
 
-from waspy.iba.file_writer import FileWriter
+from waspy.iba.file_handler import FileHandler
 from waspy.iba.rbs_recipes import run_random, run_channeling, save_rbs_journal, save_channeling_journal
 from waspy.iba.rbs_setup import RbsSetup
 
@@ -22,7 +22,7 @@ class RbsJob(Job):
     _finished_recipes: List
     _running: bool
     _db: LogBookDb
-    _file_writer: FileWriter
+    _file_writer: FileHandler
     _time_loaded: datetime
     _ays_index: int
     _active_recipe: RbsRandom | RbsChanneling
@@ -31,7 +31,7 @@ class RbsJob(Job):
     _cancelled: bool
 
     def __init__(self, job_model: RbsJobModel, rbs_setup: RbsSetup,
-                 file_writer: FileWriter, db: LogBookDb):
+                 file_writer: FileHandler, db: LogBookDb):
         self._rbs_setup = rbs_setup
         self._job_model = job_model
         self._active_recipe = copy.deepcopy(empty_recipe)

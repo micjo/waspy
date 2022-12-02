@@ -1,6 +1,7 @@
 from pathlib import Path
+
+from db.db_routes import add_logbook_routes
 from waspy.restapi.router_builder import create_router
-from db.routes import add_logbook_routes
 from db.sqlite_db import SqliteDb
 from pydantic import BaseSettings
 
