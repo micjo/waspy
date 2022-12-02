@@ -7,9 +7,9 @@ Requires=wait_eth_up.service
 Type=simple
 User=root
 WorkingDirectory=/root/waspy/projects/db
-ExecStart=/root/waspy/projects/logbook/run_db.sh
+ExecStart=/root/waspy/projects/db/run_db.sh
 Restart=on-failure
-SyslogIdentifier=logbook
+SyslogIdentifier=db
 
 [Install]
 WantedBy=multi-user.target
