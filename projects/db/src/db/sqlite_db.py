@@ -164,8 +164,9 @@ class SqliteDb:
         return dataframe.to_dict(orient='records')
 
     def get_key_last_seconds_bucket(self, seconds, key):
-        epoch_start = int(time.time()) - (60 * 20)
+        epoch_start = int(time.time()) - (seconds)
         bucket_size = int(seconds / 500)
+        print("bucket size: " + str(bucket_size))
         dataframe = self._sql_extract(f'''
             select
                 id/{bucket_size} as range_id,
