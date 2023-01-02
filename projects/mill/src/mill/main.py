@@ -77,10 +77,10 @@ def build_job_and_hw_routes(router, mill_config: MillConfig, logbook_db: LogBook
         erd_setup = ErdSetup(mill_config.erd.get_driver_urls())
         erd_file_writer = FileHandler(mill_config.erd.local_dir, mill_config.erd.remote_dir)
 
-        factory = JobFactory(rbs_setup, rbs_file_writer, erd_setup, erd_file_writer, logbook_db)
-        build_job_routes(router, job_runner, factory)
-
         recipe_meta = RecipeMeta(logbook_db, Path('./recipe_meta'))
+
+        factory = JobFactory(rbs_setup, rbs_file_writer, erd_setup, erd_file_writer, logbook_db, recipe_meta)
+        build_job_routes(router, job_runner, factory)
 
         rbs_routes.build_driver_endpoints(router, mill_config.rbs.drivers)
         rbs_routes.build_setup_endpoints(router, rbs_setup)

@@ -23,11 +23,11 @@ class RecipeMeta:
 
     def fill_rbs_recipe_meta(self):
         try:
-            content = self.get_rbs_recipe_meta_template_path()
+            content = self._file_handler.read_text_from_disk(self._RBS_FILENAME)
             daybook = self._db.get_daybook()
             return fill_in_meta_template(content, daybook)
-        except:
-            logging.error("Failed to fill in rbs recipe template metadata")
+        except Exception as e:
+            logging.error("Failed to fill in rbs recipe template metadata" + str(e))
             return ""
 
     def write_erd_recipe_meta_template(self, content):
@@ -38,11 +38,11 @@ class RecipeMeta:
 
     def fill_erd_recipe_meta(self):
         try:
-            content = self.get_erd_recipe_meta_template_path()
+            content = self._file_handler.read_text_from_disk(self._ERD_FILENAME)
             daybook = self._db.get_daybook()
             return fill_in_meta_template(content, daybook)
         except:
-            logging.error("Failed to fill in erd recipe template metadata")
+            logging.error("Failed to fill in erd recipe template metadata" + str(e))
             return ""
 
 

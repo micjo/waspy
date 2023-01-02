@@ -6,6 +6,7 @@ import pandas as pd
 from mill.erd_entities import ErdJobModel
 from mill.erd_job import ErdJob
 from mill.logbook_db import LogBookDb
+from mill.recipe_meta import RecipeMeta
 from waspy.iba.erd_setup import ErdSetup
 from mill.rbs_entities import RbsJobModel
 from mill.rbs_job import RbsJob
@@ -16,7 +17,7 @@ from waspy.iba.rbs_setup import RbsSetup
 
 class JobFactory:
     def __init__(self, rbs_setup: RbsSetup, rbs_file_handler: FileHandler, erd_setup: ErdSetup,
-                 erd_file_handler: FileHandler, db: LogBookDb):
+                 erd_file_handler: FileHandler, db: LogBookDb, recipe_meta: RecipeMeta):
         self._rbs_setup = rbs_setup
         self._rbs_file_writer = rbs_file_handler
         self._rbs_metadata = {}
@@ -24,9 +25,10 @@ class JobFactory:
         self._erd_file_writer = erd_file_handler
         self._erd_metadata = {}
         self._db = db
+        self._recipe_meta = recipe_meta
 
     def make_rbs_job(self, job_model: RbsJobModel):
-        return RbsJob(job_model, self._rbs_setup, self._rbs_file_writer, self._db)
+        return RbsJob(job_model, self._rbs_setup, self._rbs_file_writer, self._db, self._recipe_meta)
 
     def set_rbs_metadata_template(self, keys: Dict):
         self._rbs_metadata = keys
@@ -35,7 +37,7 @@ class JobFactory:
         self._erd_metadata = keys
 
     def make_erd_job(self, job_model: ErdJobModel):
-        return ErdJob(job_model, self._erd_setup, self._erd_file_writer, self._db)
+        return ErdJob(job_model, self._erd_setup, self._erd_file_writer, self._db, self._recipe_meta)
 
     def make_job_model_from_csv(self, contents) -> Union[RbsJobModel, ErdJobModel]:
         sections = get_sections(contents)

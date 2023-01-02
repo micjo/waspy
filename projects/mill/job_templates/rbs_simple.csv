@@ -1,0 +1,6 @@
+name,job_type,,,,,,,,
+RBS22_084,rbs,,,,,,,,
+,,,,,,,,,
+type,sample,name,charge_total,x,y,phi,zeta,det,theta
+rbs_random,AE200856_D07,RBS22_084_01A,60000,9,14,,0.15,170,11
+rbs_random,ref,RBS22_084_R1A,60000,10,110,,0.15,170,11

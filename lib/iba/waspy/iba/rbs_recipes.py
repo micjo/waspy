@@ -189,7 +189,6 @@ def format_caen_histogram(data: List[int]) -> str:
 
 def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe: RbsRandom | RbsChanneling, extra):
     now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
-
     header = f""" % Comments
  % Title                 := {recipe.name + "_" + detector_name}
  % Section := <raw_data>
@@ -217,10 +216,9 @@ def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe: RbsR
  * Detector offset[keV]  := 33.14020
  * Detector gain[keV/ch] := 1.972060
  * Detector FWHM[keV]    := 18.0
- *
 """
     if extra:
-        header += "\n" + extra
+        header += extra
 
     header += f""" % Section :=  </raw_data>
  % End comments"""
