@@ -19,12 +19,20 @@ class JobFactory:
                  erd_file_handler: FileHandler, db: LogBookDb):
         self._rbs_setup = rbs_setup
         self._rbs_file_writer = rbs_file_handler
+        self._rbs_metadata = {}
         self._erd_setup = erd_setup
         self._erd_file_writer = erd_file_handler
+        self._erd_metadata = {}
         self._db = db
 
     def make_rbs_job(self, job_model: RbsJobModel):
         return RbsJob(job_model, self._rbs_setup, self._rbs_file_writer, self._db)
+
+    def set_rbs_metadata_template(self, keys: Dict):
+        self._rbs_metadata = keys
+
+    def set_erd_metadata_template(self, keys: Dict):
+        self._erd_metadata = keys
 
     def make_erd_job(self, job_model: ErdJobModel):
         return ErdJob(job_model, self._erd_setup, self._erd_file_writer, self._db)

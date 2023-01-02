@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Union, Dict
 
 from mill.logbook_db import LogBookDb
+from mill.recipe_meta import RecipeMeta
 from waspy.iba.rbs_entities import RecipeType, RbsRandom, RbsChanneling, AysJournal, CoordinateRange
 from mill.rbs_entities import RbsJobModel, make_rbs_status
 from mill.job import Job
@@ -27,11 +28,11 @@ class RbsJob(Job):
     _ays_index: int
     _active_recipe: RbsRandom | RbsChanneling
     _recipe_start_time: datetime
-    _extra_meta: Dict
     _cancelled: bool
+    _recipe_meta: RecipeMeta
 
     def __init__(self, job_model: RbsJobModel, rbs_setup: RbsSetup,
-                 file_writer: FileHandler, db: LogBookDb):
+                 file_writer: FileHandler, db: LogBookDb, recipe_meta: RecipeMeta):
         self._rbs_setup = rbs_setup
         self._job_model = job_model
         self._active_recipe = copy.deepcopy(empty_recipe)
@@ -42,6 +43,7 @@ class RbsJob(Job):
         self._ays_index = 0
         self._recipe_start_time = datetime.now()
         self._cancelled = False
+        self._recipe_meta = recipe_meta
 
     def setup(self):
         self._file_writer.set_base_folder(self._job_model.name)
@@ -88,13 +90,15 @@ class RbsJob(Job):
 
     def _run_random_recipe(self, recipe: RbsRandom):
         journal = run_random(recipe, self._rbs_setup)
-        save_rbs_journal(self._file_writer, recipe, journal, self._extra_params)
+        recipe_meta_data = self._recipe_meta.fill_rbs_recipe_meta()
+        save_rbs_journal(self._file_writer, recipe, journal, recipe_meta_data)
         # TODO: log finish in db
 
     def _run_channeling_recipe(self, recipe: RbsChanneling):
         self._ays_index = 0
         journal = run_channeling(recipe, self._rbs_setup, self._ays_report_cb)
-        save_channeling_journal(self._file_writer, recipe, journal, self._extra_params)
+        recipe_meta_data = self._recipe_meta.fill_rbs_recipe_meta()
+        save_channeling_journal(self._file_writer, recipe, journal, recipe_meta_data)
         # TODO: log finish in db
 
     def _run_recipe(self, recipe: RbsRandom | RbsChanneling):
@@ -102,7 +106,6 @@ class RbsJob(Job):
         self._rbs_setup.clear_charge_offset()
         self._recipe_start_time = datetime.now()
         self._running = True
-        self._extra_params = self._db.get_last_beam_parameters()
         if recipe.type == RecipeType.RANDOM:
             self._run_random_recipe(recipe)
         if recipe.type == RecipeType.CHANNELING:
@@ -135,3 +138,6 @@ def _get_total_counts(recipe: Union[RbsRandom, RbsChanneling]):
         return _get_total_counts_channeling(recipe)
     if recipe.type == RecipeType.RANDOM:
         return _get_total_counts_stepwise(recipe)
+
+
+# def fill_meta(meta_template: Dict):

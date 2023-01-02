@@ -83,12 +83,12 @@ def save_rbs_graph_to_disk(file_writer, journal: RbsJournal, file_stem):
     file_writer.write_matplotlib_fig_to_disk(f'{graph_group.title}.png', fig)
 
 
-def save_rbs_journal(file_handler: FileHandler, recipe: RbsRandom, journal: RbsJournal, extra=None):
+def save_rbs_journal(file_handler: FileHandler, recipe: RbsRandom, journal: RbsJournal, extra):
     save_rbs_journal_with_file_stem(file_handler, recipe.name, recipe, journal, extra)
 
 
 def save_rbs_journal_with_file_stem(file_writer: FileHandler, file_stem, recipe: RbsChanneling | RbsRandom,
-                                    journal: RbsJournal, extra=None):
+                                    journal: RbsJournal, extra):
     for [detector, histogram] in journal.histograms.items():
         title = f'{file_stem}_{detector}.txt'
         header = _serialize_histogram_header(journal, detector, recipe, extra)
@@ -97,7 +97,7 @@ def save_rbs_journal_with_file_stem(file_writer: FileHandler, file_stem, recipe:
     save_rbs_graph_to_disk(file_writer, journal, file_stem)
 
 
-def save_channeling_journal(file_handler: FileHandler, recipe: RbsChanneling, journal: ChannelingJournal, extra=None):
+def save_channeling_journal(file_handler: FileHandler, recipe: RbsChanneling, journal: ChannelingJournal, extra):
     for ays_index, ays_journal in enumerate(journal.ays):
         yield_coordinate_range = recipe.yield_coordinate_ranges[ays_index]
         coordinate_ranging = yield_coordinate_range.name
@@ -189,8 +189,6 @@ def format_caen_histogram(data: List[int]) -> str:
 
 def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe: RbsRandom | RbsChanneling, extra):
     now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
-    if extra is None:
-        extra = {}
 
     header = f""" % Comments
  % Title                 := {recipe.name + "_" + detector_name}
@@ -203,7 +201,6 @@ def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe: RbsR
  *
  * ANAL.IONS(Z)          := 4.002600
  * ANAL.IONS(symb)       := He+
- * ENERGY[MeV]           := {extra.get("beam_energy_MeV", "")} MeV
  * Charge[nC]            := {journal.accumulated_charge}
  *
  * Sample ID             := {recipe.sample}
@@ -221,6 +218,10 @@ def _serialize_histogram_header(journal: RbsJournal, detector_name, recipe: RbsR
  * Detector gain[keV/ch] := 1.972060
  * Detector FWHM[keV]    := 18.0
  *
- % Section :=  </raw_data>
+"""
+    if extra:
+        header += "\n" + extra
+
+    header += f""" % Section :=  </raw_data>
  % End comments"""
     return header

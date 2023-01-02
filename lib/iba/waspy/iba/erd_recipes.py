@@ -59,16 +59,14 @@ def _log_recipe(recipe, wait_time, z_range):
                  ", z-positions: \n\t" + position_list)
 
 
-def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: ErdJournal, extra=None):
+def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: ErdJournal, extra):
     file_handler.write_text_to_disk(f'{recipe.name}.flt', erd_journal.histogram)
     meta = _serialize_meta(erd_journal, recipe, extra)
     file_handler.write_text_to_disk(f'{recipe.name}.meta', meta)
 
 
-def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra=None):
+def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra):
     now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
-    if extra is None:
-        extra = {}
 
     header = f""" % Comments
  % Title                 := {recipe.name}
@@ -77,10 +75,6 @@ def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra=None):
  * Recipe name           := {recipe.name}
  * DATE/Time             := {now}
  * MEASURING TIME[sec]   := {journal.measuring_time_sec}
- *
- * ENERGY[MeV]           := {extra.get("beam_energy_MeV", "")} MeV
- * Beam description      := {extra.get("beam_description", "")}
- * Sample Tilt Degrees   := {extra.get("sample_tilt_degrees", "")}
  *
  * Sample ID             := {recipe.sample}
  * Sample Z              := {journal.z}
@@ -93,8 +87,10 @@ def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra=None):
  * Start time            := {journal.start_time}
  * End time              := {journal.end_time}
  *
- * Avg Terminal Voltage  := {-1}
- *
- % Section :=  </raw_data>
+ """
+    if extra:
+        header += "\n" + extra
+
+    header += f""" % Section :=  </raw_data>
  % End comments"""
     return header

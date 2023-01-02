@@ -3,8 +3,6 @@ from typing import Union, Dict, List
 
 from fastapi import FastAPI
 
-from db.db_orm import DbAccelerator, session, fill_in_entry, insert_dict, DbDayBook, add_account_entry, \
-    get_entry_from_daybook, update_account_format
 from db.sqlite_db import SqliteDb
 from db.entities import AnyRecipe, Accelerator
 
@@ -33,28 +31,6 @@ def add_logbook_routes(router: FastAPI, sql_db: SqliteDb):
     @router.post("/log_finished_recipe")
     async def log_finished_recipe(rbs_recipe: AnyRecipe):
         sql_db.log_recipe_finished(rbs_recipe.__root__)
-
-    @router.post("/log_accelerator_paramaters")
-    async def log_accelerator_parameters(accelerator: Accelerator):
-        entry = fill_in_entry(accelerator)
-        insert_dict(entry)
-
-    @router.delete("/accelerator_parameters", status_code=201)
-    async def remove_accelerator_parameters(id: int):
-        session.query(DbAccelerator).filter(DbAccelerator.id == id).delete()
-        session.commit()
-
-    @router.get("/check_accelerator_parameters")
-    async def check_accelerator_parameters():
-        return DbAccelerator.__table__.columns.keys()
-
-    @router.get("/get_accelerator_parameters")
-    async def check_accelerator_parameters():
-        return session.query(DbAccelerator).all()
-
-    @router.get("/get_last_accelerator_parameters")
-    async def get_last_accelerator_parameters():
-        return session.query(DbAccelerator).order_by(DbAccelerator.epoch.desc()).first()
 
     @router.post("/log_terminated_recipe")
     async def log_terminated_recipe(rbs_recipe: AnyRecipe, reason: str):

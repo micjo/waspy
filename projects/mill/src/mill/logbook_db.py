@@ -30,8 +30,8 @@ class LogBookDb:
     def recipe_finish(self, recipe: Dict):
         post_safe(self._logbook_url + "/log_finished_recipe", json=recipe)
 
-    def get_last_beam_parameters(self):
-        return get_json_safe(self._logbook_url + "/get_last_accelerator_parameters", {})
+    def get_daybook(self):
+        return get_json_safe(self._logbook_url + "/daybook_json", {})
 
     def get_trends(self, start: datetime, end: datetime, starts_with: str) -> Dict:
         start_str = str(start)

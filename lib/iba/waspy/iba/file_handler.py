@@ -89,6 +89,9 @@ class FileHandler:
         json_content = json.dumps(content, indent=4, default=str)
         self.write_text_to_disk(filename, json_content)
 
+    def get_local_dir(self):
+        return self._local
+
     def _in_local_path(self, file_stem: str):
         return self._local / self._base_folder / self._sub_folder / file_stem
 

@@ -1,0 +1,8 @@
+{
+    "dacq": {
+        "dacq_fwhm": 5
+    },
+    "acc_beam": {
+        "something": 4
+    }
+}

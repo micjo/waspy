@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,11 +8,10 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from mill import mill_routes, rbs_routes, erd_routes
+from mill.recipe_meta import RecipeMeta
 from waspy.iba import rbs_setup as rbs_lib
 from waspy.iba.file_handler import FileHandler
-from waspy.iba.erd_entities import ErdDriverUrls
 from waspy.iba.erd_setup import ErdSetup
-from waspy.iba.rbs_entities import RbsDriverUrls
 from mill.job_factory import JobFactory
 from mill.systemd_routes import build_systemd_endpoints
 from mill.logbook_db import LogBookDb
@@ -80,11 +80,15 @@ def build_job_and_hw_routes(router, mill_config: MillConfig, logbook_db: LogBook
         factory = JobFactory(rbs_setup, rbs_file_writer, erd_setup, erd_file_writer, logbook_db)
         build_job_routes(router, job_runner, factory)
 
+        recipe_meta = RecipeMeta(logbook_db, Path('./recipe_meta'))
+
         rbs_routes.build_driver_endpoints(router, mill_config.rbs.drivers)
         rbs_routes.build_setup_endpoints(router, rbs_setup)
+        rbs_routes.build_meta_endpoints(router, recipe_meta)
 
         erd_routes.build_driver_endpoints(router, mill_config.erd.drivers)
         erd_routes.build_setup_endpoints(router, erd_setup)
+        erd_routes.build_meta_endpoints(router, recipe_meta)
 
         env_conf = GlobalConfig()
         if env_conf.FAKER:

@@ -1,22 +1,29 @@
-from typing import Dict, List
+import tomli
+from starlette.responses import JSONResponse, FileResponse
+from fastapi import UploadFile
 
-from db.db_orm import get_entry_from_daybook, add_account_entry, get_daybook_all_formats, update_account_format
+from waspy.iba.file_handler import FileHandler
 
 
-def add_daybook_routes(router):
-    @router.get("/daybook/entry")
-    async def get_daybook(account:str, nr_of_entries=1):
-        return get_entry_from_daybook(account, nr_of_entries)
+def add_daybook_routes(router, file_handler: FileHandler):
+    @router.post("/daybook")
+    async def upload_meta(upload_file: UploadFile):
+        content = await upload_file.read()
+        try:
+            tomli.load(upload_file.file)
+            return file_handler.write_text_to_disk('daybook.toml', content.decode("utf-8"))
+        except tomli.TOMLDecodeError as e:
+            return JSONResponse(status_code=400, content=f"Invalid tomli : {e}")
 
-    @router.post("/daybook/entry")
-    async def post_daybook(account: str,entry: Dict):
-        return add_account_entry(account, entry)
+    @router.get("/daybook", response_class=FileResponse)
+    async def download_meta():
+        return file_handler.get_local_dir() / "daybook.toml"
 
-    @router.post("/daybook/format")
-    async def post_daybook_format(account: str, format: List):
-        update_account_format(account, format)
+    @router.get("/daybook_json")
+    async def download_meta():
+        toml = file_handler.read_text_from_disk("daybook.toml")
+        return tomli.loads(toml)
 
-    @router.get("/daybook/format")
-    async def get_daybook_formats():
-        return get_daybook_all_formats()
+
+
 

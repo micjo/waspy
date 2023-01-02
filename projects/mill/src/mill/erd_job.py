@@ -1,11 +1,11 @@
 import logging
 import copy
 from datetime import datetime, timedelta
-from typing import List
-
+from typing import List, Dict
 
 from mill.erd_entities import ErdJobModel, ErdRecipe, make_erd_status
 from mill.logbook_db import LogBookDb
+from mill.recipe_meta import RecipeMeta
 from waspy.iba.erd_recipes import run_erd_recipe, save_erd_journal
 from waspy.iba.erd_setup import ErdSetup
 from waspy.iba.file_handler import FileHandler
@@ -27,8 +27,10 @@ class ErdJob(Job):
     _db: LogBookDb
     _time_loaded: datetime
     _cancelled: bool
+    _recipe_meta: RecipeMeta
 
-    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, file_handler: FileHandler, log_book_db: LogBookDb):
+    def __init__(self, job_model: ErdJobModel, erd_setup: ErdSetup, file_handler: FileHandler, log_book_db: LogBookDb,
+                 recipe_meta: RecipeMeta):
         self._job_model = job_model
         self._erd_setup = erd_setup
         self._run_time = timedelta(0)
@@ -39,6 +41,7 @@ class ErdJob(Job):
         self._recipe_start_time = datetime.now()
         self._db = log_book_db
         self._cancelled = False
+        self._recipe_meta = recipe_meta
 
     def setup(self) -> None:
         self._file_handler.set_base_folder(self._job_model.name)
@@ -74,7 +77,7 @@ class ErdJob(Job):
     def get_recipe_progress(self):
         measuring_time = self._erd_setup.get_measuring_time()
         total_time = self._active_recipe.measuring_time_sec
-        progress = round(measuring_time / total_time * 100,2) if self._running else 0
+        progress = round(measuring_time / total_time * 100, 2) if self._running else 0
         return f'{progress:02}'
 
     def cancel(self):
@@ -88,7 +91,7 @@ class ErdJob(Job):
         self._running = True
 
         erd_journal = run_erd_recipe(recipe, self._erd_setup)
-        extra = self._db.get_last_beam_parameters()
+        extra = self._recipe_meta.fill_erd_recipe_meta()
         save_erd_journal(self._file_handler, recipe, erd_journal, extra)
         self._running = False
 
@@ -96,5 +99,3 @@ class ErdJob(Job):
         finished_recipe_status = make_erd_status(self._active_recipe, 100, self._recipe_start_time)
         self._finished_recipes.append(finished_recipe_status.dict())
         self._active_recipe = empty_erd_recipe
-
-

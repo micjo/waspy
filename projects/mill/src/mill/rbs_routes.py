@@ -1,6 +1,10 @@
+from fastapi import Body
+from starlette.responses import FileResponse, Response
+
 from mill.entities import CaenConfig
 from mill.mill_routes import build_get_redirect, build_post_redirect, build_histogram_redirect, \
     build_packed_histogram, build_detector_endpoints
+from mill.recipe_meta import RecipeMeta
 from waspy.iba.rbs_entities import PositionCoordinates
 from waspy.iba.rbs_setup import RbsSetup
 
@@ -29,3 +33,21 @@ def build_setup_endpoints(http_server, rbs_setup:RbsSetup):
     @http_server.post("/api/rbs/position", tags=["RBS"], summary="Move the rbs setup to a specified position")
     def rbs_move(position: PositionCoordinates):
         rbs_setup.move(position)
+
+
+def build_meta_endpoints(http_server, recipe_meta: RecipeMeta):
+    @http_server.post("/api/rbs/recipe_meta_template", tags=["RBS"], summary="update the experiment metadata template")
+    async def upload_rbs_recipe_meta_template(meta_template: str = Body(..., media_type="text/plain")):
+        return recipe_meta.write_rbs_recipe_meta_template(meta_template)
+
+    @http_server.get("/api/rbs/recipe_meta_template", tags=["RBS"], summary="get the experiment metadata template", response_class=FileResponse)
+    async def download_rbs_recipe_meta_template():
+        return recipe_meta.get_rbs_recipe_meta_template_path()
+
+    @http_server.get("/api/rbs/recipe_meta", tags=["RBS"], summary="get the experiment metadata")
+    def get_rbs_recipe_meta():
+        text = recipe_meta.fill_rbs_recipe_meta()
+        return Response(content=text, media_type="text/plain")
+
+
+
