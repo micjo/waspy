@@ -1,5 +1,6 @@
 [dacq]
 dacq_fwhm=5
+my_value=3
 
 [acc_beam]
 something=4

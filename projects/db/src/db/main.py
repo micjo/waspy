@@ -10,6 +10,7 @@ from pydantic import BaseSettings
 
 class GlobalConfig(BaseSettings):
     DB_FILE: str
+    DAYBOOK_FILE: str
 
 
 def main():
@@ -19,8 +20,13 @@ def main():
     sql_db = SqliteDb(Path(env_conf.DB_FILE))
     add_logbook_routes(router, sql_db)
 
-    daybook_file_handler = FileHandler(Path('./daybook'))
-    add_daybook_routes(router, daybook_file_handler)
+    daybook_path = Path(env_conf.DAYBOOK_FILE)
+    daybook_folder = daybook_path.parent
+    daybook_filename = daybook_path.name
+
+    daybook_file_handler = FileHandler(daybook_folder)
+
+    add_daybook_routes(router, daybook_file_handler, daybook_filename)
 
     return router
 
