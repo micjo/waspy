@@ -46,7 +46,6 @@ class RecipeMeta:
             return ""
 
 
-
 def fill_in_meta_template(content: str, values: dict) -> str:
     filled_in_template = ""
     for line in content.splitlines():
@@ -56,7 +55,10 @@ def fill_in_meta_template(content: str, values: dict) -> str:
             db_key = line[replace_start_index + 2:replace_end_index]
             local_value = values
             for nestedKey in db_key.split('.'):
-                local_value = local_value.get(nestedKey, "NOT FOUND")
+                try:
+                    local_value = local_value.get(nestedKey, "NOT FOUND")
+                except:
+                    local_value = "NOT FOUND"
             line = line.replace("{{" + db_key + "}}", str(local_value))
         filled_in_template += line + "\n"
     return filled_in_template
