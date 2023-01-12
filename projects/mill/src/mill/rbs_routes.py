@@ -1,4 +1,8 @@
-from fastapi import Body
+import logging
+import traceback
+
+from fastapi import Body, File, UploadFile
+from starlette import status
 from starlette.responses import FileResponse, Response
 
 from mill.entities import CaenConfig
@@ -37,8 +41,15 @@ def build_setup_endpoints(http_server, rbs_setup:RbsSetup):
 
 def build_meta_endpoints(http_server, recipe_meta: RecipeMeta):
     @http_server.post("/api/rbs/recipe_meta_template", tags=["RBS"], summary="update the experiment metadata template")
-    async def upload_rbs_recipe_meta_template(meta_template: str = Body(..., media_type="text/plain")):
-        return recipe_meta.write_rbs_recipe_meta_template(meta_template)
+    async def upload_rbs_recipe_meta_template(response: Response, file: UploadFile = File(...)):
+        try:
+            file_bytes = await file.read()
+            contents = file_bytes.decode('utf-8')
+            return recipe_meta.write_rbs_recipe_meta_template(contents)
+        except Exception as e:
+            logging.error(traceback.format_exc())
+            response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+            return str(e)
 
     @http_server.get("/api/rbs/recipe_meta_template", tags=["RBS"], summary="get the experiment metadata template", response_class=FileResponse)
     async def download_rbs_recipe_meta_template():
