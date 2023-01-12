@@ -68,7 +68,7 @@ class Caen:
         post_request(self._url, request)
 
     def get_raw_histogram(self, board, channel):
-        url = self._url + "/histogram/" + str(board) + "/" + str(channel)
+        url = self._url + "/histogram?board=" + str(board) + "&channel=" + str(channel)
         http_code, data = get_text_with_response_code(url)
         if http_code == 404:
             raise DriverError(f'Could not retrieve histogram. Does this detector: '
