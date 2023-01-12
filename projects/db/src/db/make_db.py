@@ -1,10 +1,11 @@
 from pathlib import Path
 
-from db.db_orm import Base
 from db.sqlite_db import SqliteDb
 import sys
 from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base
 
+Base = declarative_base()
 
 def make_log_book(sql_db):
     sql_db.sql_insert("""
