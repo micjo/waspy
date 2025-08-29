@@ -188,13 +188,8 @@ def _build_2_by_5_floats_all_zeroes():
 
 def _load_flt_data(content: str) -> np.array:
     """
-<<<<<<< Updated upstream
-    Converts flt data string to numpy array.
-    """
-=======
     Converts flt data string to numpy array
     """    
->>>>>>> Stashed changes
     lines = content.split('\n')
     if len(lines) < 2:
         return np.zeros((2, 2), dtype=float)
@@ -282,4 +277,3 @@ def _extend_flt_data(flt_data: np.array, B0, B1, B2, ns_ch, t_offs):
 
     return output_data
 
-  
