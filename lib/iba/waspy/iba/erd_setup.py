@@ -35,13 +35,13 @@ class ErdSetup:
 
     def get_b_param_file_path(self) -> Path:
         return self._param_folder / self._BPARAMS_FILE
-
+    
     def get_tof_file_path(self) -> Path:
         return self._param_folder / self._TOF_FILE
-
+    
     def _get_tof_chmin_chmax(self) -> tuple[int, int]:
         return self._tof_chmin, self._tof_chmax
-
+    
     def convert_to_extended_flt_data(self, histogram: str):
         np_histogram = _load_flt_data(histogram)
         # nanoseconds ? time_offset ? to be figured out
@@ -62,7 +62,6 @@ class ErdSetup:
 
     def fake(self):
         self._fake = True
-        self._cancel = True
 
     @preemptive
     def move(self, position: PositionCoordinates):
@@ -119,7 +118,6 @@ class ErdSetup:
         logging.info("[WASPY.IBA.ERD_SETUP] Acquisition Started")
 
     def get_histogram(self):
-        logging.info("[WASPY.IBA.ERD_SETUP] get histogram")
         if self._cancel:
             return ""
         if self._fake:
@@ -162,7 +160,7 @@ class ErdSetup:
                 logging.info("[WASPY.IBA.ERD_SETUP] Acquisition has completed")
                 break
 
-    @preemptive
+    @preemptive 
     def _acquisition_started(self):
         while True:
             time.sleep(1)
@@ -176,7 +174,7 @@ class ErdSetup:
 def _load_flt_data(content: str) -> np.array:
     """
     Converts flt data string to numpy array
-    """
+    """    
     lines = content.split('\n')
     if len(lines) == 0:
         raise RuntimeError()
@@ -190,8 +188,8 @@ def _load_bparams_calibration(filename: Path, tof_chmin: int , tof_chmax: int) -
     """
 
     if not filename.is_file():
-        raise FileNotFoundError(f"Bparam file {filename} not found.")
-
+        raise FileNotFoundError(f"Bparam file {filename} not found.")    
+       
     B0 = np.zeros(tof_chmax+1)
     B1 = np.zeros(tof_chmax+1)
     B2 = np.zeros(tof_chmax+1)
@@ -220,7 +218,7 @@ def _load_tof_calibration(filename: Path) -> tuple[float, float]:
     Opens a `Tof.in` file and returns the TOF calibration data.
     Returns (ns_ch, t_offs)
     """
-
+ 
     try:
         with open(filename, 'r') as f:
             for line in f:
@@ -237,10 +235,6 @@ def _extend_flt_data(flt_data: np.array, B0, B1, B2, ns_ch, t_offs):
     Extends the flt data with aditional columns (t_k, E_k) -> (t_k, t, E_k, m, m_k).
     `k` denotes that this unit is expressed per channel.
     """
-    if len(flt_data) == 0:
-        logging.warn("flt data had length 0")
-        return [[]]
-
     TOFCHMIN=1
     TOFCHMAX=8192
 
@@ -268,4 +262,4 @@ def _extend_flt_data(flt_data: np.array, B0, B1, B2, ns_ch, t_offs):
 
     return output_data
 
-
+  
