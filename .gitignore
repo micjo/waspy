@@ -1,4 +1,12 @@
-projects/mill/core
-
+.vscode
 **/__pycache__/
+projects/mill/core
+*.log
+*.db
+venv
 .idea
+*.egg-info
+.tox
+out/
+projects/db/core
+cleanup_db.patch

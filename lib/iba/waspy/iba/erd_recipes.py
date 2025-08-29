@@ -35,6 +35,7 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup) -> ErdJournal:
 
     erd_setup.wait_for_acquisition_done()
     erd_setup.convert_data_to_ascii()
+
     erd_setup.get_measuring_time()
 
     erd_status = erd_setup.get_status(get_histogram=True)
@@ -74,7 +75,7 @@ def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: 
     # plots
     evt_fig = create_erd_evt_plot(recipe.name, erd_journal.extended_flt_data)
     file_handler.write_matplotlib_fig_to_disk(recipe.name + ".evt.png",  evt_fig)
-    
+
     mvt_fig = create_erd_mvt_plot(recipe.name, erd_journal.extended_flt_data)
     file_handler.write_matplotlib_fig_to_disk(recipe.name + ".mvt.png", mvt_fig)
 

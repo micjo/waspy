@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from db.daybook_routes import add_daybook_routes
+from db.dashboard_routes import add_dashboard_routes
 from db.db_routes import add_logbook_routes
+from db.dashboard_handler import DashboardHandler
 from waspy.iba.file_handler import FileHandler
 from waspy.restapi.router_builder import create_router
 from db.sqlite_db import SqliteDb
@@ -12,6 +13,8 @@ class GlobalConfig(BaseSettings):
     DB_FILE: str
     DAYBOOK_FILE: str # TODO: to be removed
     REMOTE_PATH: str
+    DASHBOARD_FILE: str # TODO: to be removed
+    REMOTE_PATH: str
 
 
 def main():
@@ -21,14 +24,21 @@ def main():
     sql_db = SqliteDb(Path(env_conf.DB_FILE))
     add_logbook_routes(router, sql_db)
 
-    daybook_path = Path(env_conf.DAYBOOK_FILE)
-    daybook_folder = daybook_path.parent
-    daybook_filename = daybook_path.name
+    dashboard_path = Path(env_conf.DASHBOARD_FILE)
+    dashboard_folder = dashboard_path.parent
+    dashboard_filename = dashboard_path.name
+
+    remote_path = Path(env_conf.REMOTE_PATH)
 
     remote_path = Path(env_conf.REMOTE_PATH)
 
     daybook_file_handler = FileHandler(daybook_folder, remote_path)
+    dashboard_file_handler = FileHandler(dashboard_folder, remote_path)
 
-    add_daybook_routes(router, daybook_file_handler, daybook_filename)
+    dashboard_handler = DashboardHandler(dashboard_file_handler)
+
+    add_dashboard_routes(router, dashboard_filename, dashboard_handler)
+
+    dashboard_handler.start_update_thread()
 
     return router
