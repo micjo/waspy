@@ -1,6 +1,5 @@
 # Waspy
 
-
 # Short description
 This repository contains python code to automate, orchestrate and log ion beam analysis experiments.
 
