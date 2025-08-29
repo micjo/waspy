@@ -39,8 +39,9 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup) -> ErdJournal:
     erd_setup.get_measuring_time()
 
     erd_status = erd_setup.get_status(get_histogram=True)
+    erd_setup.clear_workaround_state()
     extended_flt_data = erd_setup.convert_to_extended_flt_data(erd_status.histogram)
-
+    
     return get_erd_journal(erd_status, start_time, extended_flt_data)
 
 
@@ -73,6 +74,7 @@ def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: 
     # file_handler.write_text_to_disk(f'{recipe.name}.meta', meta)
 
     # plots
+    logging.info(erd_journal.extended_flt_data)
     evt_fig = create_erd_evt_plot(recipe.name, erd_journal.extended_flt_data)
     file_handler.write_matplotlib_fig_to_disk(recipe.name + ".evt.png",  evt_fig)
 
@@ -82,16 +84,17 @@ def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: 
     # data files
     recipe_identifier: str = recipe.name.split("_")[-1] # e.g. A01
     file_handler.cd_folder(recipe_identifier)
+    file_handler.write_text_to_disk(f"workaround.txt", f"mpa3 workaround trigger: {erd_journal.mpa3_workaround_trigger}")
     file_handler.write_text_to_disk(f"{recipe.name}.flt", erd_journal.histogram)
-    file_handler.write_text_to_disk(f"{recipe.name}.ext", _serialize_np_array(erd_journal.extended_flt_data))
-    file_handler.write_text_to_disk(f"{recipe.name}.mvt", _serialize_np_array(erd_journal.extended_flt_data[:, [4, 0]]))
+    file_handler.write_text_to_disk(f"{recipe.name}.ext", _serialize_np_array(np.array(erd_journal.extended_flt_data)))
+    file_handler.write_text_to_disk(f"{recipe.name}.mvt", _serialize_np_array(np.array(erd_journal.extended_flt_data)[:, [4, 0]]))
     file_handler.copy_file_to_local(tof_in_file_path)
     file_handler.cd_folder_up()
 
 
 def _serialize_np_array(np_array):
     return '\n'.join([
-        ' '.join(line) + ' ' for line in np_array
+        ' '.join([str(item) for item in line]) + ' ' for line in np_array
     ]) + '\n'
 
 def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra):
