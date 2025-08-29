@@ -41,5 +41,5 @@ class LogBookDb:
         if response == {}:
             return {}
         df = pd.DataFrame.from_dict(response)
-        df['time'] = pd.to_datetime(df['epoch'], unit='s')
+        df['time'] = pd.to_datetime(df['epoch'], unit='s', utc=True)
         return df.to_dict(orient='list')

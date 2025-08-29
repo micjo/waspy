@@ -14,12 +14,16 @@ class ErdDriverUrls(BaseModel):
     mdrive_z: str
     mdrive_theta: str
     mpa3: str
+    motrona_z_encoder: str
+    motrona_theta_encoder: str
 
 
 class ErdData(BaseModel):
     mdrive_z: Dict
     mdrive_theta: Dict
     mpa3: Dict
+    motrona_z_encoder: Dict
+    motrona_theta_encoder: Dict
     histogram: str
     measuring_time_sec: float
 
@@ -47,11 +51,16 @@ class ErdJournal(BaseModel):
     measuring_time_sec: int
     z: float
     theta: float
+    z_encoder: float
+    theta_encoder: float
     histogram: str
+    extended_flt_data: list[list[float]]
 
-
-def get_erd_journal(erd_data: ErdData, start_time: datetime) -> ErdJournal:
+def get_erd_journal(erd_data: ErdData, start_time: datetime, extended_flt_data: list[list[float]]) -> ErdJournal:
     return ErdJournal(
         start_time=start_time, end_time=datetime.now(), measuring_time_sec=erd_data.measuring_time_sec,
         z=erd_data.mdrive_z["motor_position"], theta=erd_data.mdrive_theta["motor_position"],
-        histogram=erd_data.histogram)
+        z_encoder=erd_data.motrona_z_encoder["charge(nC)"],
+        theta_encoder=erd_data.motrona_theta_encoder["charge(nC)"],
+        histogram=erd_data.histogram, 
+        extended_flt_data = extended_flt_data)

@@ -45,6 +45,9 @@ class RbsSetup:
     def cancel(self):
         self._cancel = True
 
+    def cancelled(self):
+        return self._cancel
+
     def resume(self):
         if not self._fake:
             self._cancel = False
@@ -60,7 +63,7 @@ class RbsSetup:
         logging.info("[WASPY.IBA.RBS_SETUP] Moving rbs system to '" + str(position) + "'")
         self.motor_x_y.move_both([position.x, position.y])
         self.motor_phi_zeta.move_both([position.phi, position.zeta])
-        self.motor_det_theta.move_both([position.detector, position.theta])
+        self.motor_det_theta.move_both([position.det, position.theta])
 
     def load(self):
         self.motor_x_y.load()

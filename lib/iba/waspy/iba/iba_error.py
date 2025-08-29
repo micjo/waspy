@@ -14,3 +14,9 @@ class CancelError(IbaError):
 
 class RangeError(IbaError):
     """ Invalid range specified"""
+    pass
+
+
+class ErdParamsMissingError(IbaError):
+    """Missing Erd conversion params"""
+    pass

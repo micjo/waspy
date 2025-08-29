@@ -75,8 +75,8 @@ class ErdJob(Job):
         return status
 
     def get_recipe_progress(self):
-        measuring_time = self._erd_setup.get_measuring_time()
-        total_time = self._active_recipe.measuring_time_sec
+        measuring_time = int(float(self._erd_setup.get_measuring_time()))
+        total_time = int(self._active_recipe.measuring_time_sec)
         progress = round(measuring_time / total_time * 100, 2) if self._running else 0
         return f'{progress:02}'
 
@@ -92,7 +92,7 @@ class ErdJob(Job):
 
         erd_journal = run_erd_recipe(recipe, self._erd_setup)
         extra = self._recipe_meta.fill_erd_recipe_meta()
-        save_erd_journal(self._file_handler, recipe, erd_journal, extra)
+        save_erd_journal(self._file_handler, recipe, erd_journal, extra, self._erd_setup.get_tof_file_path())
         self._running = False
 
     def _finish_recipe(self):

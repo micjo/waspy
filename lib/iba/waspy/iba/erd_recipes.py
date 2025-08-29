@@ -7,11 +7,16 @@ import numpy as np
 from waspy.iba.erd_entities import ErdRecipe, PositionCoordinates, ErdJournal, get_erd_journal
 from waspy.iba.erd_setup import ErdSetup
 from waspy.iba.file_handler import FileHandler
-from waspy.iba.iba_error import RangeError, CancelError
+from waspy.iba.iba_error import RangeError, CancelError, ErdParamsMissingError
+from waspy.iba.erd_plot import create_erd_evt_plot, create_erd_mvt_plot
+from pathlib import Path
 
 
 def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup) -> ErdJournal:
     start_time = datetime.now()
+    if not erd_setup.do_params_exist():
+        raise ErdParamsMissingError("Could not find necessary parameters for erd data conversion")
+
     erd_setup.move(PositionCoordinates(z=recipe.z_start, theta=recipe.theta))
     erd_setup.wait_for_arrival()
     erd_setup.configure_acquisition(recipe.measuring_time_sec, recipe.name)
@@ -30,10 +35,12 @@ def run_erd_recipe(recipe: ErdRecipe, erd_setup: ErdSetup) -> ErdJournal:
 
     erd_setup.wait_for_acquisition_done()
     erd_setup.convert_data_to_ascii()
-
     erd_setup.get_measuring_time()
 
-    return get_erd_journal(erd_setup.get_status(get_histogram=True), start_time)
+    erd_status = erd_setup.get_status(get_histogram=True)
+    extended_flt_data = erd_setup.convert_to_extended_flt_data(erd_status.histogram)
+
+    return get_erd_journal(erd_status, start_time, extended_flt_data)
 
 
 def get_z_range(start, end, increment, repeat=1) -> List[PositionCoordinates]:
@@ -59,13 +66,35 @@ def _log_recipe(recipe, wait_time, z_range):
                  ", z-positions: \n\t" + position_list)
 
 
-def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: ErdJournal, extra):
-    file_handler.write_text_to_disk(f'{recipe.name}.flt', erd_journal.histogram)
-    meta = _serialize_meta(erd_journal, recipe, extra)
-    file_handler.write_text_to_disk(f'{recipe.name}.meta', meta)
+def save_erd_journal(file_handler: FileHandler, recipe: ErdRecipe, erd_journal: ErdJournal, extra, tof_in_file_path: Path):
+    # OLD ( for backup ): file_handler.write_text_to_disk(f"{recipe.name}.flt", erd_journal.histogram)
+    # meta = _serialize_meta(erd_journal, recipe, extra)
+    # file_handler.write_text_to_disk(f'{recipe.name}.meta', meta)
 
+    # plots
+    evt_fig = create_erd_evt_plot(recipe.name, erd_journal.extended_flt_data)
+    file_handler.write_matplotlib_fig_to_disk(recipe.name + ".evt.png",  evt_fig)
+    
+    mvt_fig = create_erd_mvt_plot(recipe.name, erd_journal.extended_flt_data)
+    file_handler.write_matplotlib_fig_to_disk(recipe.name + ".mvt.png", mvt_fig)
+
+    # data files
+    recipe_identifier: str = recipe.name.split("_")[-1] # e.g. A01
+    file_handler.cd_folder(recipe_identifier)
+    file_handler.write_text_to_disk(f"{recipe.name}.flt", erd_journal.histogram)
+    file_handler.write_text_to_disk(f"{recipe.name}.ext", _serialize_np_array(erd_journal.extended_flt_data))
+    file_handler.write_text_to_disk(f"{recipe.name}.mvt", _serialize_np_array(erd_journal.extended_flt_data[:, [4, 0]]))
+    file_handler.copy_file_to_local(tof_in_file_path)
+    file_handler.cd_folder_up()
+
+
+def _serialize_np_array(np_array):
+    return '\n'.join([
+        ' '.join(line) + ' ' for line in np_array
+    ]) + '\n'
 
 def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra):
+
     now = datetime.utcnow().strftime("%Y.%m.%d__%H:%M__%S.%f")[:-3]
 
     header = f""" % Comments
@@ -83,6 +112,9 @@ def _serialize_meta(journal: ErdJournal, recipe: ErdRecipe, extra):
  * Z End                 := {recipe.z_end}
  * Z Increment           := {recipe.z_increment}
  * Z Repeat              := {recipe.z_repeat}
+ *
+ * Theta encoder units   := {journal.theta_encoder}
+ * Z encoder units       := {journal.z_encoder}
  *
  * Start time            := {journal.start_time}
  * End time              := {journal.end_time}

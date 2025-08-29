@@ -4,6 +4,7 @@ title="AML U V"
 url="http://localhost:30000/api/latest"
 names = ["U", "V"]
 
+
 [rbs.drivers.aml_x_y]
 type="aml"
 title="AML X Y"
@@ -48,15 +49,26 @@ type = "mdrive"
 title = "MDrive Theta"
 url = "http://localhost:22300/api/latest"
 
+[erd.drivers.motrona_z_encoder]
+type="motrona_dx350"
+title="Motrona Z Encoder"
+url="http://localhost:30101/api/latest"
+
+[erd.drivers.motrona_theta_encoder]
+type="motrona_dx350"
+title="Motrona Theta Encoder"
+url="http://localhost:30100/api/latest"
+
 [erd.drivers.mpa3]
 type = "mpa3"
 title = "MPA 3"
 url = "http://localhost:22400/api/latest"
 
+
 [rbs]
-local_dir = "/tmp/ACQ/5_data"
-remote_dir = "/tmp/ACQ/REM/_05_data"
+local_dir = "/home/mca/ACQ/5_data"
+remote_dir = "/home/mca/ACQ/REM/_05_data"
 
 [erd]
-local_dir = "/tmp/ACQ/ERD/5_data"
-remote_dir = "/tmp/ACQ/ERD/REM/_05_data"
+local_dir = "/home/mca/ACQ/ERD/5_data"
+remote_dir = "/home/mca/ACQ/ERD/REM/_05_data"

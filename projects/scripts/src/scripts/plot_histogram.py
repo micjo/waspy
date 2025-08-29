@@ -1,68 +1,67 @@
-import requests
 import sys
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib import widgets, dates, ticker
+
+from PyQt5.QtWidgets import *
+from widgets.plot_live_spectrum import PlotLiveSpectrum
+from widgets.plot_upload_spectrum import PlotUploadSpectrum
+
+BUTTON_COLOR = "CornflowerBlue"
 
 
-class Graph:
-    def __init__(self):
-        title_string = "Detector: " + sys.argv[1]
-        self.fig = plt.figure(title_string)
-        self.title_text = plt.figtext(0.20, 0.94, title_string, size='x-large', color='blue')
-        ax_size = [0.11, 0.20, 1-0.140, 1-0.27] # [left, bottom, width, height] as fractions of figure width and height.
-        self.axes = self.fig.add_axes(ax_size)
-        self.reset_axes()
-        self.pause = False
+class Window(QDialog):
+    def __init__(self, lab, data_file=None):
+        super(Window, self).__init__()
 
-    def set_play_pause(self, animation):
-        self.pause = not self.pause
-        if self.pause:
-            animation.pause()
-        else:
-            animation.resume()
+        self.setFixedSize(760, 800)
+        self.setWindowTitle("plot_histogram.py")
 
-    def reset_axes(self):
-        self.axes.clear()
-        self.axes.set_xlabel("Energy Level")
-        self.axes.set_ylabel("Occurrence")
-        self.axes.grid(which='both')
-        self.axes.yaxis.set_ticks_position('left')
-        self.axes.xaxis.set_ticks_position('bottom')
-        # self.axes.xaxis_date()
-        # self.axes.xaxis.set_major_formatter(dates.DateFormatter('%H:%M'))
-        # self.axes.xaxis.set_major_locator(ticker.AutoLocator())
+        # Window Buttons
+        self.live_data_btn = QPushButton("Live Data")
+        self.live_data_btn.clicked.connect(self.on_click_live_data_btn)
+        self.live_data_btn.setStyleSheet(f"background-color: {BUTTON_COLOR}")
+        self.upload_data_btn = QPushButton("Upload Data")
+        self.upload_data_btn.clicked.connect(self.on_click_upload_data_btn)
+        tabs_layout = QHBoxLayout()
+        tabs_layout.addWidget(self.live_data_btn)
+        tabs_layout.addWidget(self.upload_data_btn)
 
-    def consume_data(self, data):
-        if data is None:
-            print("No data available !!")
-            self.axes.set_facecolor('lightgrey')
-            self.axes.get_lines()[0].set_color("black")
-            return
-        else:
-            self.axes.set_facecolor('white')
-        self.reset_axes()
-        self.axes.plot(data)
+        # Windows
+        self.live_data = PlotLiveSpectrum(lab)
+        self.upload_data = PlotUploadSpectrum(data_file)
+        self.upload_data.hide()
 
-    def get_data(self):
-        while True:
-            try:
-                data = requests.get("http://mill.capitan.imec.be/api/rbs/caen/detector/{}".format(sys.argv[1])).json()
-            except Exception as e:
-                data = None
-            yield data
+        # Main Layout
+        layout = QVBoxLayout()
+        layout.addLayout(tabs_layout)
+        layout.addWidget(self.live_data)
+        layout.addWidget(self.upload_data)
+        layout.addStretch()
+        self.setLayout(layout)
+
+    def on_click_live_data_btn(self):
+        self.live_data.show()
+        self.upload_data.hide()
+
+        self.live_data_btn.setStyleSheet(f"background-color: {BUTTON_COLOR}")
+        self.upload_data_btn.setStyleSheet("")
+
+    def on_click_upload_data_btn(self):
+        self.live_data.hide()
+        self.upload_data.show()
+
+        self.live_data_btn.setStyleSheet("")
+        self.upload_data_btn.setStyleSheet(f"background-color: {BUTTON_COLOR}")
 
 
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
 
-if __name__ == "__main__":
-    graph = Graph()
-    ani = animation.FuncAnimation(graph.fig, graph.consume_data,
-                                  frames=graph.get_data(),
-                                  interval=1200,
-                                  repeat=True,
-                                  cache_frame_data=False,
-                                  blit=False)
+    if len(sys.argv) >= 3:
+        data_file = sys.argv[2]
+    else: data_file = None
 
-    graph.day_button = widgets.Button(plt.axes([0.84, 0.01, 0.15, 0.060]), 'play/pause')
-    graph.day_button.on_clicked(lambda _: graph.set_play_pause(ani))
-    plt.show()
+    try:
+        main = Window(sys.argv[1], data_file)
+    except IndexError:
+        main = Window("dev")
+    main.show()
+    sys.exit(app.exec_())

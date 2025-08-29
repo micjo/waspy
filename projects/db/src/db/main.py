@@ -10,7 +10,8 @@ from pydantic import BaseSettings
 
 class GlobalConfig(BaseSettings):
     DB_FILE: str
-    DAYBOOK_FILE: str
+    DAYBOOK_FILE: str # TODO: to be removed
+    REMOTE_PATH: str
 
 
 def main():
@@ -24,12 +25,10 @@ def main():
     daybook_folder = daybook_path.parent
     daybook_filename = daybook_path.name
 
-    daybook_file_handler = FileHandler(daybook_folder)
+    remote_path = Path(env_conf.REMOTE_PATH)
+
+    daybook_file_handler = FileHandler(daybook_folder, remote_path)
 
     add_daybook_routes(router, daybook_file_handler, daybook_filename)
 
     return router
-
-
-
-

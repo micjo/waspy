@@ -7,7 +7,7 @@ from pydantic import Field, validator
 from pydantic.generics import BaseModel
 
 from mill.entities import SimpleConfig, AmlConfig, CaenConfig
-from waspy.iba.rbs_entities import RbsChanneling, RbsRandom, RbsDriverUrls
+from waspy.iba.rbs_entities import RbsChanneling, RbsRandom, RbsDriverUrls, RbsChannelingMap
 
 
 class RbsDriverGroup(BaseModel):
@@ -52,7 +52,7 @@ class StatusModel(str, Enum):
 
 
 class RbsJobModel(BaseModel):
-    recipes: List[Annotated[Union[RbsChanneling, RbsRandom], Field(discriminator='type')]]
+    recipes: List[Annotated[Union[RbsChanneling, RbsRandom, RbsChannelingMap], Field(discriminator='type')]]
     name: str
     type = "rbs"
 
@@ -66,25 +66,35 @@ class RbsJobModel(BaseModel):
                     "recipes": [
                         {"type": "rbs_random", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
-                         "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
+                         "coordinate_range": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                          },
                         {"type": "rbs_random", "sample": "AE007607_D02_B", "name": "RBS21_071_08B_A",
                          "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 45000,
-                         "vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
+                         "coordinate_range": {"name": "phi", "start": 0, "end": 30, "increment": 2}
                          },
                         {
                             "type": "rbs_channeling", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
                             "start_position": {"x": 10, "y": 22, "phi": 0}, "yield_charge_total": 2100,
-                            "yield_vary_coordinates": [
+                            "yield_coordinate_ranges": [
                                 {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
                                 {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
                                 {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
                                 {"name": "theta", "start": -2, "end": 2, "increment": 0.2}
                             ],
                             "yield_integration_window": {"start": 22, "end": 53},
-                            "yield_optimize_detector_index": 0,
+                            "optimize_detector_identifier": "d01",
                             "random_fixed_charge_total": 1000,
-                            "random_vary_coordinate": {"name": "phi", "start": 0, "end": 30, "increment": 2}
+                            "random_coordinate_range": {"name": "phi", "start": 0, "end": 30, "increment": 2},
+                            "fit_algorithm_type": "lower_fit"
+
+                        },
+                        {
+                            "type": "rbs_channeling_map", "sample": "AE007607_D02_A", "name": "RBS21_071_01B_A",
+                            "start_position": {"x": 10, "y": 22, "phi": 0}, "charge_total": 2000,
+                            "zeta_coordinate_range": {"name": "zeta", "start": -2, "end": 2, "increment": 0.2},
+                            "theta_coordinate_range": {"name": "theta", "start": -2, "end": 2, "increment": 0.2},
+                            "yield_integration_window": {"start": 0, "end": 100},
+                            "optimize_detector_identifier": "d01",
                         }
                     ]
                 }

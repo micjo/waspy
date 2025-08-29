@@ -74,7 +74,7 @@ def build_job_and_hw_routes(router, mill_config: MillConfig, logbook_db: LogBook
         rbs_file_writer = FileHandler(mill_config.rbs.local_dir, mill_config.rbs.remote_dir)
         rbs_setup.configure_detectors(mill_config.rbs.drivers.caen.detectors)
 
-        erd_setup = ErdSetup(mill_config.erd.get_driver_urls())
+        erd_setup = ErdSetup(mill_config.erd.get_driver_urls(), mill_config.erd.remote_dir / mill_config.erd.param_subdir, mill_config.erd.tof_chmin, mill_config.erd.tof_chmax)
         erd_file_writer = FileHandler(mill_config.erd.local_dir, mill_config.erd.remote_dir)
 
         recipe_meta = RecipeMeta(logbook_db, Path('./recipe_meta'))

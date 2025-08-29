@@ -3,6 +3,11 @@ type="motrona_ax350"
 title="Motrona SF6"
 url="http://127.0.0.1:22101/api/latest"
 
+[any.drivers.motrona_theta_encoder]
+type="motrona_dx350"
+title="Motrona Theta Encoder"
+url="http://127.0.0.1:22105/api/latest"
+
 [any.drivers.motrona_terminal_voltage]
 type="motrona_ax350"
 title="Motrona Terminal Voltage"
@@ -16,30 +21,30 @@ url="http://127.0.0.1:22103/api/latest"
 [rbs.drivers.aml_x_y]
 type="aml"
 title="AML X Y"
-url="http://127.0.0.1:22000/api/latest"
+url="https://mill.capitan.imec.be/api/rbs/aml_x_y"
 names = ["X", "Y"]
 
 [rbs.drivers.aml_phi_zeta]
 type = "aml"
 title = "AML Phi Zeta"
-url = "http://127.0.0.1:22001/api/latest"
+url = "https://mill.capitan.imec.be/api/rbs/aml_phi_zeta"
 names = ["Phi", "Zeta"]
 
 [rbs.drivers.aml_det_theta]
 type = "aml"
 title = "AML Detector Theta"
-url = "http://127.0.0.1:22002/api/latest"
+url = "https://mill.capitan.imec.be/api/rbs/aml_det_theta"
 names = ["Detector", "Theta"]
 
 [rbs.drivers.motrona_charge]
 type = "motrona_dx350"
 title = "Motrona Charge"
-url = "http://127.0.0.1:22100/api/latest"
+url = "https://mill.capitan.imec.be/api/rbs/motrona_charge"
 
 [rbs.drivers.caen]
 type = "caen"
 title = "Caen"
-url = "http://172.16.0.16:22200/api/latest"
+url = "https://mill.capitan.imec.be/api/rbs/caen"
 detectors = [
 	{"board"="10664", "channel"=0, "identifier"="d01", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
 	{"board"="10664", "channel"=1, "identifier"="d02", "bins_min"=0, "bins_max"=11264, "bins_width"=1024},
@@ -68,17 +73,6 @@ type = "mpa3"
 title = "MPA 3"
 url = "http://172.16.0.11:25000/api/latest"
 
-[erd.drivers.motrona_z_encoder]
-type="motrona_dx350"
-title="Motrona Z Encoder"
-url="http://localhost:30101/api/latest"
-
-[erd.drivers.motrona_theta_encoder]
-type="motrona_dx350"
-title="Motrona Theta Encoder"
-url="http://127.0.0.1:22105/api/latest"
-
-
 [rbs]
 local_dir = "/mnt/mcaiba_nas/transfer_RBS"
 remote_dir = "/mnt/winbe_wasp/transfer_RBS"
@@ -86,6 +80,4 @@ remote_dir = "/mnt/winbe_wasp/transfer_RBS"
 [erd]
 local_dir = "/mnt/mcaiba_nas/transfer_ERD"
 remote_dir = "/mnt/winbe_wasp/transfer_ERD"
-param_subdir = "erd_settings"
-tof_chmin = 1
-tof_chmax = 8192
+

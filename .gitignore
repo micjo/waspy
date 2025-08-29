@@ -1,9 +1,4 @@
-.vscode
-__pycache__
-*.log
-*.db
-venv
+projects/mill/core
+
+**/__pycache__/
 .idea
-*.egg-info
-.tox
-out/
