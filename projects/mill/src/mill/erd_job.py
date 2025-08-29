@@ -91,6 +91,7 @@ class ErdJob(Job):
         self._running = True
 
         erd_journal = run_erd_recipe(recipe, self._erd_setup)
+        logging.info("_run_recipe " + str(erd_journal))
         extra = self._recipe_meta.fill_erd_recipe_meta()
         save_erd_journal(self._file_handler, recipe, erd_journal, extra, self._erd_setup.get_tof_file_path())
         self._running = False

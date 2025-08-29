@@ -26,6 +26,7 @@ class ErdData(BaseModel):
     motrona_theta_encoder: Dict
     histogram: str
     measuring_time_sec: float
+    mpa3_workaround_trigger: bool
 
 
 class ErdResult(BaseModel):
@@ -55,6 +56,7 @@ class ErdJournal(BaseModel):
     theta_encoder: float
     histogram: str
     extended_flt_data: list[list[float]]
+    mpa3_workaround_trigger: bool
 
 def get_erd_journal(erd_data: ErdData, start_time: datetime, extended_flt_data: list[list[float]]) -> ErdJournal:
     return ErdJournal(
@@ -63,4 +65,5 @@ def get_erd_journal(erd_data: ErdData, start_time: datetime, extended_flt_data: 
         z_encoder=erd_data.motrona_z_encoder["charge(nC)"],
         theta_encoder=erd_data.motrona_theta_encoder["charge(nC)"],
         histogram=erd_data.histogram, 
+        mpa3_workaround_trigger = erd_data.mpa3_workaround_trigger,
         extended_flt_data = extended_flt_data)
